@@ -1,584 +1,757 @@
 package gdd.scene;
 
-import gdd.AudioPlayer;
 import gdd.Game;
 import static gdd.Global.*;
-import gdd.SpawnDetails;
+import gdd.RunState;
+import gdd.SpawnManager;
+import gdd.TransitionMode;
 import gdd.powerup.PowerUp;
-import gdd.powerup.SpeedUp;
-import gdd.sprite.Alien1;
+import gdd.sprite.Bubble;
+import gdd.sprite.Coral;
 import gdd.sprite.Enemy;
+import gdd.sprite.EnemyRock;
 import gdd.sprite.Explosion;
+import gdd.sprite.Mine;
+import gdd.sprite.Octopus;
 import gdd.sprite.Player;
-import gdd.sprite.Shot;
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Toolkit;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Random;
-import javax.swing.ImageIcon;
+import java.util.Queue;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
-public class Scene1 extends JPanel {
+public class Scene1 extends JPanel implements GameScene {
 
-    private int frame = 0;
-    private List<PowerUp> powerups;
-    private List<Enemy> enemies;
-    private List<Explosion> explosions;
-    private List<Shot> shots;
-    private Player player;
-    // private Shot shot;
+    protected final Game game;
+    protected final RunState runState;
+    protected final int stageNumber;
+    protected final List<Enemy> enemies = new ArrayList<>();
+    protected final List<PowerUp> powerUps = new ArrayList<>();
+    protected final List<Bubble> playerBubbles = new ArrayList<>();
+    protected final List<EnemyRock> enemyProjectiles = new ArrayList<>();
+    protected final List<Explosion> explosions = new ArrayList<>();
+    protected final List<Mine> mines = new ArrayList<>();
+    protected final List<Coral> corals = new ArrayList<>();
+    protected final List<Rectangle> walls = new ArrayList<>();
 
-    final int BLOCKHEIGHT = 50;
-    final int BLOCKWIDTH = 50;
+    protected Player player;
+    protected SpawnManager spawnManager;
+    protected int stageTick;
 
-    final int BLOCKS_TO_DRAW = BOARD_HEIGHT / BLOCKHEIGHT;
-
-    private int direction = -1;
-    private int deaths = 0;
-
-    private boolean inGame = true;
-    private String message = "Game Over";
-
-    private final Dimension d = new Dimension(BOARD_WIDTH, BOARD_HEIGHT);
-    private final Random randomizer = new Random();
-
+    private final KeyAdapter input = new SceneInput();
     private Timer timer;
-    private final Game game;
+    private int remainingTicks;
+    private int backgroundOffsetNear;
+    private int backgroundOffsetFar;
+    private boolean paused;
+    private boolean finished;
+    private boolean transitioning;
+    private int transitionTicks;
+    private int playerDeathTicks;
 
-    private int currentRow = -1;
-    // TODO load this map from a file
-    private int mapOffset = 0;
-    private final int[][] MAP = {
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-        {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0},
-        {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
-    };
+    public Scene1(Game game, RunState runState) {
+        this(game, runState, 1);
+    }
 
-    private HashMap<Integer, SpawnDetails> spawnMap = new HashMap<>();
-    private AudioPlayer audioPlayer;
-    private int lastRowToShow;
-    private int firstRowToShow;
-
-    public Scene1(Game game) {
+    protected Scene1(Game game, RunState runState, int stageNumber) {
         this.game = game;
-        // initBoard();
-        // gameInit();
-        loadSpawnDetails();
-    }
-
-    private void initAudio() {
-        try {
-            String filePath = "src/audio/scene1.wav";
-            audioPlayer = new AudioPlayer(filePath);
-            audioPlayer.play();
-        } catch (Exception e) {
-            System.err.println("Error initializing audio player: " + e.getMessage());
-        }
-    }
-
-    private void loadSpawnDetails() {
-        // TODO load this from a file
-        spawnMap.put(50, new SpawnDetails("PowerUp-SpeedUp", 100, 0));
-        spawnMap.put(200, new SpawnDetails("Alien1", 200, 0));
-        spawnMap.put(300, new SpawnDetails("Alien1", 300, 0));
-
-        spawnMap.put(400, new SpawnDetails("Alien1", 400, 0));
-        spawnMap.put(401, new SpawnDetails("Alien1", 450, 0));
-        spawnMap.put(402, new SpawnDetails("Alien1", 500, 0));
-        spawnMap.put(403, new SpawnDetails("Alien1", 550, 0));
-
-        spawnMap.put(500, new SpawnDetails("Alien1", 100, 0));
-        spawnMap.put(501, new SpawnDetails("Alien1", 150, 0));
-        spawnMap.put(502, new SpawnDetails("Alien1", 200, 0));
-        spawnMap.put(503, new SpawnDetails("Alien1", 350, 0));
-    }
-
-    private void initBoard() {
-
-    }
-
-    public void start() {
-        addKeyListener(new TAdapter());
+        this.runState = runState;
+        this.stageNumber = stageNumber;
         setFocusable(true);
-        requestFocusInWindow();
-        setBackground(Color.black);
-
-        timer = new Timer(1000 / 60, new GameCycle());
-        timer.start();
-
-        gameInit();
-        initAudio();
-    }
-
-    public void stop() {
-        timer.stop();
-        try {
-            if (audioPlayer != null) {
-                audioPlayer.stop();
-            }
-        } catch (Exception e) {
-            System.err.println("Error closing audio player.");
-        }
-    }
-
-    private void gameInit() {
-
-        enemies = new ArrayList<>();
-        powerups = new ArrayList<>();
-        explosions = new ArrayList<>();
-        shots = new ArrayList<>();
-
-        // for (int i = 0; i < 4; i++) {
-        // for (int j = 0; j < 6; j++) {
-        // var enemy = new Enemy(ALIEN_INIT_X + (ALIEN_WIDTH + ALIEN_GAP) * j,
-        // ALIEN_INIT_Y + (ALIEN_HEIGHT + ALIEN_GAP) * i);
-        // enemies.add(enemy);
-        // }
-        // }
-        player = new Player();
-        // shot = new Shot();
-    }
-
-    private void drawMap(Graphics g) {
-        // Draw scrolling starfield background
-
-        // Calculate smooth scrolling offset (1 pixel per frame)
-        int scrollOffset = (frame) % BLOCKHEIGHT;
-
-        // Calculate which rows to draw based on screen position
-        int baseRow = (frame) / BLOCKHEIGHT;
-        int rowsNeeded = (BOARD_HEIGHT / BLOCKHEIGHT) + 2; // +2 for smooth scrolling
-
-        // Loop through rows that should be visible on screen
-        for (int screenRow = 0; screenRow < rowsNeeded; screenRow++) {
-            // Calculate which MAP row to use (with wrapping)
-            int mapRow = (baseRow + screenRow) % MAP.length;
-
-            // Calculate Y position for this row
-            // int y = (screenRow * BLOCKHEIGHT) - scrollOffset;
-            int y = BOARD_HEIGHT - ( (screenRow * BLOCKHEIGHT) - scrollOffset );
-
-            // Skip if row is completely off-screen
-            if (y > BOARD_HEIGHT || y < -BLOCKHEIGHT) {
-                continue;
-            }
-
-            // Draw each column in this row
-            for (int col = 0; col < MAP[mapRow].length; col++) {
-                if (MAP[mapRow][col] == 1) {
-                    // Calculate X position
-                    int x = col * BLOCKWIDTH;
-
-                    // Draw a cluster of stars
-                    drawStarCluster(g, x, y, BLOCKWIDTH, BLOCKHEIGHT);
-                }
-            }
-        }
-
-    }
-
-    private void drawStarCluster(Graphics g, int x, int y, int width, int height) {
-        // Set star color to white
-        g.setColor(Color.WHITE);
-
-        // Draw multiple stars in a cluster pattern
-        // Main star (larger)
-        int centerX = x + width / 2;
-        int centerY = y + height / 2;
-        g.fillOval(centerX - 2, centerY - 2, 4, 4);
-
-        // Smaller surrounding stars
-        g.fillOval(centerX - 15, centerY - 10, 2, 2);
-        g.fillOval(centerX + 12, centerY - 8, 2, 2);
-        g.fillOval(centerX - 8, centerY + 12, 2, 2);
-        g.fillOval(centerX + 10, centerY + 15, 2, 2);
-
-        // Tiny stars for more detail
-        g.fillOval(centerX - 20, centerY + 5, 1, 1);
-        g.fillOval(centerX + 18, centerY - 15, 1, 1);
-        g.fillOval(centerX - 5, centerY - 18, 1, 1);
-        g.fillOval(centerX + 8, centerY + 20, 1, 1);
-    }
-
-    private void drawAliens(Graphics g) {
-
-        for (Enemy enemy : enemies) {
-
-            if (enemy.isVisible()) {
-
-                g.drawImage(enemy.getImage(), enemy.getX(), enemy.getY(), this);
-            }
-
-            if (enemy.isDying()) {
-
-                enemy.die();
-            }
-        }
-    }
-
-    private void drawPowreUps(Graphics g) {
-
-        for (PowerUp p : powerups) {
-
-            if (p.isVisible()) {
-
-                g.drawImage(p.getImage(), p.getX(), p.getY(), this);
-            }
-
-            if (p.isDying()) {
-
-                p.die();
-            }
-        }
-    }
-
-    private void drawPlayer(Graphics g) {
-
-        if (player.isVisible()) {
-
-            g.drawImage(player.getImage(), player.getX(), player.getY(), this);
-        }
-
-        if (player.isDying()) {
-
-            player.die();
-            inGame = false;
-        }
-    }
-
-    private void drawShot(Graphics g) {
-
-        for (Shot shot : shots) {
-
-            if (shot.isVisible()) {
-                g.drawImage(shot.getImage(), shot.getX(), shot.getY(), this);
-            }
-        }
-    }
-
-    private void drawBombing(Graphics g) {
-
-        // for (Enemy e : enemies) {
-        //     Enemy.Bomb b = e.getBomb();
-        //     if (!b.isDestroyed()) {
-        //         g.drawImage(b.getImage(), b.getX(), b.getY(), this);
-        //     }
-        // }
-    }
-
-    private void drawExplosions(Graphics g) {
-
-        List<Explosion> toRemove = new ArrayList<>();
-
-        for (Explosion explosion : explosions) {
-
-            if (explosion.isVisible()) {
-                g.drawImage(explosion.getImage(), explosion.getX(), explosion.getY(), this);
-                explosion.visibleCountDown();
-                if (!explosion.isVisible()) {
-                    toRemove.add(explosion);
-                }
-            }
-        }
-
-        explosions.removeAll(toRemove);
+        setBackground(new Color(4, 42, 70));
     }
 
     @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        doDrawing(g);
+    public void start() {
+        resetStage();
+        addKeyListener(input);
+        timer = new Timer(TIMER_DELAY_MS, this::gameTick);
+        timer.start();
+        requestFocusInWindow();
     }
 
-    private void doDrawing(Graphics g) {
-
-        g.setColor(Color.black);
-        g.fillRect(0, 0, d.width, d.height);
-
-        g.setColor(Color.white);
-        g.drawString("FRAME: " + frame, 10, 10);
-
-        g.setColor(Color.green);
-
-        if (inGame) {
-
-            drawMap(g);  // Draw background stars first
-            drawExplosions(g);
-            drawPowreUps(g);
-            drawAliens(g);
-            drawPlayer(g);
-            drawShot(g);
-
-        } else {
-
-            if (timer.isRunning()) {
-                timer.stop();
-            }
-
-            gameOver(g);
-        }
-
-        Toolkit.getDefaultToolkit().sync();
-    }
-
-    private void gameOver(Graphics g) {
-
-        g.setColor(Color.black);
-        g.fillRect(0, 0, BOARD_WIDTH, BOARD_HEIGHT);
-
-        g.setColor(new Color(0, 32, 48));
-        g.fillRect(50, BOARD_WIDTH / 2 - 30, BOARD_WIDTH - 100, 50);
-        g.setColor(Color.white);
-        g.drawRect(50, BOARD_WIDTH / 2 - 30, BOARD_WIDTH - 100, 50);
-
-        var small = new Font("Helvetica", Font.BOLD, 14);
-        var fontMetrics = this.getFontMetrics(small);
-
-        g.setColor(Color.white);
-        g.setFont(small);
-        g.drawString(message, (BOARD_WIDTH - fontMetrics.stringWidth(message)) / 2,
-                BOARD_WIDTH / 2);
-    }
-
-    private void update() {
-
-
-        // Check enemy spawn
-        // TODO this approach can only spawn one enemy at a frame
-        SpawnDetails sd = spawnMap.get(frame);
-        if (sd != null) {
-            // Create a new enemy based on the spawn details
-            switch (sd.type) {
-                case "Alien1":
-                    Enemy enemy = new Alien1(sd.x, sd.y);
-                    enemies.add(enemy);
-                    break;
-                // Add more cases for different enemy types if needed
-                case "Alien2":
-                    // Enemy enemy2 = new Alien2(sd.x, sd.y);
-                    // enemies.add(enemy2);
-                    break;
-                case "PowerUp-SpeedUp":
-                    // Handle speed up item spawn
-                    PowerUp speedUp = new SpeedUp(sd.x, sd.y);
-                    powerups.add(speedUp);
-                    break;
-                default:
-                    System.out.println("Unknown enemy type: " + sd.type);
-                    break;
-            }
-        }
-
-        if (deaths == NUMBER_OF_ALIENS_TO_DESTROY) {
-            inGame = false;
+    @Override
+    public void stop() {
+        removeKeyListener(input);
+        if (timer != null) {
             timer.stop();
-            message = "Game won!";
         }
-
-        // player
-        player.act();
-
-        // Power-ups
-        for (PowerUp powerup : powerups) {
-            if (powerup.isVisible()) {
-                powerup.act();
-                if (powerup.collidesWith(player)) {
-                    powerup.upgrade(player);
-                }
-            }
-        }
-
-        // Enemies
-        for (Enemy enemy : enemies) {
-            if (enemy.isVisible()) {
-                enemy.act(direction);
-            }
-        }
-
-        // shot
-        List<Shot> shotsToRemove = new ArrayList<>();
-        for (Shot shot : shots) {
-
-            if (shot.isVisible()) {
-                int shotX = shot.getX();
-                int shotY = shot.getY();
-
-                for (Enemy enemy : enemies) {
-                    // Collision detection: shot and enemy
-                    int enemyX = enemy.getX();
-                    int enemyY = enemy.getY();
-
-                    if (enemy.isVisible() && shot.isVisible()
-                            && shotX >= (enemyX)
-                            && shotX <= (enemyX + ALIEN_WIDTH)
-                            && shotY >= (enemyY)
-                            && shotY <= (enemyY + ALIEN_HEIGHT)) {
-
-                        var ii = new ImageIcon(IMG_EXPLOSION);
-                        enemy.setImage(ii.getImage());
-                        enemy.setDying(true);
-                        explosions.add(new Explosion(enemyX, enemyY));
-                        deaths++;
-                        shot.die();
-                        shotsToRemove.add(shot);
-                    }
-                }
-
-                int y = shot.getY();
-                // y -= 4;
-                y -= 20;
-
-                if (y < 0) {
-                    shot.die();
-                    shotsToRemove.add(shot);
-                } else {
-                    shot.setY(y);
-                }
-            }
-        }
-        shots.removeAll(shotsToRemove);
-
-        // enemies
-        // for (Enemy enemy : enemies) {
-        //     int x = enemy.getX();
-        //     if (x >= BOARD_WIDTH - BORDER_RIGHT && direction != -1) {
-        //         direction = -1;
-        //         for (Enemy e2 : enemies) {
-        //             e2.setY(e2.getY() + GO_DOWN);
-        //         }
-        //     }
-        //     if (x <= BORDER_LEFT && direction != 1) {
-        //         direction = 1;
-        //         for (Enemy e : enemies) {
-        //             e.setY(e.getY() + GO_DOWN);
-        //         }
-        //     }
-        // }
-        // for (Enemy enemy : enemies) {
-        //     if (enemy.isVisible()) {
-        //         int y = enemy.getY();
-        //         if (y > GROUND - ALIEN_HEIGHT) {
-        //             inGame = false;
-        //             message = "Invasion!";
-        //         }
-        //         enemy.act(direction);
-        //     }
-        // }
-        // bombs - collision detection
-        // Bomb is with enemy, so it loops over enemies
-        /*
-        for (Enemy enemy : enemies) {
-
-            int chance = randomizer.nextInt(15);
-            Enemy.Bomb bomb = enemy.getBomb();
-
-            if (chance == CHANCE && enemy.isVisible() && bomb.isDestroyed()) {
-
-                bomb.setDestroyed(false);
-                bomb.setX(enemy.getX());
-                bomb.setY(enemy.getY());
-            }
-
-            int bombX = bomb.getX();
-            int bombY = bomb.getY();
-            int playerX = player.getX();
-            int playerY = player.getY();
-
-            if (player.isVisible() && !bomb.isDestroyed()
-                    && bombX >= (playerX)
-                    && bombX <= (playerX + PLAYER_WIDTH)
-                    && bombY >= (playerY)
-                    && bombY <= (playerY + PLAYER_HEIGHT)) {
-
-                var ii = new ImageIcon(IMG_EXPLOSION);
-                player.setImage(ii.getImage());
-                player.setDying(true);
-                bomb.setDestroyed(true);
-            }
-
-            if (!bomb.isDestroyed()) {
-                bomb.setY(bomb.getY() + 1);
-                if (bomb.getY() >= GROUND - BOMB_HEIGHT) {
-                    bomb.setDestroyed(true);
-                }
-            }
-        }
-         */
+        clearSceneEntities();
     }
 
-    private void doGameCycle() {
-        frame++;
-        update();
+    protected void resetStage() {
+        clearSceneEntities();
+        stageTick = 0;
+        remainingTicks = stageDurationTicks();
+        paused = false;
+        finished = false;
+        transitioning = false;
+        playerDeathTicks = 0;
+        player = new Player(runState);
+
+        if (stageNumber <= 2) {
+            spawnManager = new SpawnManager(player, stageNumber);
+            spawnManager.setMode(DEFAULT_SPAWN_MODE);
+        }
+
+        loadPlaceholderStageContent();
+        setupSpecialStageContent();
+    }
+
+    protected void setupSpecialStageContent() {
+    }
+
+    protected void loadPlaceholderStageContent() {
+        if (stageNumber == 1) {
+            mines.add(new Mine(BOARD_WIDTH + 120, 180));
+            mines.add(new Mine(BOARD_WIDTH + 520, 460));
+        } else if (stageNumber == 2) {
+            corals.add(new Coral(BOARD_WIDTH + 170,
+                    BOARD_HEIGHT - CORAL_HEIGHT - 42));
+            walls.add(new Rectangle(BOARD_WIDTH + 520, 0, 130, 85));
+            walls.add(new Rectangle(BOARD_WIDTH + 850,
+                    BOARD_HEIGHT - 130, 150, 100));
+        }
+    }
+
+    private void gameTick(ActionEvent event) {
+        if (!paused && !finished) {
+            updateGame();
+        }
         repaint();
     }
 
-    private class GameCycle implements ActionListener {
+    protected void updateGame() {
+        if (playerDeathTicks > 0) {
+            updatePlayerDeath();
+            return;
+        }
 
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            doGameCycle();
+        if (transitioning) {
+            updateTransition();
+            return;
+        }
+
+        stageTick++;
+        if (usesStageTimer()) {
+            remainingTicks--;
+        }
+
+        updateBackground();
+        updatePlayer();
+
+        if (spawnManager != null) {
+            spawnManager.update(stageTick, enemies, powerUps);
+        }
+
+        spawnPlaceholderObstacles();
+        updateSprites();
+        updateSpecialStage();
+        handleCollisions();
+        removeDeadEntities();
+
+        if (player.isDead()) {
+            player.setDying(true);
+            playerDeathTicks = PLAYER_DEATH_TICKS;
+            enemyProjectiles.clear();
+            return;
+        }
+
+        if (usesStageTimer() && remainingTicks <= 0) {
+            completeStage();
         }
     }
 
-    private class TAdapter extends KeyAdapter {
+    protected void updateSpecialStage() {
+    }
 
-        @Override
-        public void keyReleased(KeyEvent e) {
-            player.keyReleased(e);
+    protected boolean usesStageTimer() {
+        return stageNumber <= 2;
+    }
+
+    private void updateBackground() {
+        if (stageNumber == 3) {
+            return;
+        }
+        backgroundOffsetNear = (backgroundOffsetNear + WORLD_SCROLL_SPEED) % 90;
+        backgroundOffsetFar = (backgroundOffsetFar + 1) % 150;
+    }
+
+    private void updatePlayerDeath() {
+        updateBackground();
+        explosions.forEach(Explosion::act);
+        explosions.removeIf(explosion -> !explosion.isVisible());
+        if (--playerDeathTicks <= 0) {
+            finishAsGameOver();
+        }
+    }
+
+    private void updateTransition() {
+        updateBackground();
+        player.act();
+        if (--transitionTicks <= 0) {
+            moveToNextStage();
+        }
+    }
+
+    private void updatePlayer() {
+        int oldX = player.getX();
+        int oldY = player.getY();
+        player.act();
+
+        if (intersectsWall(player.getBounds())) {
+            player.restorePosition(oldX, oldY);
+            resolveWallOverlap();
+            if (WALL_DAMAGE_ENABLED) {
+                player.damage(WALL_DAMAGE);
+            }
         }
 
-        @Override
-        public void keyPressed(KeyEvent e) {
-            System.out.println("Scene2.keyPressed: " + e.getKeyCode());
+        playerBubbles.addAll(player.createBubbles());
+    }
 
-            player.keyPressed(e);
+    private void updateSprites() {
+        for (Enemy enemy : enemies) {
+            if (!enemy.isVisible()) {
+                continue;
+            }
+            enemy.act();
+            if (enemy instanceof Octopus) {
+                EnemyRock rock = ((Octopus) enemy).takeRock();
+                if (rock != null) {
+                    enemyProjectiles.add(rock);
+                }
+            }
+        }
 
-            int x = player.getX();
-            int y = player.getY();
+        playerBubbles.forEach(Bubble::act);
+        enemyProjectiles.forEach(EnemyRock::act);
+        powerUps.forEach(PowerUp::act);
+        mines.forEach(Mine::act);
+        corals.forEach(Coral::act);
+        explosions.forEach(Explosion::act);
 
-            int key = e.getKeyCode();
+        for (Rectangle wall : walls) {
+            wall.x -= WORLD_SCROLL_SPEED;
+        }
 
-            if (key == KeyEvent.VK_SPACE && inGame) {
-                System.out.println("Shots: " + shots.size());
-                if (shots.size() < 4) {
-                    // Create a new shot and add it to the list
-                    Shot shot = new Shot(x, y);
-                    shots.add(shot);
+        player.advanceAnimation();
+        enemies.forEach(Enemy::advanceAnimation);
+        powerUps.forEach(PowerUp::advanceAnimation);
+        playerBubbles.forEach(Bubble::advanceAnimation);
+        enemyProjectiles.forEach(EnemyRock::advanceAnimation);
+        mines.forEach(Mine::advanceAnimation);
+        corals.forEach(Coral::advanceAnimation);
+        explosions.forEach(Explosion::advanceAnimation);
+    }
+
+    private void spawnPlaceholderObstacles() {
+        if (stageNumber == 1 && stageTick > 0
+                && stageTick % secondsToTicks(9) == 0) {
+            int y = 90 + (stageTick / secondsToTicks(9) * 97)
+                    % (BOARD_HEIGHT - 190);
+            mines.add(new Mine(BOARD_WIDTH + 40, y));
+        }
+
+        if (stageNumber == 2 && stageTick > 0
+                && stageTick % secondsToTicks(11) == 0) {
+            corals.add(new Coral(BOARD_WIDTH + 40,
+                    BOARD_HEIGHT - CORAL_HEIGHT - 42));
+        }
+    }
+
+    private void handleCollisions() {
+        handlePlayerBubbleCollisions();
+        handleEnemyProjectileCollisions();
+        handleEnemyContact();
+        handlePowerUpContact();
+        handleObstacleContact();
+    }
+
+    private void handlePlayerBubbleCollisions() {
+        for (Bubble bubble : playerBubbles) {
+            if (!bubble.isVisible()) {
+                continue;
+            }
+
+            for (Enemy enemy : enemies) {
+                if (bubble.collidesWith(enemy)) {
+                    boolean killed = enemy.damage(bubble.getDamage());
+                    bubble.die();
+                    if (killed) {
+                        runState.addScore(enemy.getScoreValue());
+                        addSmallExplosion(enemy);
+                        onEnemyKilled(enemy);
+                    }
+                    break;
                 }
             }
 
+            if (!bubble.isVisible()) {
+                continue;
+            }
+
+            for (Coral coral : corals) {
+                if (bubble.collidesWith(coral)) {
+                    coral.damage();
+                    bubble.die();
+                    break;
+                }
+            }
+
+            if (!bubble.isVisible()) {
+                continue;
+            }
+
+            for (Mine mine : new ArrayList<>(mines)) {
+                if (bubble.collidesWith(mine)) {
+                    bubble.die();
+                    triggerMine(mine);
+                    break;
+                }
+            }
+
+            if (bubble.isVisible() && intersectsWall(bubble.getBounds())) {
+                bubble.die();
+            }
+        }
+    }
+
+    protected void onEnemyKilled(Enemy enemy) {
+    }
+
+    private void handleEnemyProjectileCollisions() {
+        for (EnemyRock projectile : enemyProjectiles) {
+            if (!projectile.isVisible()) {
+                continue;
+            }
+
+            if (projectile.collidesWith(player)) {
+                player.damage(projectile.getDamage());
+                projectile.die();
+                continue;
+            }
+
+            for (Mine mine : new ArrayList<>(mines)) {
+                if (projectile.collidesWith(mine)) {
+                    projectile.die();
+                    triggerMine(mine);
+                    break;
+                }
+            }
+
+            if (projectile.isVisible() && intersectsWall(projectile.getBounds())) {
+                projectile.die();
+            }
+        }
+    }
+
+    private void handleEnemyContact() {
+        for (Enemy enemy : enemies) {
+            if (enemy.collidesWith(player)) {
+                player.damage(enemy.getContactDamage());
+            }
+
+            for (Mine mine : new ArrayList<>(mines)) {
+                if (enemy.collidesWith(mine)) {
+                    triggerMine(mine);
+                }
+            }
+        }
+    }
+
+    private void handlePowerUpContact() {
+        for (PowerUp powerUp : powerUps) {
+            for (Mine mine : new ArrayList<>(mines)) {
+                if (powerUp.collidesWith(mine)) {
+                    powerUp.die();
+                    triggerMine(mine);
+                    break;
+                }
+            }
+
+            if (!powerUp.isVisible()) {
+                continue;
+            }
+
+            if (powerUp.collidesWith(player)) {
+                powerUp.upgrade(player);
+            }
+        }
+    }
+
+    private void handleObstacleContact() {
+        for (Mine mine : new ArrayList<>(mines)) {
+            if (mine.collidesWith(player)) {
+                triggerMine(mine);
+            }
+        }
+
+        for (Coral coral : corals) {
+            if (coral.collidesWith(player)) {
+                player.damage(1);
+                coral.damage();
+            }
+        }
+    }
+
+    private void triggerMine(Mine firstMine) {
+        Queue<Mine> queue = new ArrayDeque<>();
+        queue.add(firstMine);
+
+        while (!queue.isEmpty()) {
+            Mine mine = queue.remove();
+            if (!mine.trigger()) {
+                continue;
+            }
+
+            int centerX = mine.getCenterX();
+            int centerY = mine.getCenterY();
+            explosions.add(new Explosion(centerX, centerY, MINE_EXPLOSION_RADIUS));
+
+            if (distanceTo(centerX, centerY, player) <= MINE_EXPLOSION_RADIUS) {
+                player.damage(MINE_DAMAGE);
+            }
+
+            for (Enemy enemy : enemies) {
+                if (enemy.isVisible()
+                        && distanceTo(centerX, centerY, enemy)
+                        <= MINE_EXPLOSION_RADIUS) {
+                    if (enemy.damage(MINE_DAMAGE)) {
+                        addSmallExplosion(enemy);
+                        onEnemyKilledByMine(enemy);
+                    }
+                }
+            }
+
+            for (Coral coral : corals) {
+                if (coral.isVisible()
+                        && distanceTo(centerX, centerY, coral)
+                        <= MINE_EXPLOSION_RADIUS) {
+                    coral.damage();
+                }
+            }
+
+            for (Mine nearby : mines) {
+                if (nearby.isVisible()
+                        && distanceTo(centerX, centerY, nearby)
+                        <= MINE_EXPLOSION_RADIUS) {
+                    queue.add(nearby);
+                }
+            }
+        }
+    }
+
+    protected void onEnemyKilledByMine(Enemy enemy) {
+    }
+
+    private double distanceTo(int x, int y, gdd.sprite.Sprite sprite) {
+        double centerX = sprite.getX() + sprite.getRenderWidth() / 2.0;
+        double centerY = sprite.getY() + sprite.getRenderHeight() / 2.0;
+        return Math.hypot(centerX - x, centerY - y);
+    }
+
+    private void addSmallExplosion(gdd.sprite.Sprite sprite) {
+        explosions.add(new Explosion(
+                sprite.getX() + sprite.getRenderWidth() / 2,
+                sprite.getY() + sprite.getRenderHeight() / 2));
+    }
+
+    private boolean intersectsWall(Rectangle bounds) {
+        for (Rectangle wall : walls) {
+            if (bounds.intersects(wall)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void resolveWallOverlap() {
+        Rectangle playerBounds = player.getBounds();
+        for (Rectangle wall : walls) {
+            if (!playerBounds.intersects(wall)) {
+                continue;
+            }
+
+            Rectangle overlap = playerBounds.intersection(wall);
+            if (overlap.width < overlap.height) {
+                if (playerBounds.getCenterX() < wall.getCenterX()) {
+                    player.setX(player.getX() - overlap.width);
+                } else {
+                    player.setX(player.getX() + overlap.width);
+                }
+            } else if (playerBounds.getCenterY() < wall.getCenterY()) {
+                player.setY(player.getY() - overlap.height);
+            } else {
+                player.setY(player.getY() + overlap.height);
+            }
+            playerBounds = player.getBounds();
+        }
+    }
+
+    private void removeDeadEntities() {
+        enemies.removeIf(enemy -> !enemy.isVisible());
+        powerUps.removeIf(powerUp -> !powerUp.isVisible());
+        playerBubbles.removeIf(bubble -> !bubble.isVisible());
+        enemyProjectiles.removeIf(projectile -> !projectile.isVisible());
+        explosions.removeIf(explosion -> !explosion.isVisible());
+        mines.removeIf(mine -> !mine.isVisible());
+        corals.removeIf(coral -> !coral.isVisible());
+
+        Iterator<Rectangle> wallsIterator = walls.iterator();
+        while (wallsIterator.hasNext()) {
+            Rectangle wall = wallsIterator.next();
+            if (wall.x + wall.width < 0) {
+                wallsIterator.remove();
+            }
+        }
+    }
+
+    protected void completeStage() {
+        if (finished) {
+            return;
+        }
+
+        if (SCENE_TRANSITION_MODE == TransitionMode.SEAMLESS && !transitioning) {
+            player.clearTemporaryPowerups();
+            clearNonPlayerEntities();
+            transitioning = true;
+            transitionTicks = SEAMLESS_TRANSITION_TICKS;
+            return;
+        }
+
+        moveToNextStage();
+    }
+
+    private void moveToNextStage() {
+        finished = true;
+        player.clearTemporaryPowerups();
+        player.syncTo(runState);
+
+        if (stageNumber == 1) {
+            game.loadScene2();
+        } else if (stageNumber == 2) {
+            game.loadBossScene();
+        }
+    }
+
+    protected void finishAsGameOver() {
+        if (finished) {
+            return;
+        }
+        finished = true;
+        player.syncTo(runState);
+        game.showGameOver();
+    }
+
+    protected void finishAsVictory() {
+        if (finished) {
+            return;
+        }
+        finished = true;
+        player.syncTo(runState);
+        game.showVictory();
+    }
+
+    private void clearSceneEntities() {
+        clearNonPlayerEntities();
+    }
+
+    private void clearNonPlayerEntities() {
+        enemies.clear();
+        powerUps.clear();
+        playerBubbles.clear();
+        enemyProjectiles.clear();
+        explosions.clear();
+        mines.clear();
+        corals.clear();
+        walls.clear();
+    }
+
+    @Override
+    protected void paintComponent(Graphics graphics) {
+        super.paintComponent(graphics);
+        Graphics2D g = (Graphics2D) graphics.create();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
+
+        drawBackground(g);
+        drawTransition(g);
+        drawWalls(g);
+        drawEntities(g);
+        drawSpecialStage(g);
+        drawHud(g);
+
+        if (paused) {
+            drawPauseOverlay(g);
+        }
+        g.dispose();
+    }
+
+    protected void drawSpecialStage(Graphics2D g) {
+    }
+
+    private void drawTransition(Graphics2D g) {
+        if (!transitioning) {
+            return;
+        }
+
+        double progress = 1.0 - transitionTicks
+                / (double) SEAMLESS_TRANSITION_TICKS;
+        int nextBackgroundX = (int) Math.round(
+                BOARD_WIDTH - progress * BOARD_WIDTH);
+        Color nextColor = stageNumber == 1
+                ? new Color(3, 34, 62)
+                : new Color(3, 24, 45);
+        g.setColor(nextColor);
+        g.fillRect(nextBackgroundX, 42,
+                BOARD_WIDTH - nextBackgroundX, BOARD_HEIGHT - 42);
+    }
+
+    private void drawBackground(Graphics2D g) {
+        Color base = stageNumber == 1
+                ? new Color(4, 56, 88)
+                : new Color(3, 34, 62);
+        g.setColor(base);
+        g.fillRect(0, 0, getWidth(), getHeight());
+
+        if (stageNumber == 3) {
+            g.setColor(new Color(10, 65, 76));
+            g.fillRect(0, getHeight() - 115, getWidth(), 115);
+            return;
+        }
+
+        g.setColor(new Color(30, 105, 135, 130));
+        for (int x = -backgroundOffsetFar; x < getWidth(); x += 150) {
+            g.fillRect(x, 90 + (x & 63), 38, 18);
+        }
+
+        g.setColor(new Color(95, 195, 215, 150));
+        for (int x = -backgroundOffsetNear; x < getWidth(); x += 90) {
+            g.drawOval(x, 150 + Math.abs(x % 240), 12, 12);
+            g.drawOval(x + 20, 180 + Math.abs(x % 170), 6, 6);
+        }
+    }
+
+    private void drawWalls(Graphics2D g) {
+        g.setColor(new Color(50, 70, 78));
+        for (Rectangle wall : walls) {
+            g.fillRect(wall.x, wall.y, wall.width, wall.height);
+            g.setColor(new Color(90, 110, 115));
+            g.drawRect(wall.x, wall.y, wall.width, wall.height);
+            g.setColor(new Color(50, 70, 78));
+        }
+    }
+
+    private void drawEntities(Graphics2D g) {
+        mines.forEach(mine -> mine.draw(g));
+        corals.forEach(coral -> coral.draw(g));
+        powerUps.forEach(powerUp -> powerUp.draw(g));
+        enemies.forEach(enemy -> enemy.draw(g));
+        playerBubbles.forEach(bubble -> bubble.draw(g));
+        enemyProjectiles.forEach(projectile -> projectile.draw(g));
+        explosions.forEach(explosion -> explosion.draw(g));
+        if (player != null) {
+            player.draw(g);
+        }
+    }
+
+    private void drawHud(Graphics2D g) {
+        g.setColor(new Color(0, 15, 28, 210));
+        g.fillRect(0, 0, getWidth(), 42);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Monospaced", Font.BOLD, 13));
+
+        String timerText = usesStageTimer()
+                ? String.format("%d:%02d",
+                        Math.max(0, remainingTicks / TARGET_FPS) / 60,
+                        Math.max(0, remainingTicks / TARGET_FPS) % 60)
+                : "BOSS";
+
+        g.drawString("STAGE " + stageNumber, 12, 18);
+        g.drawString("TIME " + timerText, 12, 36);
+        g.drawString("SCORE " + runState.getScore(), 125, 18);
+        g.drawString("HP " + player.getHealth() + "/" + PLAYER_MAX_HEALTH,
+                125, 36);
+        g.drawString("SPEED " + player.getSpeedLevel() + "/2", 285, 18);
+        g.drawString("SPD " + ticksAsSeconds(player.getSpeedPowerupTicks()),
+                285, 36);
+        g.drawString(player.getWeaponType().getDisplayName(), 430, 18);
+        g.drawString("LV " + player.getMultiShotLevel()
+                + "  " + ticksAsSeconds(player.getWeaponPowerupTicks()),
+                430, 36);
+    }
+
+    private String ticksAsSeconds(int ticks) {
+        if (ticks <= 0) {
+            return "--";
+        }
+        return String.format("%.1fs", ticks / (double) TARGET_FPS);
+    }
+
+    private void drawPauseOverlay(Graphics2D g) {
+        g.setColor(new Color(0, 0, 0, 190));
+        g.fillRect(0, 0, getWidth(), getHeight());
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("SansSerif", Font.BOLD, 38));
+        drawCentered(g, "PAUSED", 250);
+        g.setFont(new Font("SansSerif", Font.PLAIN, 20));
+        drawCentered(g, "[ESC] Resume", 330);
+        drawCentered(g, "[R] Restart Game", 366);
+        drawCentered(g, "[M] Main Menu", 402);
+        drawCentered(g, "[Q] Quit", 438);
+    }
+
+    private void drawCentered(Graphics2D g, String text, int y) {
+        int x = (getWidth() - g.getFontMetrics().stringWidth(text)) / 2;
+        g.drawString(text, x, y);
+    }
+
+    private class SceneInput extends KeyAdapter {
+
+        @Override
+        public void keyPressed(KeyEvent event) {
+            if (event.getKeyCode() == KeyEvent.VK_ESCAPE) {
+                paused = !paused;
+                return;
+            }
+
+            if (paused) {
+                switch (event.getKeyCode()) {
+                    case KeyEvent.VK_R:
+                        game.startNewGame();
+                        break;
+                    case KeyEvent.VK_M:
+                        game.loadTitle();
+                        break;
+                    case KeyEvent.VK_Q:
+                        game.quit();
+                        break;
+                    default:
+                        break;
+                }
+                return;
+            }
+
+            player.keyPressed(event);
+        }
+
+        @Override
+        public void keyReleased(KeyEvent event) {
+            if (player != null) {
+                player.keyReleased(event);
+            }
         }
     }
 }

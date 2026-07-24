@@ -1,73 +1,51 @@
 package gdd.sprite;
 
 import static gdd.Global.*;
-import javax.swing.ImageIcon;
+import java.awt.Color;
 
-public class Enemy extends Sprite {
+public abstract class Enemy extends Sprite {
 
-    // private Bomb bomb;
+    protected final Player player;
+    protected int health;
+    private final int contactDamage;
+    private final int scoreValue;
 
-    public Enemy(int x, int y) {
-
-        initEnemy(x, y);
+    protected Enemy(Player player, int x, int y, int width, int height,
+            int health, int contactDamage, int scoreValue, Color color) {
+        super(x, y, width, height, color);
+        this.player = player;
+        this.health = health;
+        this.contactDamage = contactDamage;
+        this.scoreValue = scoreValue;
+        setHitboxScale(0.9);
     }
 
-    private void initEnemy(int x, int y) {
-
-        this.x = x;
-        this.y = y;
-
-        // bomb = new Bomb(x, y);
-
-        var ii = new ImageIcon(IMG_ENEMY);
-
-        // Scale the image to use the global scaling factor
-        var scaledImage = ii.getImage().getScaledInstance(ii.getIconWidth() * SCALE_FACTOR,
-                ii.getIconHeight() * SCALE_FACTOR,
-                java.awt.Image.SCALE_SMOOTH);
-        setImage(scaledImage);
+    protected void moveWithWorld() {
+        x -= WORLD_SCROLL_SPEED;
     }
 
-    public void act(int direction) {
-
-        this.x += direction;
-    }
-/* 
-    public Bomb getBomb() {
-
-        return bomb;
-    }
-
-    public class Bomb extends Sprite {
-
-        private boolean destroyed;
-
-        public Bomb(int x, int y) {
-
-            initBomb(x, y);
+    public boolean damage(int amount) {
+        if (!isVisible() || amount <= 0) {
+            return false;
         }
 
-        private void initBomb(int x, int y) {
-
-            setDestroyed(true);
-
-            this.x = x;
-            this.y = y;
-
-            var bombImg = "src/images/bomb.png";
-            var ii = new ImageIcon(bombImg);
-            setImage(ii.getImage());
+        health -= amount;
+        if (health <= 0) {
+            die();
+            return true;
         }
-
-        public void setDestroyed(boolean destroyed) {
-
-            this.destroyed = destroyed;
-        }
-
-        public boolean isDestroyed() {
-
-            return destroyed;
-        }
+        return false;
     }
-*/
+
+    public int getHealth() {
+        return health;
+    }
+
+    public int getContactDamage() {
+        return contactDamage;
+    }
+
+    public int getScoreValue() {
+        return scoreValue;
+    }
 }

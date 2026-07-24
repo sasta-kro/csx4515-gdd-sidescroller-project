@@ -1,14 +1,14 @@
 package gdd;
 
-
 public class SpawnDetails {
-    public String type;
-    public int x;
-    public int y;
+
+    public final String type;
+    public final int x;
+    public final int y;
 
     public SpawnDetails(String type, int x, int y) {
-      this.type = type;
-      this.x = x;
-      this.y = y;
+        this.type = type;
+        this.x = x;
+        this.y = y;
     }
 }

@@ -1,152 +1,104 @@
 package gdd.scene;
 
-import gdd.AudioPlayer;
 import gdd.Game;
 import static gdd.Global.*;
 import java.awt.Color;
-import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Image;
-import java.awt.Toolkit;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import javax.swing.ImageIcon;
 import javax.swing.JPanel;
-import javax.swing.Timer;
 
-public class TitleScene extends JPanel {
+public class TitleScene extends JPanel implements GameScene {
 
-    private int frame = 0;
-    private Image image;
-    private AudioPlayer audioPlayer;
-    private final Dimension d = new Dimension(BOARD_WIDTH, BOARD_HEIGHT);
-    private Timer timer;
-    private Game game;
+    private final Game game;
+    private final KeyAdapter input = new TitleInput();
 
     public TitleScene(Game game) {
         this.game = game;
-        // initBoard();
-        // initTitle();
-    }
-
-    private void initBoard() {
-
-    }
-
-    public void start() {
-        addKeyListener(new TAdapter());
         setFocusable(true);
-        setBackground(Color.black);
-
-        timer = new Timer(1000 / 60, new GameCycle());
-        timer.start();
-
-        initTitle();
-        initAudio();
-    }
-
-    public void stop() {
-        try {
-            if (timer != null) {
-                timer.stop();
-            }
-
-            if (audioPlayer != null) {
-                audioPlayer.stop();
-            }
-        } catch (Exception e) {
-            System.err.println("Error closing audio player.");
-        }
-    }
-
-    private void initTitle() {
-        var ii = new ImageIcon(IMG_TITLE);
-        image = ii.getImage();
-
-    }
-
-    private void initAudio() {
-        try {
-            String filePath = "src/audio/title.wav";
-            audioPlayer = new AudioPlayer(filePath);
-
-            audioPlayer.play();
-        } catch (Exception e) {
-            System.err.println("Error with playing sound.");
-        }
-
+        setBackground(new Color(4, 32, 56));
     }
 
     @Override
-    public void paintComponent(Graphics g) {
-        super.paintComponent(g);
-
-        doDrawing(g);
+    public void start() {
+        addKeyListener(input);
+        requestFocusInWindow();
     }
 
-    private void doDrawing(Graphics g) {
+    @Override
+    public void stop() {
+        removeKeyListener(input);
+    }
 
-        g.setColor(Color.black);
-        g.fillRect(0, 0, d.width, d.height);
+    @Override
+    protected void paintComponent(Graphics graphics) {
+        super.paintComponent(graphics);
+        Graphics2D g = (Graphics2D) graphics.create();
+        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
+                RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g.drawImage(image, 0, -80, d.width, d.height, this);
+        drawPlaceholderOcean(g);
 
-        if (frame % 60 < 30) {
-            g.setColor(Color.red);
-        } else {
-            g.setColor(Color.white);
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("SansSerif", Font.BOLD, 46));
+        drawCentered(g, "OCEAN INVADERS", 190);
+
+        g.setFont(new Font("SansSerif", Font.PLAIN, 22));
+        drawCentered(g, "[1] Start Game", 340);
+        drawCentered(g, "[2] Start From Stage 2", 382);
+        drawCentered(g, "[Q] Quit", 424);
+
+        g.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        drawCentered(g, "Team Members: [Name]  [Name]  [Name]", 610);
+        g.dispose();
+    }
+
+    private void drawPlaceholderOcean(Graphics2D g) {
+        g.setColor(new Color(6, 52, 86));
+        g.fillRect(0, 0, getWidth(), getHeight());
+
+        g.setColor(new Color(15, 92, 126));
+        for (int y = 60; y < getHeight(); y += 80) {
+            g.fillRect(0, y, getWidth(), 3);
         }
 
-        g.setFont(g.getFont().deriveFont(32f));
-        String text = "Press SPACE to Start";
-        int stringWidth = g.getFontMetrics().stringWidth(text);
-        int x = (d.width - stringWidth) / 2;
-        // int stringHeight = g.getFontMetrics().getAscent();
-        // int y = (d.height + stringHeight) / 2;
-        g.drawString(text, x, 600);
-
-        g.setColor(Color.gray);
-        g.setFont(g.getFont().deriveFont(10f));
-        g.drawString("Game by Chayapol", 10, 650);
-
-        Toolkit.getDefaultToolkit().sync();
-    }
-
-    private void update() {
-        frame++;
-    }
-
-    private void doGameCycle() {
-        update();
-        repaint();
-    }
-
-    private class GameCycle implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-            doGameCycle();
-        }
-    }
-
-    private class TAdapter extends KeyAdapter {
-
-        @Override
-        public void keyReleased(KeyEvent e) {
-
+        g.setColor(new Color(98, 198, 220));
+        for (int x = 40; x < getWidth(); x += 95) {
+            g.drawOval(x, 70 + (x % 130), 18, 18);
+            g.drawOval(x + 12, 105 + (x % 90), 8, 8);
         }
 
+        g.setColor(COLOR_PLAYER);
+        g.fillRect(80, 230, 90, 48);
+        g.setColor(Color.WHITE);
+        g.fillOval(145, 240, 9, 9);
+    }
+
+    private void drawCentered(Graphics2D g, String text, int y) {
+        int x = (getWidth() - g.getFontMetrics().stringWidth(text)) / 2;
+        g.drawString(text, x, y);
+    }
+
+    private class TitleInput extends KeyAdapter {
+
         @Override
-        public void keyPressed(KeyEvent e) {
-            System.out.println("Title.keyPressed: " + e.getKeyCode());
-            int key = e.getKeyCode();
-            if (key == KeyEvent.VK_SPACE) {
-                // Load the next scene
-                game.loadScene2();
+        public void keyPressed(KeyEvent event) {
+            switch (event.getKeyCode()) {
+                case KeyEvent.VK_1:
+                    game.startNewGame();
+                    break;
+                case KeyEvent.VK_2:
+                    game.startFromScene2();
+                    break;
+                case KeyEvent.VK_Q:
+                    game.quit();
+                    break;
+                default:
+                    break;
             }
-
         }
     }
 }

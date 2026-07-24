@@ -3,15 +3,15 @@ package gdd.powerup;
 import static gdd.Global.*;
 import gdd.sprite.Player;
 
-public class SpeedUp extends PowerUp {
+public class MegaShot extends PowerUp {
 
-    public SpeedUp(int x, int y) {
-        super(x, y, COLOR_SPEED, "Speed Up");
+    public MegaShot(int x, int y) {
+        super(x, y, COLOR_MEGA, "Mega-shot");
     }
 
     @Override
     public void upgrade(Player player) {
-        player.applySpeedUp();
+        player.applyMegaShot();
         die();
     }
 }

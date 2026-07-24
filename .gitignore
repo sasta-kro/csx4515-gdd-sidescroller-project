@@ -2,4 +2,8 @@
 *.class
 
 # IDE
-.idea
+.idea/
+*.iml
+
+# Build output
+out/

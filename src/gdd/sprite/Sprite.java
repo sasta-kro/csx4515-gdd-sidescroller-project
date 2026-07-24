@@ -1,32 +1,91 @@
 package gdd.sprite;
 
+import static gdd.Global.*;
+import java.awt.Color;
+import java.awt.Graphics2D;
 import java.awt.Image;
+import java.awt.Rectangle;
+import java.util.ArrayList;
+import java.util.List;
 
-abstract public class Sprite {
+public abstract class Sprite {
 
-    protected boolean visible;
-    protected Image image;
+    protected boolean visible = true;
     protected boolean dying;
-    protected int visibleFrames = 10;
+    protected Image image;
+    protected double x;
+    protected double y;
+    protected double dx;
+    protected double dy;
 
-    protected int x;
-    protected int y;
-    protected int dx;
+    private int width;
+    private int height;
+    private double renderScale = RENDER_SCALE;
+    private double hitboxScale = HITBOX_SCALE;
+    private Color placeholderColor;
+    private final List<Image> animationFrames = new ArrayList<>();
+    private int animationFrame;
+    private int animationCounter;
+    private int animationInterval = 1;
 
-    public Sprite() {
-        visible = true;
+    protected Sprite(int x, int y, int width, int height, Color color) {
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        placeholderColor = color;
     }
 
-    abstract public void act();
+    public abstract void act();
+
+    public void draw(Graphics2D g) {
+        int renderWidth = getRenderWidth();
+        int renderHeight = getRenderHeight();
+
+        Image activeImage = getActiveImage();
+        if (activeImage != null) {
+            g.drawImage(activeImage, getX(), getY(), renderWidth, renderHeight, null);
+            return;
+        }
+
+        g.setColor(placeholderColor);
+        g.fillRect(getX(), getY(), renderWidth, renderHeight);
+        g.setColor(new Color(255, 255, 255, 130));
+        g.drawRect(getX(), getY(), renderWidth, renderHeight);
+
+        if (renderWidth >= 24 && renderHeight >= 20) {
+            String label = getClass().getSimpleName().substring(0, 1);
+            int textX = getX() + (renderWidth - g.getFontMetrics()
+                    .stringWidth(label)) / 2;
+            int textY = getY() + (renderHeight + g.getFontMetrics()
+                    .getAscent()) / 2 - 2;
+            g.drawString(label, textX, textY);
+        }
+    }
+
+    public Rectangle getBounds() {
+        int renderWidth = getRenderWidth();
+        int renderHeight = getRenderHeight();
+        int hitboxWidth = Math.max(1, (int) Math.round(renderWidth * hitboxScale));
+        int hitboxHeight = Math.max(1, (int) Math.round(renderHeight * hitboxScale));
+        int offsetX = (renderWidth - hitboxWidth) / 2;
+        int offsetY = (renderHeight - hitboxHeight) / 2;
+        return new Rectangle(getX() + offsetX, getY() + offsetY,
+                hitboxWidth, hitboxHeight);
+    }
 
     public boolean collidesWith(Sprite other) {
-        if (other == null || !this.isVisible() || !other.isVisible()) {
-            return false;
-        }
-        return this.getX() < other.getX() + other.getImage().getWidth(null)
-                && this.getX() + this.getImage().getWidth(null) > other.getX()
-                && this.getY() < other.getY() + other.getImage().getHeight(null)
-                && this.getY() + this.getImage().getHeight(null) > other.getY();
+        return other != null
+                && isVisible()
+                && other.isVisible()
+                && getBounds().intersects(other.getBounds());
+    }
+
+    public boolean isOutsideViewport() {
+        return getX() + getRenderWidth() < 0
+                || getX() > BOARD_WIDTH
+                || getY() + getRenderHeight() < 0
+                || getY() > BOARD_HEIGHT;
     }
 
     public void die() {
@@ -37,24 +96,24 @@ abstract public class Sprite {
         return visible;
     }
 
-    public void visibleCountDown() {
-        if (visibleFrames > 0) {
-            visibleFrames--;
-        } else {
-            visible = false;
-        }
-    }
-
-    protected void setVisible(boolean visible) {
+    public void setVisible(boolean visible) {
         this.visible = visible;
     }
 
-    public void setImage(Image image) {
-        this.image = image;
+    public boolean isDying() {
+        return dying;
     }
 
-    public Image getImage() {
-        return image;
+    public void setDying(boolean dying) {
+        this.dying = dying;
+    }
+
+    public int getX() {
+        return (int) Math.round(x);
+    }
+
+    public int getY() {
+        return (int) Math.round(y);
     }
 
     public void setX(int x) {
@@ -65,19 +124,66 @@ abstract public class Sprite {
         this.y = y;
     }
 
-    public int getY() {
-        return y;
+    public int getRenderWidth() {
+        return Math.max(1, (int) Math.round(width * renderScale));
     }
 
-    public int getX() {
-        return x;
+    public int getRenderHeight() {
+        return Math.max(1, (int) Math.round(height * renderScale));
     }
 
-    public void setDying(boolean dying) {
-        this.dying = dying;
+    public void setDimensions(int width, int height) {
+        this.width = width;
+        this.height = height;
     }
 
-    public boolean isDying() {
-        return this.dying;
+    public void setRenderScale(double renderScale) {
+        this.renderScale = Math.max(0.1, renderScale);
+    }
+
+    public void setHitboxScale(double hitboxScale) {
+        this.hitboxScale = Math.max(0.1, hitboxScale);
+    }
+
+    public Image getImage() {
+        return image;
+    }
+
+    public void setImage(Image image) {
+        this.image = image;
+    }
+
+    public void setAnimationFrames(List<Image> frames, int intervalTicks) {
+        animationFrames.clear();
+        animationFrames.addAll(frames);
+        animationFrame = 0;
+        animationCounter = 0;
+        animationInterval = Math.max(1, intervalTicks);
+    }
+
+    public void advanceAnimation() {
+        if (animationFrames.size() < 2) {
+            return;
+        }
+
+        if (++animationCounter >= animationInterval) {
+            animationCounter = 0;
+            animationFrame = (animationFrame + 1) % animationFrames.size();
+        }
+    }
+
+    private Image getActiveImage() {
+        if (!animationFrames.isEmpty()) {
+            return animationFrames.get(animationFrame);
+        }
+        return image;
+    }
+
+    public Color getPlaceholderColor() {
+        return placeholderColor;
+    }
+
+    public void setPlaceholderColor(Color color) {
+        placeholderColor = color;
     }
 }

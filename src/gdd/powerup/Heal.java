@@ -3,15 +3,15 @@ package gdd.powerup;
 import static gdd.Global.*;
 import gdd.sprite.Player;
 
-public class SpeedUp extends PowerUp {
+public class Heal extends PowerUp {
 
-    public SpeedUp(int x, int y) {
-        super(x, y, COLOR_SPEED, "Speed Up");
+    public Heal(int x, int y) {
+        super(x, y, COLOR_HEAL, "Heal");
     }
 
     @Override
     public void upgrade(Player player) {
-        player.applySpeedUp();
+        player.heal();
         die();
     }
 }
