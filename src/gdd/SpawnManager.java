@@ -100,7 +100,8 @@ public class SpawnManager {
             case 3:
                 return new Swordfish(player, x, y);
             default:
-                return new Snake(player, x, random.nextBoolean());
+                int snakeX = randomBetween(0, BOARD_WIDTH - 28);
+                return new Snake(player, snakeX, random.nextBoolean());
         }
     }
 
