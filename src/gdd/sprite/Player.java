@@ -223,53 +223,23 @@ public class Player extends Sprite {
 
     public void keyPressed(KeyEvent event) {
         switch (event.getKeyCode()) {
-            case KeyEvent.VK_W:
-            case KeyEvent.VK_UP:
-                movingUp = true;
-                break;
-            case KeyEvent.VK_S:
-            case KeyEvent.VK_DOWN:
-                movingDown = true;
-                break;
-            case KeyEvent.VK_A:
-            case KeyEvent.VK_LEFT:
-                movingLeft = true;
-                break;
-            case KeyEvent.VK_D:
-            case KeyEvent.VK_RIGHT:
-                movingRight = true;
-                break;
-            case KeyEvent.VK_SPACE:
-                firing = true;
-                break;
-            default:
-                break;
+            case KeyEvent.VK_W, KeyEvent.VK_UP -> movingUp = true;
+            case KeyEvent.VK_S, KeyEvent.VK_DOWN -> movingDown = true;
+            case KeyEvent.VK_A, KeyEvent.VK_LEFT -> movingLeft = true;
+            case KeyEvent.VK_D, KeyEvent.VK_RIGHT -> movingRight = true;
+            case KeyEvent.VK_SPACE -> firing = true;
+            default -> {}
         }
     }
 
     public void keyReleased(KeyEvent event) {
         switch (event.getKeyCode()) {
-            case KeyEvent.VK_W:
-            case KeyEvent.VK_UP:
-                movingUp = false;
-                break;
-            case KeyEvent.VK_S:
-            case KeyEvent.VK_DOWN:
-                movingDown = false;
-                break;
-            case KeyEvent.VK_A:
-            case KeyEvent.VK_LEFT:
-                movingLeft = false;
-                break;
-            case KeyEvent.VK_D:
-            case KeyEvent.VK_RIGHT:
-                movingRight = false;
-                break;
-            case KeyEvent.VK_SPACE:
-                firing = false;
-                break;
-            default:
-                break;
+            case KeyEvent.VK_W, KeyEvent.VK_UP -> movingUp = false;
+            case KeyEvent.VK_S, KeyEvent.VK_DOWN -> movingDown = false;
+            case KeyEvent.VK_A, KeyEvent.VK_LEFT -> movingLeft = false;
+            case KeyEvent.VK_D, KeyEvent.VK_RIGHT -> movingRight = false;
+            case KeyEvent.VK_SPACE -> firing = false;
+            default -> {}
         }
     }
 
