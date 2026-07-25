@@ -35,7 +35,7 @@ public class Octopus extends Enemy {
         }
     }
 
-    public EnemyRock takeRock() {
+    public EnemyRock shootRockIfReady() {
         if (!rockReady || !isVisible()) {
             return null;
         }

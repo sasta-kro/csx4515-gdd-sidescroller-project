@@ -24,8 +24,9 @@ public abstract class Sprite {
     private double hitboxScale = HITBOX_SCALE;
     private Color placeholderColor;
     private final List<Image> animationFrames = new ArrayList<>();
-    private int animationFrame;
-    private int animationCounter;
+    private int currentAnimationFrame;
+    private int ticksSinceLastAnimationFrameChange;
+    /// number of ticks each image remains visible. equivalent to animating on 2s, 3s, 4s, etc.
     private int animationInterval = 1;
 
     protected Sprite(int x, int y, int width, int height, Color color) {
@@ -156,25 +157,36 @@ public abstract class Sprite {
     public void setAnimationFrames(List<Image> frames, int intervalTicks) {
         animationFrames.clear();
         animationFrames.addAll(frames);
-        animationFrame = 0;
-        animationCounter = 0;
+        currentAnimationFrame = 0;
+        ticksSinceLastAnimationFrameChange = 0;
         animationInterval = Math.max(1, intervalTicks);
     }
 
     public void advanceAnimation() {
+        // check for no animation (static image)
         if (animationFrames.size() < 2) {
             return;
         }
 
-        if (++animationCounter >= animationInterval) {
-            animationCounter = 0;
-            animationFrame = (animationFrame + 1) % animationFrames.size();
+        ticksSinceLastAnimationFrameChange++;
+
+        if (ticksSinceLastAnimationFrameChange >= animationInterval) {
+            // reset frame timer back down to 0
+            ticksSinceLastAnimationFrameChange = 0;
+
+            // move on to next animation frame
+            currentAnimationFrame++;
+
+            // if out of bounds, circle back to frame 0
+            if (currentAnimationFrame >= animationFrames.size()) {
+                currentAnimationFrame = 0;
+            }
         }
     }
 
     private Image getActiveImage() {
         if (!animationFrames.isEmpty()) {
-            return animationFrames.get(animationFrame);
+            return animationFrames.get(currentAnimationFrame);
         }
         return image;
     }

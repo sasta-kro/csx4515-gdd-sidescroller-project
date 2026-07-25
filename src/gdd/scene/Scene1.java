@@ -179,7 +179,7 @@ public class Scene1 extends JPanel implements GameScene {
         if (player.isDead()) {
             player.setDying(true);
             playerDeathTicks = PLAYER_DEATH_TICKS;
-            enemyProjectiles.clear();
+//            enemyProjectiles.clear();  // why remove this? cuz like keeping it makes it look more realistic?
             return;
         }
 
@@ -270,7 +270,7 @@ public class Scene1 extends JPanel implements GameScene {
 
             if (enemy instanceof Octopus) {
                 Octopus octopus = (Octopus) enemy;
-                EnemyRock rock = octopus.takeRock();
+                EnemyRock rock = octopus.shootRockIfReady();
 
                 if (rock != null) {
                     enemyProjectiles.add(rock);
@@ -376,6 +376,7 @@ public class Scene1 extends JPanel implements GameScene {
                 continue;
             }
 
+            // check collisions with enemies
             for (Enemy enemy : enemies) {
                 if (bubble.collidesWith(enemy)) {
                     boolean killed = enemy.damage(bubble.getDamage());
@@ -393,6 +394,7 @@ public class Scene1 extends JPanel implements GameScene {
                 continue;
             }
 
+            // check collision with corals
             for (Coral coral : corals) {
                 if (bubble.collidesWith(coral)) {
                     coral.damage();
@@ -405,7 +407,8 @@ public class Scene1 extends JPanel implements GameScene {
                 continue;
             }
 
-            for (Mine mine : new ArrayList<>(mines)) {
+            // check collision with mines
+            for (Mine mine : mines) {
                 if (bubble.collidesWith(mine)) {
                     bubble.die();
                     triggerMine(mine);
@@ -413,6 +416,7 @@ public class Scene1 extends JPanel implements GameScene {
                 }
             }
 
+            // bubble pops if it touches a wall
             if (bubble.isVisible() && intersectsWall(bubble.getBounds())) {
                 bubble.die();
             }
@@ -434,7 +438,7 @@ public class Scene1 extends JPanel implements GameScene {
                 continue;
             }
 
-            for (Mine mine : new ArrayList<>(mines)) {
+            for (Mine mine : mines) {
                 if (projectile.collidesWith(mine)) {
                     projectile.die();
                     triggerMine(mine);
@@ -454,7 +458,7 @@ public class Scene1 extends JPanel implements GameScene {
                 player.damage(enemy.getContactDamage());
             }
 
-            for (Mine mine : new ArrayList<>(mines)) {
+            for (Mine mine : mines) {
                 if (enemy.collidesWith(mine)) {
                     triggerMine(mine);
                 }
@@ -464,13 +468,14 @@ public class Scene1 extends JPanel implements GameScene {
 
     private void handlePowerUpContact() {
         for (PowerUp powerUp : powerUps) {
-            for (Mine mine : new ArrayList<>(mines)) {
-                if (powerUp.collidesWith(mine)) {
-                    powerUp.die();
-                    triggerMine(mine);
-                    break;
-                }
-            }
+            // powerups shouldn't trigger mines
+//            for (Mine mine : new ArrayList<>(mines)) {
+//                if (powerUp.collidesWith(mine)) {
+//                    powerUp.die();
+//                    triggerMine(mine);
+//                    break;
+//                }
+//            }
 
             if (!powerUp.isVisible()) {
                 continue;
@@ -483,7 +488,7 @@ public class Scene1 extends JPanel implements GameScene {
     }
 
     private void handleObstacleContact() {
-        for (Mine mine : new ArrayList<>(mines)) {
+        for (Mine mine : mines) {
             if (mine.collidesWith(player)) {
                 triggerMine(mine);
             }
@@ -491,7 +496,7 @@ public class Scene1 extends JPanel implements GameScene {
 
         for (Coral coral : corals) {
             if (coral.collidesWith(player)) {
-                player.damage(1);
+                player.damage(coral.contactDamage);
                 coral.damage();
             }
         }
@@ -612,14 +617,7 @@ public class Scene1 extends JPanel implements GameScene {
         explosions.removeIf(explosion -> !explosion.isVisible());
         mines.removeIf(mine -> !mine.isVisible());
         corals.removeIf(coral -> !coral.isVisible());
-
-        Iterator<Rectangle> wallsIterator = walls.iterator();
-        while (wallsIterator.hasNext()) {
-            Rectangle wall = wallsIterator.next();
-            if (wall.x + wall.width < 0) {
-                wallsIterator.remove();
-            }
-        }
+        walls.removeIf(wall -> wall.x + wall.width < 0);
     }
 
     protected void completeStage() {
