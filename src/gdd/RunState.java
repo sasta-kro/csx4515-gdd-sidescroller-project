@@ -1,7 +1,7 @@
 package gdd;
 
-// stores current game state like player score, hp, position.
-// also handles player hp and score validation
+/// stores current game state like player score, hp, position.
+/// also handles player hp and score validation
 public class RunState {
 
     private int score;

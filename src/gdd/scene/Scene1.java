@@ -74,7 +74,7 @@ public class Scene1 extends JPanel implements GameScene {
     public void start() {
         resetStage();
         addKeyListener(input);
-        timer = new Timer(TIMER_DELAY_MS, this::gameTick);
+        timer = new Timer(TIMER_DELAY_MS, event -> gameTick(event)); // check gameTick method for more info
         timer.start();
         requestFocusInWindow();
     }
@@ -88,7 +88,7 @@ public class Scene1 extends JPanel implements GameScene {
         clearSceneEntities();
     }
 
-    protected void resetStage() {
+    private void resetStage() {
         clearSceneEntities();
         stageTick = 0;
         remainingTicks = stageDurationTicks();
@@ -123,8 +123,18 @@ public class Scene1 extends JPanel implements GameScene {
         }
     }
 
+    /* this is basically equal to doGameCycle() inside a GameCycle class like this
+
+    timer = new Timer(TIMER_DELAY_MS, new GameCycle());
+    private class GameCycle implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            gameTick(event);
+        }
+    }
+     */
     private void gameTick(ActionEvent event) {
-        if (!paused && !finished) {
+        if (!paused && !finished) { // handling a pause
             updateGame();
         }
         repaint();
@@ -566,6 +576,11 @@ public class Scene1 extends JPanel implements GameScene {
         clearNonPlayerEntities();
     }
 
+    /// Although it says clear seen entities, it does not clear every entity.
+    /// It only clears non-player entities because the player attributes get copied into run state to be moved to another scene.
+    ///
+    // Each scene creates a new player from RunState.
+    // Enemies, projectiles, powerups, and obstacles do not carry into the next scene.
     private void clearNonPlayerEntities() {
         enemies.clear();
         powerUps.clear();
@@ -716,24 +731,19 @@ public class Scene1 extends JPanel implements GameScene {
 
         @Override
         public void keyPressed(KeyEvent event) {
+            // kinda like a toggle logic
             if (event.getKeyCode() == KeyEvent.VK_ESCAPE) {
                 paused = !paused;
                 return;
             }
 
+            // for pause menu
             if (paused) {
                 switch (event.getKeyCode()) {
-                    case KeyEvent.VK_R:
-                        game.startNewGame();
-                        break;
-                    case KeyEvent.VK_M:
-                        game.loadTitle();
-                        break;
-                    case KeyEvent.VK_Q:
-                        game.quit();
-                        break;
-                    default:
-                        break;
+                    case KeyEvent.VK_R -> game.startNewGame();
+                    case KeyEvent.VK_M -> game.loadTitle();
+                    case KeyEvent.VK_Q -> game.quit();
+                    default -> {}
                 }
                 return;
             }
