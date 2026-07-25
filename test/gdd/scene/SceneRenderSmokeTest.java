@@ -31,7 +31,33 @@ public class SceneRenderSmokeTest {
         scene.stop();
     }
 
+    private static void renderScene(Scene2 scene, String name) throws Exception {
+        scene.start();
+        advance(scene, 180);
+        renderPanel(scene, name);
+        scene.stop();
+    }
+
+    private static void renderScene(BossScene scene, String name) throws Exception {
+        scene.start();
+        advance(scene, 180);
+        renderPanel(scene, name);
+        scene.stop();
+    }
+
     private static void advance(Scene1 scene, int ticks) {
+        for (int tick = 0; tick < ticks; tick++) {
+            scene.updateGame();
+        }
+    }
+
+    private static void advance(Scene2 scene, int ticks) {
+        for (int tick = 0; tick < ticks; tick++) {
+            scene.updateGame();
+        }
+    }
+
+    private static void advance(BossScene scene, int ticks) {
         for (int tick = 0; tick < ticks; tick++) {
             scene.updateGame();
         }

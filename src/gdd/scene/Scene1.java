@@ -7,7 +7,6 @@ import gdd.SpawnManager;
 import gdd.TransitionMode;
 import gdd.powerup.PowerUp;
 import gdd.sprite.Bubble;
-import gdd.sprite.Coral;
 import gdd.sprite.Enemy;
 import gdd.sprite.EnemyProjectile;
 import gdd.sprite.Explosion;
@@ -17,7 +16,6 @@ import gdd.sprite.Player;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -30,25 +28,22 @@ import javax.swing.Timer;
 
 public class Scene1 extends JPanel implements GameScene {
 
-    protected final Game game;
-    protected final RunState runState;
-    protected final int stageNumber;
-    protected final List<Enemy> enemies = new ArrayList<>();
-    protected final List<PowerUp> powerUps = new ArrayList<>();
-    protected final List<Bubble> playerBubbles = new ArrayList<>();
-    protected final List<EnemyProjectile> enemyProjectiles = new ArrayList<>();
-    protected final List<Explosion> explosions = new ArrayList<>();
-    protected final List<Mine> mines = new ArrayList<>();
-    protected final List<Coral> corals = new ArrayList<>();
-    protected final List<Rectangle> walls = new ArrayList<>();
+    private Game game;
+    private RunState runState;
+    private List<Enemy> enemies = new ArrayList<>();
+    private List<PowerUp> powerUps = new ArrayList<>();
+    private List<Bubble> playerBubbles = new ArrayList<>();
+    private List<EnemyProjectile> enemyProjectiles = new ArrayList<>();
+    private List<Explosion> explosions = new ArrayList<>();
+    private List<Mine> mines = new ArrayList<>();
 
-    protected Player player;
-    protected SpawnManager spawnManager;
+    private Player player;
+    private SpawnManager spawnManager;
 
     /// Timer in ticks/frames for how long the player has been in this stage
-    protected int stageTick;
+    private int stageTick;
 
-    private final KeyAdapter input = new SceneInput();
+    private KeyAdapter input = new SceneInput();
     private Timer timer;
     private int backgroundOffsetNear;
     private int backgroundOffsetFar;
@@ -59,13 +54,8 @@ public class Scene1 extends JPanel implements GameScene {
     private int playerDeathTicks; // for death animation
 
     public Scene1(Game game, RunState runState) {
-        this(game, runState, 1);
-    }
-
-    protected Scene1(Game game, RunState runState, int stageNumber) {
         this.game = game;
         this.runState = runState;
-        this.stageNumber = stageNumber;
         setFocusable(true);
         setBackground(new Color(4, 42, 70));
     }
@@ -82,47 +72,27 @@ public class Scene1 extends JPanel implements GameScene {
     @Override
     public void stop() {
         removeKeyListener(input);
-        if (timer != null) {
-            timer.stop();
-        }
-        clearSceneEntities();
+        timer.stop();
+        clearStageEntities();
     }
 
     private void resetStage() {
-        clearSceneEntities();
+        clearStageEntities();
         stageTick = 0;
         paused = false;
         finished = false;
         transitioning = false;
         playerDeathTicks = 0;
         player = new Player(runState);
-
-        // only spawn enemies in stage 1 or 2
-        if (stageNumber <= 2) {
-            spawnManager = new SpawnManager(player, stageNumber);
-            spawnManager.setMode(DEFAULT_SPAWN_MODE);
-        }
-
+        spawnManager = new SpawnManager(player, 1);
+        spawnManager.setMode(DEFAULT_SPAWN_MODE);
         loadPlaceholderStageContent();
-        setupSpecialStageContent();
-    }
-
-    // TODO: obstacles
-    protected void setupSpecialStageContent() {
     }
 
     // TODO: parallax bg (or the other way around??)
-    protected void loadPlaceholderStageContent() {
-        if (stageNumber == 1) {
-            mines.add(new Mine(BOARD_WIDTH + 120, 180));
-            mines.add(new Mine(BOARD_WIDTH + 520, 460));
-        } else if (stageNumber == 2) {
-            corals.add(new Coral(BOARD_WIDTH + 170,
-                    BOARD_HEIGHT - CORAL_HEIGHT - 42));
-            walls.add(new Rectangle(BOARD_WIDTH + 520, 0, 130, 85));
-            walls.add(new Rectangle(BOARD_WIDTH + 850,
-                    BOARD_HEIGHT - 130, 150, 100));
-        }
+    private void loadPlaceholderStageContent() {
+        mines.add(new Mine(BOARD_WIDTH + 120, 180));
+        mines.add(new Mine(BOARD_WIDTH + 520, 460));
     }
 
     /* this is basically equal to doGameCycle() inside a GameCycle class like this
@@ -143,7 +113,7 @@ public class Scene1 extends JPanel implements GameScene {
     }
 
     // equals to update() used by the prof
-    protected void updateGame() {
+    void updateGame() {
         // only active when player is dying
         if (playerDeathTicks > 0) {
             updatePlayerDeath();
@@ -160,9 +130,7 @@ public class Scene1 extends JPanel implements GameScene {
         updateBackgroundScroll();
         updatePlayer();
 
-        if (spawnManager != null) {
-            spawnManager.update(stageTick, enemies, powerUps);
-        }
+        spawnManager.update(stageTick, enemies, powerUps);
 
         spawnPlaceholderObstacles();
         updateEnemies();
@@ -171,7 +139,6 @@ public class Scene1 extends JPanel implements GameScene {
         updateObstacles();
         updateExplosions();
         advanceSpriteAnimations();
-        updateSpecialStage();
         handleCollisions();
         removeDeadEntities();
 
@@ -183,17 +150,9 @@ public class Scene1 extends JPanel implements GameScene {
         }
 
         // stage/scene ends when it reaches the end of the timer
-        if (usesStageTimer() && stageTick >= stageDurationTicks()) {
+        if (stageTick >= stageDurationTicks()) {
             completeStage();
         }
-    }
-
-    protected void updateSpecialStage() {
-    }
-
-    // only stage 1 and 2 uses stage timer, cuz boss fight is not timed
-    protected boolean usesStageTimer() {
-        return stageNumber <= 2;
     }
 
     private int getRemainingTicks() {
@@ -202,11 +161,6 @@ public class Scene1 extends JPanel implements GameScene {
 
     // parallax is implemented here
     private void updateBackgroundScroll() {
-        // The boss background is staying still during the boss fight.
-        if (stageNumber == 3) {
-            return;
-        }
-
         // The near and far background layers are moving at different speeds.
         // These offsets are changing here, and gameTick() is repainting afterward.
         backgroundOffsetNear = (backgroundOffsetNear + WORLD_SCROLL_SPEED) % 90;
@@ -244,18 +198,7 @@ public class Scene1 extends JPanel implements GameScene {
     }
 
     private void updatePlayer() {
-        int oldX = player.getX();
-        int oldY = player.getY();
         player.act();
-
-        if (intersectsWall(player.getBounds())) {
-            player.restorePosition(oldX, oldY);
-            resolveWallOverlap();
-            if (WALL_DAMAGE_ENABLED) {
-                player.damage(WALL_DAMAGE);
-            }
-        }
-
         playerBubbles.addAll(player.createBubbles());
     }
 
@@ -298,14 +241,6 @@ public class Scene1 extends JPanel implements GameScene {
         for (Mine mine : mines) {
             mine.act();
         }
-
-        for (Coral coral : corals) {
-            coral.act();
-        }
-
-        for (Rectangle wall : walls) {
-            wall.x -= WORLD_SCROLL_SPEED;
-        }
     }
 
     private void updateExplosions() {
@@ -337,27 +272,16 @@ public class Scene1 extends JPanel implements GameScene {
             mine.advanceAnimation();
         }
 
-        for (Coral coral : corals) {
-            coral.advanceAnimation();
-        }
-
         for (Explosion explosion : explosions) {
             explosion.advanceAnimation();
         }
     }
 
     private void spawnPlaceholderObstacles() {
-        if (stageNumber == 1 && stageTick > 0
-                && stageTick % secondsToTicks(9) == 0) {
+        if (stageTick > 0 && stageTick % secondsToTicks(9) == 0) {
             int y = 90 + (stageTick / secondsToTicks(9) * 97)
                     % (BOARD_HEIGHT - 190);
             mines.add(new Mine(BOARD_WIDTH + 40, y));
-        }
-
-        if (stageNumber == 2 && stageTick > 0
-                && stageTick % secondsToTicks(11) == 0) {
-            corals.add(new Coral(BOARD_WIDTH + 40,
-                    BOARD_HEIGHT - CORAL_HEIGHT - 42));
         }
     }
 
@@ -383,21 +307,7 @@ public class Scene1 extends JPanel implements GameScene {
                     if (killed) {
                         runState.addScore(enemy.getScoreValue());
                         addSmallExplosion(enemy);
-                        onEnemyKilled(enemy);
                     }
-                    break;
-                }
-            }
-
-            if (!bubble.isVisible()) {
-                continue;
-            }
-
-            // check collision with corals
-            for (Coral coral : corals) {
-                if (bubble.collidesWith(coral)) {
-                    coral.damage();
-                    bubble.die();
                     break;
                 }
             }
@@ -414,15 +324,7 @@ public class Scene1 extends JPanel implements GameScene {
                     break;
                 }
             }
-
-            // bubble pops if it touches a wall
-            if (bubble.isVisible() && intersectsWall(bubble.getBounds())) {
-                bubble.die();
-            }
         }
-    }
-
-    protected void onEnemyKilled(Enemy enemy) {
     }
 
     private void handleEnemyProjectileCollisions() {
@@ -445,9 +347,6 @@ public class Scene1 extends JPanel implements GameScene {
                 }
             }
 
-            if (projectile.isVisible() && intersectsWall(projectile.getBounds())) {
-                projectile.die();
-            }
         }
     }
 
@@ -467,20 +366,7 @@ public class Scene1 extends JPanel implements GameScene {
 
     private void handlePowerUpContact() {
         for (PowerUp powerUp : powerUps) {
-            // powerups shouldn't trigger mines
-//            for (Mine mine : new ArrayList<>(mines)) {
-//                if (powerUp.collidesWith(mine)) {
-//                    powerUp.die();
-//                    triggerMine(mine);
-//                    break;
-//                }
-//            }
-
-            if (!powerUp.isVisible()) {
-                continue;
-            }
-
-            if (powerUp.collidesWith(player)) {
+            if (powerUp.isVisible() && powerUp.collidesWith(player)) {
                 powerUp.upgrade(player);
             }
         }
@@ -490,13 +376,6 @@ public class Scene1 extends JPanel implements GameScene {
         for (Mine mine : mines) {
             if (mine.collidesWith(player)) {
                 triggerMine(mine);
-            }
-        }
-
-        for (Coral coral : corals) {
-            if (coral.collidesWith(player)) {
-                player.damage(coral.contactDamage);
-                coral.damage();
             }
         }
     }
@@ -537,14 +416,6 @@ public class Scene1 extends JPanel implements GameScene {
                 }
             }
 
-            for (Coral coral : corals) {
-                if (coral.isVisible()
-                        && distanceTo(centerX, centerY, coral)
-                        <= MINE_EXPLOSION_RADIUS) {
-                    coral.damage();
-                }
-            }
-
             for (Mine nearby : mines) {
                 if (nearby.isVisible()
                         && distanceTo(centerX, centerY, nearby)
@@ -568,51 +439,6 @@ public class Scene1 extends JPanel implements GameScene {
                 sprite.getY() + sprite.getRenderHeight() / 2));
     }
 
-    private boolean intersectsWall(Rectangle bounds) {
-        for (Rectangle wall : walls) {
-            if (bounds.intersects(wall)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void resolveWallOverlap() {
-        Rectangle playerBounds = player.getBounds();
-        for (Rectangle wall : walls) {
-            if (!playerBounds.intersects(wall)) {
-                continue;
-            }
-
-            Rectangle overlap = playerBounds.intersection(wall);
-            boolean horizontalOverlapIsSmaller = overlap.width < overlap.height;
-
-            // Resolve along the smaller overlap to use the shortest correction.
-            if (horizontalOverlapIsSmaller) {
-                boolean playerIsLeftOfWall = playerBounds.getCenterX() < wall.getCenterX();
-
-                // Push the player left or right based on its side of the wall.
-                if (playerIsLeftOfWall) {
-                    player.setX(player.getX() - overlap.width);
-                } else {
-                    player.setX(player.getX() + overlap.width);
-                }
-            } else {
-                boolean playerIsAboveWall = playerBounds.getCenterY() < wall.getCenterY();
-
-                // Push the player up or down based on its side of the wall.
-                if (playerIsAboveWall) {
-                    player.setY(player.getY() - overlap.height);
-                } else {
-                    player.setY(player.getY() + overlap.height);
-                }
-            }
-
-            // Refresh the hitbox before checking the next wall.
-            playerBounds = player.getBounds();
-        }
-    }
-
     private void removeDeadEntities() {
         enemies.removeIf(enemy -> !enemy.isVisible());
         powerUps.removeIf(powerUp -> !powerUp.isVisible());
@@ -620,17 +446,11 @@ public class Scene1 extends JPanel implements GameScene {
         enemyProjectiles.removeIf(projectile -> !projectile.isVisible());
         explosions.removeIf(explosion -> !explosion.isVisible());
         mines.removeIf(mine -> !mine.isVisible());
-        corals.removeIf(coral -> !coral.isVisible());
-        walls.removeIf(wall -> wall.x + wall.width < 0);
     }
 
-    protected void completeStage() {
-        if (finished) {
-            return;
-        }
-
+    private void completeStage() {
         if (SCENE_TRANSITION_MODE == TransitionMode.SEAMLESS && !transitioning) {
-            clearNonPlayerEntities();
+            clearStageEntities();
             transitioning = true;
             transitionTicks = SEAMLESS_TRANSITION_TICKS;
             return;
@@ -642,44 +462,22 @@ public class Scene1 extends JPanel implements GameScene {
     private void moveToNextStage() {
         finished = true;
         player.syncTo(runState);
-
-        if (stageNumber == 1) {
-            game.loadScene2();
-        } else if (stageNumber == 2) {
-            game.loadBossScene();
-        }
+        game.loadScene2();
     }
 
-    protected void finishAsGameOver() {
-
+    private void finishAsGameOver() {
         finished = true;
         player.syncTo(runState);
         game.showGameOver();
     }
 
-    protected void finishAsVictory() {
-
-        finished = true;
-        player.syncTo(runState);
-        game.showVictory();
-    }
-
-    private void clearSceneEntities() {
-        clearNonPlayerEntities();
-    }
-
-    /// Although it says clear seen entities, it does not clear every entity.
-    /// It only clears non-player entities because the player attributes get copied into run state to be moved to another scene.
-    /// Somehow this is relevant to seamless transition logic
-    private void clearNonPlayerEntities() {
+    private void clearStageEntities() {
         enemies.clear();
         powerUps.clear();
         playerBubbles.clear();
         enemyProjectiles.clear();
         explosions.clear();
         mines.clear();
-        corals.clear();
-        walls.clear();
     }
 
     @Override
@@ -688,17 +486,12 @@ public class Scene1 extends JPanel implements GameScene {
 
         drawBackground(g);
         drawTransition(g);
-        drawWalls(g);
         drawEntities(g);
-        drawSpecialStage(g);
         drawHud(g);
 
         if (paused) {
             drawPauseOverlay(g);
         }
-    }
-
-    protected void drawSpecialStage(Graphics g) {
     }
 
     private void drawTransition(Graphics g) {
@@ -708,29 +501,13 @@ public class Scene1 extends JPanel implements GameScene {
 
         double progress = 1.0 - transitionTicks / (double) SEAMLESS_TRANSITION_TICKS;
         int nextBackgroundX = (int) Math.round(BOARD_WIDTH - progress * BOARD_WIDTH);
-        Color nextColor;
-
-        if (stageNumber == 1) {
-            nextColor = new Color(3, 34, 62);
-        } else {
-            nextColor = new Color(3, 24, 45);
-        }
-        g.setColor(nextColor);
+        g.setColor(new Color(3, 34, 62));
         g.fillRect(nextBackgroundX, 42, BOARD_WIDTH - nextBackgroundX, BOARD_HEIGHT - 42);
     }
 
     private void drawBackground(Graphics g) {
-        Color base = stageNumber == 1
-                ? new Color(4, 56, 88)
-                : new Color(3, 34, 62);
-        g.setColor(base);
+        g.setColor(new Color(4, 56, 88));
         g.fillRect(0, 0, getWidth(), getHeight());
-
-        if (stageNumber == 3) {
-            g.setColor(new Color(10, 65, 76));
-            g.fillRect(0, getHeight() - 115, getWidth(), 115);
-            return;
-        }
 
         g.setColor(new Color(30, 105, 135, 130));
         for (int x = -backgroundOffsetFar; x < getWidth(); x += 150) {
@@ -744,23 +521,9 @@ public class Scene1 extends JPanel implements GameScene {
         }
     }
 
-    private void drawWalls(Graphics g) {
-        g.setColor(new Color(50, 70, 78));
-        for (Rectangle wall : walls) {
-            g.fillRect(wall.x, wall.y, wall.width, wall.height);
-            g.setColor(new Color(90, 110, 115));
-            g.drawRect(wall.x, wall.y, wall.width, wall.height);
-            g.setColor(new Color(50, 70, 78));
-        }
-    }
-
     private void drawEntities(Graphics g) {
         for (Mine mine : mines) {
             mine.draw(g);
-        }
-
-        for (Coral coral : corals) {
-            coral.draw(g);
         }
 
         for (PowerUp powerUp : powerUps) {
@@ -783,9 +546,7 @@ public class Scene1 extends JPanel implements GameScene {
             explosion.draw(g);
         }
 
-        if (player != null) {
-            player.draw(g);
-        }
+        player.draw(g);
     }
 
     private void drawHud(Graphics g) {
@@ -795,13 +556,11 @@ public class Scene1 extends JPanel implements GameScene {
         g.setFont(new Font("Monospaced", Font.BOLD, scaledFontSize(13)));
 
         int remainingTicks = getRemainingTicks();
-        String timerText = usesStageTimer()
-                ? String.format("%d:%02d",
-                        remainingTicks / TARGET_FPS / 60,
-                        remainingTicks / TARGET_FPS % 60)
-                : "BOSS";
+        String timerText = String.format("%d:%02d",
+                remainingTicks / TARGET_FPS / 60,
+                remainingTicks / TARGET_FPS % 60);
 
-        g.drawString("STAGE " + stageNumber, 12, 18);
+        g.drawString("STAGE 1", 12, 18);
         g.drawString("TIME " + timerText, 12, 36);
         g.drawString("SCORE " + runState.getScore(), 125, 18);
         g.drawString("HP " + player.getHealth() + "/" + PLAYER_MAX_HEALTH,
@@ -866,9 +625,7 @@ public class Scene1 extends JPanel implements GameScene {
 
         @Override
         public void keyReleased(KeyEvent event) {
-            if (player != null) {
-                player.keyReleased(event);
-            }
+            player.keyReleased(event);
         }
     }
 }
