@@ -45,6 +45,8 @@ public class Scene1 extends JPanel implements GameScene {
 
     protected Player player;
     protected SpawnManager spawnManager;
+
+    /// Timer in ticks/frames for how long the player has been in this stage
     protected int stageTick;
 
     private final KeyAdapter input = new SceneInput();
@@ -56,7 +58,7 @@ public class Scene1 extends JPanel implements GameScene {
     private boolean finished;
     private boolean transitioning;
     private int transitionTicks;
-    private int playerDeathTicks;
+    private int playerDeathTicks; // for death animation
 
     public Scene1(Game game, RunState runState) {
         this(game, runState, 1);
@@ -98,6 +100,7 @@ public class Scene1 extends JPanel implements GameScene {
         playerDeathTicks = 0;
         player = new Player(runState);
 
+        // only spawn enemies in stage 1 or 2
         if (stageNumber <= 2) {
             spawnManager = new SpawnManager(player, stageNumber);
             spawnManager.setMode(DEFAULT_SPAWN_MODE);
@@ -107,9 +110,11 @@ public class Scene1 extends JPanel implements GameScene {
         setupSpecialStageContent();
     }
 
+    // TODO: obstacles
     protected void setupSpecialStageContent() {
     }
 
+    // TODO: parallax bg (or the other way around??)
     protected void loadPlaceholderStageContent() {
         if (stageNumber == 1) {
             mines.add(new Mine(BOARD_WIDTH + 120, 180));
@@ -140,7 +145,9 @@ public class Scene1 extends JPanel implements GameScene {
         repaint();
     }
 
+    // equals to update() used by the prof
     protected void updateGame() {
+        // only active when player is dying
         if (playerDeathTicks > 0) {
             updatePlayerDeath();
             return;
@@ -156,7 +163,7 @@ public class Scene1 extends JPanel implements GameScene {
             remainingTicks--;
         }
 
-        updateBackground();
+        updateBackgroundScroll();
         updatePlayer();
 
         if (spawnManager != null) {
@@ -184,31 +191,50 @@ public class Scene1 extends JPanel implements GameScene {
     protected void updateSpecialStage() {
     }
 
+    // only stage 1 and 2 uses stage timer, cuz boss fight is not timed
     protected boolean usesStageTimer() {
         return stageNumber <= 2;
     }
 
-    private void updateBackground() {
+    // parallax is implemented here
+    private void updateBackgroundScroll() {
+        // The boss background is staying still during the boss fight.
         if (stageNumber == 3) {
             return;
         }
+
+        // The near and far background layers are moving at different speeds.
+        // These offsets are changing here, and gameTick() is repainting afterward.
         backgroundOffsetNear = (backgroundOffsetNear + WORLD_SCROLL_SPEED) % 90;
         backgroundOffsetFar = (backgroundOffsetFar + 1) % 150;
     }
 
     private void updatePlayerDeath() {
-        updateBackground();
-        explosions.forEach(Explosion::act);
+        // Normal gameplay is staying paused while the death delay is running.
+        // The background is continuing to scroll during this delay.
+        updateBackgroundScroll();
+
+        // Existing explosions are continuing their animations, and finished explosions are being removed.
+        for (Explosion explosion : explosions) {
+            explosion.act();
+        }
         explosions.removeIf(explosion -> !explosion.isVisible());
-        if (--playerDeathTicks <= 0) {
+
+        // death counter countdown
+        playerDeathTicks--;
+
+        // The game-over screen opens when the timer is reaches zero.
+        if (playerDeathTicks <= 0) {
             finishAsGameOver();
         }
     }
 
     private void updateTransition() {
-        updateBackground();
+        updateBackgroundScroll();
         player.act();
-        if (--transitionTicks <= 0) {
+
+        transitionTicks--;
+        if (transitionTicks <= 0) {
             moveToNextStage();
         }
     }
@@ -555,18 +581,14 @@ public class Scene1 extends JPanel implements GameScene {
     }
 
     protected void finishAsGameOver() {
-        if (finished) {
-            return;
-        }
+
         finished = true;
         player.syncTo(runState);
         game.showGameOver();
     }
 
     protected void finishAsVictory() {
-        if (finished) {
-            return;
-        }
+
         finished = true;
         player.syncTo(runState);
         game.showVictory();
@@ -578,9 +600,7 @@ public class Scene1 extends JPanel implements GameScene {
 
     /// Although it says clear seen entities, it does not clear every entity.
     /// It only clears non-player entities because the player attributes get copied into run state to be moved to another scene.
-    ///
-    // Each scene creates a new player from RunState.
-    // Enemies, projectiles, powerups, and obstacles do not carry into the next scene.
+    /// Somehow this is relevant to seamless transition logic
     private void clearNonPlayerEntities() {
         enemies.clear();
         powerUps.clear();
