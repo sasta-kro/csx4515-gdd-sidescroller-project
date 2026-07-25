@@ -54,13 +54,13 @@ public class EndScene extends JPanel implements GameScene {
         super.paintComponent(g);
 
         g.setColor(victory ? new Color(80, 220, 150) : new Color(245, 100, 100));
-        g.setFont(new Font("SansSerif", Font.BOLD, 44));
+        g.setFont(new Font("SansSerif", Font.BOLD, scaledFontSize(44)));
         drawCentered(g, victory ? "OCEAN SAVED" : "GAME OVER", 300);
 
         boolean inputReady = !victory || ticks >= VICTORY_INPUT_DELAY_TICKS;
         if (inputReady) {
             g.setColor(Color.WHITE);
-            g.setFont(new Font("SansSerif", Font.PLAIN, 20));
+            g.setFont(new Font("SansSerif", Font.PLAIN, scaledFontSize(20)));
             drawCentered(g, "Press ENTER to return to the main menu", 380);
         }
     }

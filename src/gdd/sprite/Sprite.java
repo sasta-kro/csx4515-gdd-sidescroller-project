@@ -2,6 +2,7 @@ package gdd.sprite;
 
 import static gdd.Global.*;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
@@ -55,6 +56,7 @@ public abstract class Sprite {
         g.drawRect(getX(), getY(), renderWidth, renderHeight);
 
         if (renderWidth >= 24 && renderHeight >= 20) {
+            g.setFont(new Font("SansSerif", Font.PLAIN, scaledFontSize(12)));
             String label = getClass().getSimpleName().substring(0, 1);
             int textX = getX() + (renderWidth - g.getFontMetrics()
                     .stringWidth(label)) / 2;

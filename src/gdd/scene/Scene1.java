@@ -9,7 +9,7 @@ import gdd.powerup.PowerUp;
 import gdd.sprite.Bubble;
 import gdd.sprite.Coral;
 import gdd.sprite.Enemy;
-import gdd.sprite.EnemyRock;
+import gdd.sprite.EnemyProjectile;
 import gdd.sprite.Explosion;
 import gdd.sprite.Mine;
 import gdd.sprite.Octopus;
@@ -23,7 +23,6 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import javax.swing.JPanel;
@@ -37,7 +36,7 @@ public class Scene1 extends JPanel implements GameScene {
     protected final List<Enemy> enemies = new ArrayList<>();
     protected final List<PowerUp> powerUps = new ArrayList<>();
     protected final List<Bubble> playerBubbles = new ArrayList<>();
-    protected final List<EnemyRock> enemyProjectiles = new ArrayList<>();
+    protected final List<EnemyProjectile> enemyProjectiles = new ArrayList<>();
     protected final List<Explosion> explosions = new ArrayList<>();
     protected final List<Mine> mines = new ArrayList<>();
     protected final List<Coral> corals = new ArrayList<>();
@@ -270,7 +269,7 @@ public class Scene1 extends JPanel implements GameScene {
 
             if (enemy instanceof Octopus) {
                 Octopus octopus = (Octopus) enemy;
-                EnemyRock rock = octopus.shootRockIfReady();
+                EnemyProjectile rock = octopus.shootRockIfReady();
 
                 if (rock != null) {
                     enemyProjectiles.add(rock);
@@ -284,7 +283,7 @@ public class Scene1 extends JPanel implements GameScene {
             bubble.act();
         }
 
-        for (EnemyRock projectile : enemyProjectiles) {
+        for (EnemyProjectile projectile : enemyProjectiles) {
             projectile.act();
         }
     }
@@ -330,7 +329,7 @@ public class Scene1 extends JPanel implements GameScene {
             bubble.advanceAnimation();
         }
 
-        for (EnemyRock projectile : enemyProjectiles) {
+        for (EnemyProjectile projectile : enemyProjectiles) {
             projectile.advanceAnimation();
         }
 
@@ -427,7 +426,7 @@ public class Scene1 extends JPanel implements GameScene {
     }
 
     private void handleEnemyProjectileCollisions() {
-        for (EnemyRock projectile : enemyProjectiles) {
+        for (EnemyProjectile projectile : enemyProjectiles) {
             if (!projectile.isVisible()) {
                 continue;
             }
@@ -709,9 +708,13 @@ public class Scene1 extends JPanel implements GameScene {
 
         double progress = 1.0 - transitionTicks / (double) SEAMLESS_TRANSITION_TICKS;
         int nextBackgroundX = (int) Math.round(BOARD_WIDTH - progress * BOARD_WIDTH);
-        Color nextColor = stageNumber == 1
-                ? new Color(3, 34, 62)
-                : new Color(3, 24, 45);
+        Color nextColor;
+
+        if (stageNumber == 1) {
+            nextColor = new Color(3, 34, 62);
+        } else {
+            nextColor = new Color(3, 24, 45);
+        }
         g.setColor(nextColor);
         g.fillRect(nextBackgroundX, 42, BOARD_WIDTH - nextBackgroundX, BOARD_HEIGHT - 42);
     }
@@ -772,7 +775,7 @@ public class Scene1 extends JPanel implements GameScene {
             bubble.draw(g);
         }
 
-        for (EnemyRock projectile : enemyProjectiles) {
+        for (EnemyProjectile projectile : enemyProjectiles) {
             projectile.draw(g);
         }
 
@@ -789,7 +792,7 @@ public class Scene1 extends JPanel implements GameScene {
         g.setColor(new Color(0, 15, 28, 210));
         g.fillRect(0, 0, getWidth(), 42);
         g.setColor(Color.WHITE);
-        g.setFont(new Font("Monospaced", Font.BOLD, 13));
+        g.setFont(new Font("Monospaced", Font.BOLD, scaledFontSize(13)));
 
         int remainingTicks = getRemainingTicks();
         String timerText = usesStageTimer()
@@ -823,9 +826,9 @@ public class Scene1 extends JPanel implements GameScene {
         g.setColor(new Color(0, 0, 0, 190));
         g.fillRect(0, 0, getWidth(), getHeight());
         g.setColor(Color.WHITE);
-        g.setFont(new Font("SansSerif", Font.BOLD, 38));
+        g.setFont(new Font("SansSerif", Font.BOLD, scaledFontSize(38)));
         drawCentered(g, "PAUSED", 250);
-        g.setFont(new Font("SansSerif", Font.PLAIN, 20));
+        g.setFont(new Font("SansSerif", Font.PLAIN, scaledFontSize(20)));
         drawCentered(g, "[ESC] Resume", 330);
         drawCentered(g, "[R] Restart Game", 366);
         drawCentered(g, "[M] Main Menu", 402);

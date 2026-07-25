@@ -35,7 +35,7 @@ public class BossScene extends Scene1 {
         enemyProjectiles.addAll(boss.takePendingProjectiles());
         enemies.addAll(boss.takePendingSummons());
 
-        for (Enemy enemy : new ArrayList<>(enemies)) {
+        for (Enemy enemy : enemies) {
             if (enemy instanceof BomberFish) {
                 BomberFish bomber = (BomberFish) enemy;
                 if (bomber.isVisible() && bomber.shouldExplode()) {
@@ -86,7 +86,7 @@ public class BossScene extends Scene1 {
         g.fillRect(barX, barY, healthWidth, 16);
         g.setColor(Color.WHITE);
         g.drawRect(barX, barY, barWidth, 16);
-        g.setFont(new Font("Monospaced", Font.BOLD, 12));
+        g.setFont(new Font("Monospaced", Font.BOLD, scaledFontSize(12)));
         g.drawString("ANGLERFISH  " + boss.getHealth() + "/" + BOSS_MAX_HEALTH
                 + "  " + boss.getAttackName(), barX, barY + 34);
     }

@@ -38,15 +38,15 @@ public class TitleScene extends JPanel implements GameScene {
         drawPlaceholderOcean(g);
 
         g.setColor(Color.WHITE);
-        g.setFont(new Font("SansSerif", Font.BOLD, 46));
+        g.setFont(new Font("SansSerif", Font.BOLD, scaledFontSize(46)));
         drawCentered(g, "OCEAN INVADERS", 190);
 
-        g.setFont(new Font("SansSerif", Font.PLAIN, 22));
+        g.setFont(new Font("SansSerif", Font.PLAIN, scaledFontSize(22)));
         drawCentered(g, "[1] Start Game", 340);
         drawCentered(g, "[2] Start From Stage 2", 382);
         drawCentered(g, "[Q] Quit", 424);
 
-        g.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        g.setFont(new Font("SansSerif", Font.PLAIN, scaledFontSize(14)));
         drawCentered(g, "Team Members: [Name]  [Name]  [Name]", 610);
     }
 

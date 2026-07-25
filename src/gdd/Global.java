@@ -112,4 +112,8 @@ public final class Global {
             return rounded;
         }
     }
+
+    public static int scaledFontSize(int baseFontSize) {
+        return (int) Math.round(baseFontSize * RENDER_SCALE);
+    }
 }
