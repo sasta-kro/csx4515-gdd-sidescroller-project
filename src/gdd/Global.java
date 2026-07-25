@@ -14,10 +14,10 @@ public final class Global {
     public static final int TIMER_DELAY_MS = 1000 / TARGET_FPS;
     public static final boolean USE_DEVELOPMENT_TIMERS = true;
     public static final int STAGE_DURATION_SECONDS = 5 * 60;
-    public static final int DEVELOPMENT_STAGE_DURATION_SECONDS = 30;
+    public static final int DEVELOPMENT_STAGE_DURATION_SECONDS = 20;
     public static final int INITIAL_SPAWN_DELAY_SECONDS = 2;
     public static final SpawnMode DEFAULT_SPAWN_MODE = SpawnMode.RANDOM;
-    public static final TransitionMode SCENE_TRANSITION_MODE = TransitionMode.SUDDEN;
+    public static final TransitionMode SCENE_TRANSITION_MODE = TransitionMode.SEAMLESS;
     public static final int SEAMLESS_TRANSITION_TICKS = secondsToTicks(1.5);
     public static final int PLAYER_DEATH_TICKS = secondsToTicks(1);
 
@@ -42,7 +42,7 @@ public final class Global {
     public static final int BUBBLE_HEIGHT = 10;
     public static final int BUBBLE_SPEED = 8;
     public static final int BUBBLE_DAMAGE = 1;
-    public static final int BASE_SHOT_COOLDOWN_TICKS = secondsToTicks(0.25);
+    public static final int BASE_SHOT_COOLDOWN_TICKS = secondsToTicks(0.3);
     public static final int BURST_INTERVAL_TICKS = Math.max(1, secondsToTicks(0.08));
 
     // Power-ups
@@ -53,14 +53,15 @@ public final class Global {
     public static final int POWERUP_HEIGHT = 28;
     public static final double POWERUP_WAVE_AMPLITUDE = 18.0;
     public static final double POWERUP_WAVE_SPEED = 0.08;
+    public static final int POWERUP_SPAWN_MIN_TICKS = secondsToTicks(4);
+    public static final int POWERUP_SPAWN_MAX_TICKS = secondsToTicks(8);
 
     // Enemies
     public static final int ENEMY_CONTACT_DAMAGE = 1;
     public static final int ENEMY_PROJECTILE_DAMAGE = 1;
     public static final int RANDOM_SPAWN_MIN_TICKS = secondsToTicks(0.8);
     public static final int RANDOM_SPAWN_MAX_TICKS = secondsToTicks(1.8);
-    public static final int POWERUP_SPAWN_MIN_TICKS = secondsToTicks(8);
-    public static final int POWERUP_SPAWN_MAX_TICKS = secondsToTicks(14);
+
 
     // Obstacles
     public static final int MINE_SIZE = 34;
@@ -68,6 +69,7 @@ public final class Global {
     public static final int MINE_EXPLOSION_RADIUS = 62;
     public static final int CORAL_WIDTH = 44;
     public static final int CORAL_HEIGHT = 62;
+    public static final int CORAL_CONTACT_DAMAGE = 1;
     public static final boolean WALL_DAMAGE_ENABLED = true;
     public static final int WALL_DAMAGE = 1;
 
@@ -93,13 +95,21 @@ public final class Global {
     public static final Color COLOR_HEAL = new Color(78, 220, 120);
 
     public static int stageDurationTicks() {
-        int seconds = USE_DEVELOPMENT_TIMERS
-                ? DEVELOPMENT_STAGE_DURATION_SECONDS
-                : STAGE_DURATION_SECONDS;
-        return secondsToTicks(seconds);
+        if (USE_DEVELOPMENT_TIMERS) {
+            return secondsToTicks(DEVELOPMENT_STAGE_DURATION_SECONDS);
+        }
+        else {
+            return secondsToTicks(STAGE_DURATION_SECONDS);
+        }
     }
 
     public static int secondsToTicks(double seconds) {
-        return Math.max(1, (int) Math.round(seconds * TARGET_FPS));
+        int rounded = (int) Math.round(seconds * TARGET_FPS);
+
+        if (rounded < 1) {
+            return 1;
+        } else {
+            return rounded;
+        }
     }
 }
