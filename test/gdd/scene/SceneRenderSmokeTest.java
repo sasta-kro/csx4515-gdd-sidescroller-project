@@ -15,19 +15,20 @@ public class SceneRenderSmokeTest {
         renderPanel(new TitleScene(null), "title");
 
         Scene1 scene1 = new Scene1(null, new RunState());
-        scene1.resetStage();
-        advance(scene1, 180);
-        renderPanel(scene1, "stage1");
+        renderScene(scene1, "stage1");
 
         Scene2 scene2 = new Scene2(null, new RunState());
-        scene2.resetStage();
-        advance(scene2, 180);
-        renderPanel(scene2, "stage2");
+        renderScene(scene2, "stage2");
 
         BossScene bossScene = new BossScene(null, new RunState());
-        bossScene.resetStage();
-        advance(bossScene, 180);
-        renderPanel(bossScene, "boss");
+        renderScene(bossScene, "boss");
+    }
+
+    private static void renderScene(Scene1 scene, String name) throws Exception {
+        scene.start();
+        advance(scene, 180);
+        renderPanel(scene, name);
+        scene.stop();
     }
 
     private static void advance(Scene1 scene, int ticks) {

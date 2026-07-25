@@ -35,12 +35,12 @@ public class Octopus extends Enemy {
         }
     }
 
-    public EnemyRock shootRockIfReady() {
+    public EnemyProjectile shootRockIfReady() {
         if (!rockReady || !isVisible()) {
             return null;
         }
         rockReady = false;
-        return new EnemyRock(getX() - 14, getY() + getRenderHeight() / 2);
+        return new EnemyProjectile(getX() - 14, getY() + getRenderHeight() / 2);
     }
 
     private int nextRockCooldown() {

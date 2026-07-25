@@ -8,7 +8,7 @@ public class Turtle extends Enemy {
     private static final double TRACK_SPEED = 1.25;
 
     public Turtle(Player player, int x, int y) {
-        super(player, x, y, 52, 34, 4,
+        super(player, x, y, 52, 34, 2,
                 ENEMY_CONTACT_DAMAGE, 250, new Color(80, 175, 105));
     }
 

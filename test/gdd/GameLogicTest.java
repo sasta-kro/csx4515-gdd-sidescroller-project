@@ -18,6 +18,7 @@ public class GameLogicTest {
         movesPlayerWithHeldKeys();
         appliesDamageInvincibility();
         stacksAndReplacesPowerups();
+        persistsPowerupsBetweenStages();
         emitsSixBubbleBurstAtLevelFour();
         followsScriptedSpawnSchedule();
         completesBossDeathDelay();
@@ -91,6 +92,33 @@ public class GameLogicTest {
         }
 
         assertEquals(6, bubbles.size(), "level-four burst size");
+    }
+
+    private static void persistsPowerupsBetweenStages() {
+        RunState state = new RunState();
+        Player stageOnePlayer = new Player(state);
+        stageOnePlayer.applySpeedUp();
+        stageOnePlayer.applySpeedUp();
+        stageOnePlayer.applyMultiShot();
+        stageOnePlayer.applyMultiShot();
+        stageOnePlayer.act();
+
+        int remainingSpeedTicks = stageOnePlayer.getSpeedPowerupTicks();
+        int remainingWeaponTicks = stageOnePlayer.getWeaponPowerupTicks();
+        stageOnePlayer.syncTo(state);
+
+        Player stageTwoPlayer = new Player(state);
+        assertEquals(2, stageTwoPlayer.getSpeedLevel(),
+                "persisted speed stacks");
+        assertEquals(remainingSpeedTicks, stageTwoPlayer.getSpeedPowerupTicks(),
+                "persisted speed timer");
+        assertEquals(WeaponType.MULTI_SHOT, stageTwoPlayer.getWeaponType(),
+                "persisted weapon");
+        assertEquals(2, stageTwoPlayer.getMultiShotLevel(),
+                "persisted multi-shot stacks");
+        assertEquals(remainingWeaponTicks,
+                stageTwoPlayer.getWeaponPowerupTicks(),
+                "persisted weapon timer");
     }
 
     private static void followsScriptedSpawnSchedule() {

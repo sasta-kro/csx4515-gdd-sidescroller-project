@@ -20,7 +20,7 @@ public class Anglerfish extends Enemy {
     }
 
     private final Random random = new Random();
-    private final List<EnemyRock> pendingProjectiles = new ArrayList<>();
+    private final List<EnemyProjectile> pendingProjectiles = new ArrayList<>();
     private final List<BomberFish> pendingSummons = new ArrayList<>();
     private final int homeX;
     private AttackState state = AttackState.IDLE;
@@ -179,8 +179,8 @@ public class Anglerfish extends Enemy {
         }
     }
 
-    public List<EnemyRock> takePendingProjectiles() {
-        List<EnemyRock> result = new ArrayList<>(pendingProjectiles);
+    public List<EnemyProjectile> takePendingProjectiles() {
+        List<EnemyProjectile> result = new ArrayList<>(pendingProjectiles);
         pendingProjectiles.clear();
         return result;
     }
