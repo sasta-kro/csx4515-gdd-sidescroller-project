@@ -166,7 +166,12 @@ public class Scene1 extends JPanel implements GameScene {
         }
 
         spawnPlaceholderObstacles();
-        updateSprites();
+        updateEnemies();
+        updateProjectiles();
+        updatePowerUps();
+        updateObstacles();
+        updateExplosions();
+        advanceSpriteAnimations();
         updateSpecialStage();
         handleCollisions();
         removeDeadEntities();
@@ -255,39 +260,91 @@ public class Scene1 extends JPanel implements GameScene {
         playerBubbles.addAll(player.createBubbles());
     }
 
-    private void updateSprites() {
+    private void updateEnemies() {
         for (Enemy enemy : enemies) {
             if (!enemy.isVisible()) {
                 continue;
             }
+
             enemy.act();
+
             if (enemy instanceof Octopus) {
-                EnemyRock rock = ((Octopus) enemy).takeRock();
+                Octopus octopus = (Octopus) enemy;
+                EnemyRock rock = octopus.takeRock();
+
                 if (rock != null) {
                     enemyProjectiles.add(rock);
                 }
             }
         }
+    }
 
-        playerBubbles.forEach(Bubble::act);
-        enemyProjectiles.forEach(EnemyRock::act);
-        powerUps.forEach(PowerUp::act);
-        mines.forEach(Mine::act);
-        corals.forEach(Coral::act);
-        explosions.forEach(Explosion::act);
+    private void updateProjectiles() {
+        for (Bubble bubble : playerBubbles) {
+            bubble.act();
+        }
+
+        for (EnemyRock projectile : enemyProjectiles) {
+            projectile.act();
+        }
+    }
+
+    private void updatePowerUps() {
+        for (PowerUp powerUp : powerUps) {
+            powerUp.act();
+        }
+    }
+
+    private void updateObstacles() {
+        for (Mine mine : mines) {
+            mine.act();
+        }
+
+        for (Coral coral : corals) {
+            coral.act();
+        }
 
         for (Rectangle wall : walls) {
             wall.x -= WORLD_SCROLL_SPEED;
         }
+    }
 
+    private void updateExplosions() {
+        for (Explosion explosion : explosions) {
+            explosion.act();
+        }
+    }
+
+    private void advanceSpriteAnimations() {
         player.advanceAnimation();
-        enemies.forEach(Enemy::advanceAnimation);
-        powerUps.forEach(PowerUp::advanceAnimation);
-        playerBubbles.forEach(Bubble::advanceAnimation);
-        enemyProjectiles.forEach(EnemyRock::advanceAnimation);
-        mines.forEach(Mine::advanceAnimation);
-        corals.forEach(Coral::advanceAnimation);
-        explosions.forEach(Explosion::advanceAnimation);
+
+        for (Enemy enemy : enemies) {
+            enemy.advanceAnimation();
+        }
+
+        for (PowerUp powerUp : powerUps) {
+            powerUp.advanceAnimation();
+        }
+
+        for (Bubble bubble : playerBubbles) {
+            bubble.advanceAnimation();
+        }
+
+        for (EnemyRock projectile : enemyProjectiles) {
+            projectile.advanceAnimation();
+        }
+
+        for (Mine mine : mines) {
+            mine.advanceAnimation();
+        }
+
+        for (Coral coral : corals) {
+            coral.advanceAnimation();
+        }
+
+        for (Explosion explosion : explosions) {
+            explosion.advanceAnimation();
+        }
     }
 
     private void spawnPlaceholderObstacles() {
@@ -697,13 +754,34 @@ public class Scene1 extends JPanel implements GameScene {
     }
 
     private void drawEntities(Graphics g) {
-        mines.forEach(mine -> mine.draw(g));
-        corals.forEach(coral -> coral.draw(g));
-        powerUps.forEach(powerUp -> powerUp.draw(g));
-        enemies.forEach(enemy -> enemy.draw(g));
-        playerBubbles.forEach(bubble -> bubble.draw(g));
-        enemyProjectiles.forEach(projectile -> projectile.draw(g));
-        explosions.forEach(explosion -> explosion.draw(g));
+        for (Mine mine : mines) {
+            mine.draw(g);
+        }
+
+        for (Coral coral : corals) {
+            coral.draw(g);
+        }
+
+        for (PowerUp powerUp : powerUps) {
+            powerUp.draw(g);
+        }
+
+        for (Enemy enemy : enemies) {
+            enemy.draw(g);
+        }
+
+        for (Bubble bubble : playerBubbles) {
+            bubble.draw(g);
+        }
+
+        for (EnemyRock projectile : enemyProjectiles) {
+            projectile.draw(g);
+        }
+
+        for (Explosion explosion : explosions) {
+            explosion.draw(g);
+        }
+
         if (player != null) {
             player.draw(g);
         }

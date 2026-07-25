@@ -6,6 +6,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.JPanel;
@@ -30,7 +31,7 @@ public class EndScene extends JPanel implements GameScene {
     public void start() {
         ticks = 0;
         addKeyListener(input);
-        timer = new Timer(TIMER_DELAY_MS, this::update);
+        timer = new Timer(TIMER_DELAY_MS, new GameCycle());
         timer.start();
         requestFocusInWindow();
     }
@@ -43,7 +44,7 @@ public class EndScene extends JPanel implements GameScene {
         }
     }
 
-    private void update(ActionEvent event) {
+    private void update() {
         ticks++;
         repaint();
     }
@@ -67,6 +68,14 @@ public class EndScene extends JPanel implements GameScene {
     private void drawCentered(Graphics g, String text, int y) {
         int x = (getWidth() - g.getFontMetrics().stringWidth(text)) / 2;
         g.drawString(text, x, y);
+    }
+
+    private class GameCycle implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent event) {
+            update();
+        }
     }
 
     private class EndInput extends KeyAdapter {
