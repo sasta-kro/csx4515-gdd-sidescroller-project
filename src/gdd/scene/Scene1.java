@@ -51,7 +51,6 @@ public class Scene1 extends JPanel implements GameScene {
 
     private final KeyAdapter input = new SceneInput();
     private Timer timer;
-    private int remainingTicks;
     private int backgroundOffsetNear;
     private int backgroundOffsetFar;
     private boolean paused;
@@ -93,7 +92,6 @@ public class Scene1 extends JPanel implements GameScene {
     private void resetStage() {
         clearSceneEntities();
         stageTick = 0;
-        remainingTicks = stageDurationTicks();
         paused = false;
         finished = false;
         transitioning = false;
@@ -159,9 +157,6 @@ public class Scene1 extends JPanel implements GameScene {
         }
 
         stageTick++;
-        if (usesStageTimer()) {
-            remainingTicks--;
-        }
 
         updateBackgroundScroll();
         updatePlayer();
@@ -183,7 +178,8 @@ public class Scene1 extends JPanel implements GameScene {
             return;
         }
 
-        if (usesStageTimer() && remainingTicks <= 0) {
+        // stage/scene ends when it reaches the end of the timer
+        if (usesStageTimer() && stageTick >= stageDurationTicks()) {
             completeStage();
         }
     }
@@ -194,6 +190,10 @@ public class Scene1 extends JPanel implements GameScene {
     // only stage 1 and 2 uses stage timer, cuz boss fight is not timed
     protected boolean usesStageTimer() {
         return stageNumber <= 2;
+    }
+
+    private int getRemainingTicks() {
+        return Math.max(0, stageDurationTicks() - stageTick);
     }
 
     // parallax is implemented here
@@ -519,17 +519,30 @@ public class Scene1 extends JPanel implements GameScene {
             }
 
             Rectangle overlap = playerBounds.intersection(wall);
-            if (overlap.width < overlap.height) {
-                if (playerBounds.getCenterX() < wall.getCenterX()) {
+            boolean horizontalOverlapIsSmaller = overlap.width < overlap.height;
+
+            // Resolve along the smaller overlap to use the shortest correction.
+            if (horizontalOverlapIsSmaller) {
+                boolean playerIsLeftOfWall = playerBounds.getCenterX() < wall.getCenterX();
+
+                // Push the player left or right based on its side of the wall.
+                if (playerIsLeftOfWall) {
                     player.setX(player.getX() - overlap.width);
                 } else {
                     player.setX(player.getX() + overlap.width);
                 }
-            } else if (playerBounds.getCenterY() < wall.getCenterY()) {
-                player.setY(player.getY() - overlap.height);
             } else {
-                player.setY(player.getY() + overlap.height);
+                boolean playerIsAboveWall = playerBounds.getCenterY() < wall.getCenterY();
+
+                // Push the player up or down based on its side of the wall.
+                if (playerIsAboveWall) {
+                    player.setY(player.getY() - overlap.height);
+                } else {
+                    player.setY(player.getY() + overlap.height);
+                }
             }
+
+            // Refresh the hitbox before checking the next wall.
             playerBounds = player.getBounds();
         }
     }
@@ -702,10 +715,11 @@ public class Scene1 extends JPanel implements GameScene {
         g.setColor(Color.WHITE);
         g.setFont(new Font("Monospaced", Font.BOLD, 13));
 
+        int remainingTicks = getRemainingTicks();
         String timerText = usesStageTimer()
                 ? String.format("%d:%02d",
-                        Math.max(0, remainingTicks / TARGET_FPS) / 60,
-                        Math.max(0, remainingTicks / TARGET_FPS) % 60)
+                        remainingTicks / TARGET_FPS / 60,
+                        remainingTicks / TARGET_FPS % 60)
                 : "BOSS";
 
         g.drawString("STAGE " + stageNumber, 12, 18);
