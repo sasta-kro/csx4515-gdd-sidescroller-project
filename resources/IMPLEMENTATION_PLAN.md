@@ -582,14 +582,13 @@ final artwork.
 1. Make sudden scene replacement the default.
 2. Add a configurable transition-mode setting.
 3. Provide a hook for adjacent-background scrolling.
-4. Preserve score, health, and player position.
+4. Preserve score, health, player position, and active power-up state.
 5. Clear:
    - Enemies
    - Enemy projectiles
    - Player bubbles
    - Floating power-ups
    - Obstacles
-   - Active power-up state
 6. Provide configurable parallax-layer update and draw hooks.
 7. Stop Stage 2 scrolling when entering BossScene.
 
@@ -606,8 +605,7 @@ The user selects and integrates:
 
 - Sudden transition works without user artwork.
 - No outgoing entities survive scene replacement.
-- Score, health, and player position persist.
-- Power-ups reset.
+- Score, health, player position, and active power-ups persist.
 - Background behavior never moves the player automatically.
 
 ## 15. Phase 9: Anglerfish Boss
@@ -725,8 +723,8 @@ Join every completed system and tune the game against the specification.
 6. Test every enemy, obstacle, and power-up.
 7. Test game over from each stage.
 8. Test pause commands from each stage.
-9. Test score and health persistence.
-10. Test that power-ups and scene entities do not persist.
+9. Test score, health, and active power-up persistence.
+10. Test that scene-owned entities do not persist.
 11. Tune recommended values without hardcoding scene-specific magic numbers.
 12. Confirm five-minute default stage timers.
 13. Update README with:

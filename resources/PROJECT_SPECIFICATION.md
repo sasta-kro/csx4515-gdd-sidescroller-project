@@ -171,14 +171,12 @@ to the boss stage:
 - Score
 - Current health
 - Player screen position
-
-The following does not carry between stages:
-
 - Active Speed Up
 - Speed Up stacks
+- Remaining Speed Up timer
 - Active weapon power-up
 - Multi-shot stacks
-- Power-up timers
+- Remaining weapon power-up timer
 
 Starting directly from Stage 2 through the development menu uses base state:
 

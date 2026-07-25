@@ -1,5 +1,7 @@
 package gdd;
 
+import gdd.powerup.WeaponType;
+
 /// stores current game state like player score, hp, position.
 /// also handles player hp and score validation
 public class RunState {
@@ -8,6 +10,11 @@ public class RunState {
     private int health;
     private int playerX;
     private int playerY;
+    private int speedLevel;
+    private int speedPowerupTicks;
+    private WeaponType weaponType;
+    private int multiShotLevel;
+    private int weaponPowerupTicks;
 
     public RunState() {
         reset();
@@ -18,6 +25,11 @@ public class RunState {
         health = Global.PLAYER_MAX_HEALTH;
         playerX = Global.PLAYER_START_X;
         playerY = Global.PLAYER_START_Y;
+        speedLevel = 0;
+        speedPowerupTicks = 0;
+        weaponType = WeaponType.BASE;
+        multiShotLevel = 0;
+        weaponPowerupTicks = 0;
     }
 
     public int getScore() {
@@ -53,5 +65,37 @@ public class RunState {
     public void setPlayerPosition(int x, int y) {
         playerX = x;
         playerY = y;
+    }
+
+    public int getSpeedLevel() {
+        return speedLevel;
+    }
+
+    public int getSpeedPowerupTicks() {
+        return speedPowerupTicks;
+    }
+
+    public void setSpeedPowerup(int level, int remainingTicks) {
+        speedLevel = level;
+        speedPowerupTicks = remainingTicks;
+    }
+
+    public WeaponType getWeaponType() {
+        return weaponType;
+    }
+
+    public int getMultiShotLevel() {
+        return multiShotLevel;
+    }
+
+    public int getWeaponPowerupTicks() {
+        return weaponPowerupTicks;
+    }
+
+    public void setWeaponPowerup(WeaponType type, int multiShotLevel,
+            int remainingTicks) {
+        weaponType = type;
+        this.multiShotLevel = multiShotLevel;
+        weaponPowerupTicks = remainingTicks;
     }
 }

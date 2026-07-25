@@ -631,7 +631,6 @@ public class Scene1 extends JPanel implements GameScene {
         }
 
         if (SCENE_TRANSITION_MODE == TransitionMode.SEAMLESS && !transitioning) {
-            player.clearTemporaryPowerups();
             clearNonPlayerEntities();
             transitioning = true;
             transitionTicks = SEAMLESS_TRANSITION_TICKS;
@@ -643,7 +642,6 @@ public class Scene1 extends JPanel implements GameScene {
 
     private void moveToNextStage() {
         finished = true;
-        player.clearTemporaryPowerups();
         player.syncTo(runState);
 
         if (stageNumber == 1) {
@@ -709,16 +707,13 @@ public class Scene1 extends JPanel implements GameScene {
             return;
         }
 
-        double progress = 1.0 - transitionTicks
-                / (double) SEAMLESS_TRANSITION_TICKS;
-        int nextBackgroundX = (int) Math.round(
-                BOARD_WIDTH - progress * BOARD_WIDTH);
+        double progress = 1.0 - transitionTicks / (double) SEAMLESS_TRANSITION_TICKS;
+        int nextBackgroundX = (int) Math.round(BOARD_WIDTH - progress * BOARD_WIDTH);
         Color nextColor = stageNumber == 1
                 ? new Color(3, 34, 62)
                 : new Color(3, 24, 45);
         g.setColor(nextColor);
-        g.fillRect(nextBackgroundX, 42,
-                BOARD_WIDTH - nextBackgroundX, BOARD_HEIGHT - 42);
+        g.fillRect(nextBackgroundX, 42, BOARD_WIDTH - nextBackgroundX, BOARD_HEIGHT - 42);
     }
 
     private void drawBackground(Graphics g) {

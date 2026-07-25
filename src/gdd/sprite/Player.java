@@ -33,7 +33,13 @@ public class Player extends Sprite {
         super(state.getPlayerX(), state.getPlayerY(),
                 PLAYER_WIDTH, PLAYER_HEIGHT, COLOR_PLAYER);
         health = state.getHealth();
+        speedLevel = state.getSpeedLevel();
+        speedPowerupTicks = state.getSpeedPowerupTicks();
+        weaponType = state.getWeaponType();
+        multiShotLevel = state.getMultiShotLevel();
+        weaponPowerupTicks = state.getWeaponPowerupTicks();
         setHitboxScale(0.88);
+        setPlaceholderColor(getActiveColor());
     }
 
     @Override
@@ -197,12 +203,6 @@ public class Player extends Sprite {
         burstRemaining = 0;
     }
 
-    public void clearTemporaryPowerups() {
-        speedLevel = 0;
-        speedPowerupTicks = 0;
-        clearWeapon();
-    }
-
     private void clearWeapon() {
         weaponType = WeaponType.BASE;
         multiShotLevel = 0;
@@ -214,6 +214,8 @@ public class Player extends Sprite {
     public void syncTo(RunState state) {
         state.setHealth(health);
         state.setPlayerPosition(getX(), getY());
+        state.setSpeedPowerup(speedLevel, speedPowerupTicks);
+        state.setWeaponPowerup(weaponType, multiShotLevel, weaponPowerupTicks);
     }
 
     public void restorePosition(int oldX, int oldY) {
