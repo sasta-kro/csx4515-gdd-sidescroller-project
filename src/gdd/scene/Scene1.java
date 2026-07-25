@@ -521,13 +521,20 @@ public class Scene1 extends JPanel implements GameScene {
             }
 
             for (Enemy enemy : enemies) {
-                if (enemy.isVisible()
-                        && distanceTo(centerX, centerY, enemy)
-                        <= MINE_EXPLOSION_RADIUS) {
-                    if (enemy.damage(MINE_DAMAGE)) {
-                        addSmallExplosion(enemy);
-                        onEnemyKilledByMine(enemy);
-                    }
+                if (!enemy.isVisible()) {
+                    continue;
+                }
+
+                boolean insideExplosion = distanceTo(centerX, centerY, enemy) <= MINE_EXPLOSION_RADIUS;
+
+                if (!insideExplosion) {
+                    continue;
+                }
+
+                boolean killed = enemy.damage(MINE_DAMAGE);
+
+                if (killed) {
+                    addSmallExplosion(enemy);
                 }
             }
 
@@ -549,15 +556,13 @@ public class Scene1 extends JPanel implements GameScene {
         }
     }
 
-    protected void onEnemyKilledByMine(Enemy enemy) {
-    }
-
     private double distanceTo(int x, int y, gdd.sprite.Sprite sprite) {
         double centerX = sprite.getX() + sprite.getRenderWidth() / 2.0;
         double centerY = sprite.getY() + sprite.getRenderHeight() / 2.0;
         return Math.hypot(centerX - x, centerY - y);
     }
 
+    // TODO: enemy shouldnt explode when dying, it should play the death animation instaead
     private void addSmallExplosion(gdd.sprite.Sprite sprite) {
         explosions.add(new Explosion(
                 sprite.getX() + sprite.getRenderWidth() / 2,
