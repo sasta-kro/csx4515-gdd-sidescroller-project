@@ -5,8 +5,6 @@ import static gdd.Global.*;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.RenderingHints;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import javax.swing.JPanel;
@@ -25,7 +23,7 @@ public class TitleScene extends JPanel implements GameScene {
     @Override
     public void start() {
         addKeyListener(input);
-        requestFocusInWindow();
+        requestFocusInWindow(); // idk what this do but it's part of prof's code
     }
 
     @Override
@@ -34,11 +32,8 @@ public class TitleScene extends JPanel implements GameScene {
     }
 
     @Override
-    protected void paintComponent(Graphics graphics) {
-        super.paintComponent(graphics);
-        Graphics2D g = (Graphics2D) graphics.create();
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
 
         drawPlaceholderOcean(g);
 
@@ -53,10 +48,10 @@ public class TitleScene extends JPanel implements GameScene {
 
         g.setFont(new Font("SansSerif", Font.PLAIN, 14));
         drawCentered(g, "Team Members: [Name]  [Name]  [Name]", 610);
-        g.dispose();
     }
 
-    private void drawPlaceholderOcean(Graphics2D g) {
+    // TODO: replace this with actual ocean background
+    private void drawPlaceholderOcean(Graphics g) {
         g.setColor(new Color(6, 52, 86));
         g.fillRect(0, 0, getWidth(), getHeight());
 
@@ -77,7 +72,7 @@ public class TitleScene extends JPanel implements GameScene {
         g.fillOval(145, 240, 9, 9);
     }
 
-    private void drawCentered(Graphics2D g, String text, int y) {
+    private void drawCentered(Graphics g, String text, int y) {
         int x = (getWidth() - g.getFontMetrics().stringWidth(text)) / 2;
         g.drawString(text, x, y);
     }
@@ -87,17 +82,10 @@ public class TitleScene extends JPanel implements GameScene {
         @Override
         public void keyPressed(KeyEvent event) {
             switch (event.getKeyCode()) {
-                case KeyEvent.VK_1:
-                    game.startNewGame();
-                    break;
-                case KeyEvent.VK_2:
-                    game.startFromScene2();
-                    break;
-                case KeyEvent.VK_Q:
-                    game.quit();
-                    break;
-                default:
-                    break;
+                case KeyEvent.VK_1 -> game.startNewGame(); // non numpad key 1
+                case KeyEvent.VK_2 -> game.startFromScene2();
+                case KeyEvent.VK_Q -> game.quit();  // key q
+                default -> {}  // don't do anything on default
             }
         }
     }

@@ -4,7 +4,7 @@ import gdd.RunState;
 import static gdd.Global.*;
 import gdd.powerup.WeaponType;
 import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.Graphics;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -274,7 +274,7 @@ public class Player extends Sprite {
     }
 
     @Override
-    public void draw(Graphics2D g) {
+    public void draw(Graphics g) {
         if (isDying()) {
             Color original = getPlaceholderColor();
             setPlaceholderColor((invincibilityTicks / 3) % 2 == 0

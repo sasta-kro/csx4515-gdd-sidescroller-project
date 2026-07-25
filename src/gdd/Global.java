@@ -12,7 +12,7 @@ public final class Global {
     public static final int BOARD_HEIGHT = 700;
     public static final int TARGET_FPS = 60;
     public static final int TIMER_DELAY_MS = 1000 / TARGET_FPS;
-    public static final boolean USE_DEVELOPMENT_TIMERS = false;
+    public static final boolean USE_DEVELOPMENT_TIMERS = true;
     public static final int STAGE_DURATION_SECONDS = 5 * 60;
     public static final int DEVELOPMENT_STAGE_DURATION_SECONDS = 30;
     public static final int INITIAL_SPAWN_DELAY_SECONDS = 2;
@@ -22,7 +22,7 @@ public final class Global {
     public static final int PLAYER_DEATH_TICKS = secondsToTicks(1);
 
     // Shared rendering and collision tuning
-    public static final double RENDER_SCALE = 1.0;
+    public static final double RENDER_SCALE = 1.0 ;
     public static final double HITBOX_SCALE = 1.0;
     public static final int WORLD_SCROLL_SPEED = 2;
 

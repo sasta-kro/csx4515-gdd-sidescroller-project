@@ -17,9 +17,7 @@ import gdd.sprite.Player;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.Rectangle;
-import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -580,11 +578,8 @@ public class Scene1 extends JPanel implements GameScene {
     }
 
     @Override
-    protected void paintComponent(Graphics graphics) {
-        super.paintComponent(graphics);
-        Graphics2D g = (Graphics2D) graphics.create();
-        g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
-                RenderingHints.VALUE_ANTIALIAS_ON);
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
 
         drawBackground(g);
         drawTransition(g);
@@ -596,13 +591,12 @@ public class Scene1 extends JPanel implements GameScene {
         if (paused) {
             drawPauseOverlay(g);
         }
-        g.dispose();
     }
 
-    protected void drawSpecialStage(Graphics2D g) {
+    protected void drawSpecialStage(Graphics g) {
     }
 
-    private void drawTransition(Graphics2D g) {
+    private void drawTransition(Graphics g) {
         if (!transitioning) {
             return;
         }
@@ -619,7 +613,7 @@ public class Scene1 extends JPanel implements GameScene {
                 BOARD_WIDTH - nextBackgroundX, BOARD_HEIGHT - 42);
     }
 
-    private void drawBackground(Graphics2D g) {
+    private void drawBackground(Graphics g) {
         Color base = stageNumber == 1
                 ? new Color(4, 56, 88)
                 : new Color(3, 34, 62);
@@ -644,7 +638,7 @@ public class Scene1 extends JPanel implements GameScene {
         }
     }
 
-    private void drawWalls(Graphics2D g) {
+    private void drawWalls(Graphics g) {
         g.setColor(new Color(50, 70, 78));
         for (Rectangle wall : walls) {
             g.fillRect(wall.x, wall.y, wall.width, wall.height);
@@ -654,7 +648,7 @@ public class Scene1 extends JPanel implements GameScene {
         }
     }
 
-    private void drawEntities(Graphics2D g) {
+    private void drawEntities(Graphics g) {
         mines.forEach(mine -> mine.draw(g));
         corals.forEach(coral -> coral.draw(g));
         powerUps.forEach(powerUp -> powerUp.draw(g));
@@ -667,7 +661,7 @@ public class Scene1 extends JPanel implements GameScene {
         }
     }
 
-    private void drawHud(Graphics2D g) {
+    private void drawHud(Graphics g) {
         g.setColor(new Color(0, 15, 28, 210));
         g.fillRect(0, 0, getWidth(), 42);
         g.setColor(Color.WHITE);
@@ -700,7 +694,7 @@ public class Scene1 extends JPanel implements GameScene {
         return String.format("%.1fs", ticks / (double) TARGET_FPS);
     }
 
-    private void drawPauseOverlay(Graphics2D g) {
+    private void drawPauseOverlay(Graphics g) {
         g.setColor(new Color(0, 0, 0, 190));
         g.fillRect(0, 0, getWidth(), getHeight());
         g.setColor(Color.WHITE);
@@ -713,7 +707,7 @@ public class Scene1 extends JPanel implements GameScene {
         drawCentered(g, "[Q] Quit", 438);
     }
 
-    private void drawCentered(Graphics2D g, String text, int y) {
+    private void drawCentered(Graphics g, String text, int y) {
         int x = (getWidth() - g.getFontMetrics().stringWidth(text)) / 2;
         g.drawString(text, x, y);
     }

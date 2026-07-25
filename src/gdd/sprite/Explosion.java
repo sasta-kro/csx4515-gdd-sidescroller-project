@@ -2,7 +2,7 @@ package gdd.sprite;
 
 import static gdd.Global.*;
 import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.Graphics;
 
 public class Explosion extends Sprite {
 
@@ -29,7 +29,7 @@ public class Explosion extends Sprite {
     }
 
     @Override
-    public void draw(Graphics2D g) {
+    public void draw(Graphics g) {
         g.setColor(new Color(255, 170, 55, 150));
         g.fillOval(getX(), getY(), getRenderWidth(), getRenderHeight());
         g.setColor(Color.WHITE);

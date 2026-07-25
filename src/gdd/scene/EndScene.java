@@ -5,7 +5,6 @@ import static gdd.Global.*;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -50,9 +49,8 @@ public class EndScene extends JPanel implements GameScene {
     }
 
     @Override
-    protected void paintComponent(Graphics graphics) {
-        super.paintComponent(graphics);
-        Graphics2D g = (Graphics2D) graphics.create();
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
 
         g.setColor(victory ? new Color(80, 220, 150) : new Color(245, 100, 100));
         g.setFont(new Font("SansSerif", Font.BOLD, 44));
@@ -64,11 +62,9 @@ public class EndScene extends JPanel implements GameScene {
             g.setFont(new Font("SansSerif", Font.PLAIN, 20));
             drawCentered(g, "Press ENTER to return to the main menu", 380);
         }
-
-        g.dispose();
     }
 
-    private void drawCentered(Graphics2D g, String text, int y) {
+    private void drawCentered(Graphics g, String text, int y) {
         int x = (getWidth() - g.getFontMetrics().stringWidth(text)) / 2;
         g.drawString(text, x, y);
     }

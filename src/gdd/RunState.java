@@ -1,5 +1,7 @@
 package gdd;
 
+// stores current game state like player score, hp, position.
+// also handles player hp and score validation
 public class RunState {
 
     private int score;
@@ -23,7 +25,7 @@ public class RunState {
     }
 
     public void addScore(int amount) {
-        score += Math.max(0, amount);
+        score += Math.max(0, amount);   // TODO: why max?? why not just += amount  (cuz amount is always positive right?)
     }
 
     public int getHealth() {
@@ -31,7 +33,13 @@ public class RunState {
     }
 
     public void setHealth(int health) {
-        this.health = Math.max(0, Math.min(Global.PLAYER_MAX_HEALTH, health));
+        if (health < 0) {
+            this.health = 0;
+        } else if (health > Global.PLAYER_MAX_HEALTH) {
+            this.health = Global.PLAYER_MAX_HEALTH;
+        } else {
+            this.health = health;
+        }
     }
 
     public int getPlayerX() {

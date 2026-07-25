@@ -2,7 +2,7 @@ package gdd.sprite;
 
 import static gdd.Global.*;
 import java.awt.Color;
-import java.awt.Graphics2D;
+import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ public abstract class Sprite {
 
     public abstract void act();
 
-    public void draw(Graphics2D g) {
+    public void draw(Graphics g) {
         int renderWidth = getRenderWidth();
         int renderHeight = getRenderHeight();
 

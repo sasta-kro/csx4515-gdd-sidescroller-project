@@ -9,7 +9,7 @@ import gdd.sprite.Enemy;
 import gdd.sprite.Explosion;
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.Graphics2D;
+import java.awt.Graphics;
 import java.util.ArrayList;
 
 public class BossScene extends Scene1 {
@@ -69,7 +69,7 @@ public class BossScene extends Scene1 {
     }
 
     @Override
-    protected void drawSpecialStage(Graphics2D g) {
+    protected void drawSpecialStage(Graphics g) {
         if (boss == null) {
             return;
         }
