@@ -2,11 +2,16 @@ package gdd.sprite;
 
 import static gdd.Global.*;
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import javax.swing.ImageIcon;
 
 public class Anglerfish extends Enemy {
+
+    private static final int HITBOX_X_OFFSET = 6 * BOSS_SCALE;
+    private static final int HITBOX_Y_OFFSET = BOSS_SCALE;
 
     private enum AttackState {
         IDLE,
@@ -16,8 +21,54 @@ public class Anglerfish extends Enemy {
         BITE_OUT,
         BITE_RETURN,
         SUMMON,
+        HURT,
         DYING
     }
+
+    private static final String IDLE_SHEET_PATH = "src/images/boss/anglerfish-boss/Idle.png";
+    private static final String HURT_SHEET_PATH = "src/images/boss/anglerfish-boss/Hurt.png";
+    private static final String ATTACK_SHEET_PATH = "src/images/boss/anglerfish-boss/Attack.png";
+    private static final String WALK_SHEET_PATH = "src/images/boss/anglerfish-boss/Walk.png";
+    private static final String DEATH_SHEET_PATH = "src/images/boss/anglerfish-boss/Death.png";
+
+    private static final ImageIcon idleSheet = new ImageIcon(IDLE_SHEET_PATH);
+    private static final ImageIcon hurtSheet = new ImageIcon(HURT_SHEET_PATH);
+    private static final ImageIcon attackSheet = new ImageIcon(ATTACK_SHEET_PATH);
+    private static final ImageIcon walkSheet = new ImageIcon(WALK_SHEET_PATH);
+    private static final ImageIcon deathSheet = new ImageIcon(DEATH_SHEET_PATH);
+
+    private static final List<Rectangle> idleAnimationClips = List.of(
+            new Rectangle(0, 0, 48, 48),
+            new Rectangle(48, 0, 48, 48),
+            new Rectangle(48*2, 0, 48, 48),
+            new Rectangle(48*3, 0, 48, 48)
+    );
+    private static final List<Rectangle> hurtAnimationClips = List.of(
+            new Rectangle(0, 0, 48, 48),
+            new Rectangle(48, 0, 48, 48)
+    );
+    private static final List<Rectangle> attackAnimationClips = List.of(
+            new Rectangle(0, 0, 48, 48),
+            new Rectangle(48, 0, 48, 48),
+            new Rectangle(48*2, 0, 48, 48),
+            new Rectangle(48*3, 0, 48, 48),
+            new Rectangle(48*4, 0, 48, 48),
+            new Rectangle(48*5, 0, 48, 48)
+    );
+    private static final List<Rectangle> walkAnimationClips = List.of(
+            new Rectangle(0, 0, 48, 48),
+            new Rectangle(48, 0, 48, 48),
+            new Rectangle(48*2, 0, 48, 48),
+            new Rectangle(48*3, 0, 48, 48)
+    );
+    private static final List<Rectangle> deathAnimationClips = List.of(
+            new Rectangle(0, 0, 48, 48),
+            new Rectangle(48, 0, 48, 48),
+            new Rectangle(48*2, 0, 48, 48),
+            new Rectangle(48*3, 0, 48, 48),
+            new Rectangle(48*4, 0, 48, 48),
+            new Rectangle(48*5, 0, 48, 48)
+    );
 
     private final Random random = new Random();
     private final List<EnemyProjectile> pendingProjectiles = new ArrayList<>();
@@ -31,11 +82,20 @@ public class Anglerfish extends Enemy {
     private double idleWave;
 
     public Anglerfish(Player player) {
-        super(player, BOARD_WIDTH - 205, 115, 175, 430,
+        super(player, BOARD_WIDTH - 45*BOSS_SCALE, 115, 48*BOSS_SCALE, 48*BOSS_SCALE,
                 BOSS_MAX_HEALTH, BOSS_CONTACT_DAMAGE, 5000,
                 new Color(54, 115, 82));
         homeX = getX();
-        setHitboxScale(0.92, 0.92);
+        setHitboxScale(0.6, 0.45);
+        setFlippedHorizontally(true);
+        updateAnimationFrames();
+    }
+
+    @Override
+    public Rectangle getBounds() {
+        Rectangle bounds = super.getBounds();
+        bounds.translate(HITBOX_X_OFFSET, HITBOX_Y_OFFSET);
+        return bounds;
     }
 
     @Override
@@ -43,6 +103,11 @@ public class Anglerfish extends Enemy {
         if (state == AttackState.DYING) {
             updateDeath();
             return;
+        }
+
+        if (state == AttackState.HURT && isAnimationFinished()) {
+            x = homeX;
+            returnToIdle();
         }
 
         updatePhaseColor();
@@ -64,6 +129,7 @@ public class Anglerfish extends Enemy {
             case BITE_WARNING:
                 if (--stateTicks <= 0) {
                     state = AttackState.BITE_OUT;
+                    updateAnimationFrames();
                 }
                 break;
             case BITE_OUT:
@@ -82,6 +148,8 @@ public class Anglerfish extends Enemy {
             case SUMMON:
                 createSummons();
                 returnToIdle();
+                break;
+            case HURT:
                 break;
             default:
                 break;
@@ -110,6 +178,7 @@ public class Anglerfish extends Enemy {
                 state = AttackState.SUMMON;
                 break;
         }
+        updateAnimationFrames();
     }
 
     private void updateLaser() {
@@ -142,6 +211,39 @@ public class Anglerfish extends Enemy {
         attackCooldown = health <= BOSS_PHASE_TWO_HEALTH
                 ? BOSS_PHASE_TWO_COOLDOWN_TICKS
                 : BOSS_PHASE_ONE_COOLDOWN_TICKS;
+        updateAnimationFrames();
+    }
+
+    private void updateAnimationFrames() {
+        if (state == AttackState.DYING) {
+            setImage(deathSheet.getImage());
+            setAnimationFrames(deathAnimationClips);
+            setAnimationLooping(false);
+            return;
+        }
+
+        if (state == AttackState.HURT) {
+            setImage(hurtSheet.getImage());
+            setAnimationFrames(hurtAnimationClips);
+            setAnimationLooping(false);
+            return;
+        }
+
+        if (state == AttackState.LASER_CHARGE || state == AttackState.LASER || state == AttackState.BITE_WARNING) {
+            setImage(attackSheet.getImage());
+            setAnimationFrames(attackAnimationClips);
+            setAnimationLooping(false);
+            return;
+        }
+
+        if (state == AttackState.BITE_OUT || state == AttackState.BITE_RETURN) {
+            setImage(walkSheet.getImage());
+            setAnimationFrames(walkAnimationClips);
+            return;
+        }
+
+        setImage(idleSheet.getImage());
+        setAnimationFrames(idleAnimationClips);
     }
 
     private void updatePhaseColor() {
@@ -164,8 +266,12 @@ public class Anglerfish extends Enemy {
             state = AttackState.DYING;
             stateTicks = BOSS_DEATH_TICKS;
             setDying(true);
+            updateAnimationFrames();
             return true;
         }
+
+        state = AttackState.HURT;
+        updateAnimationFrames();
         return false;
     }
 

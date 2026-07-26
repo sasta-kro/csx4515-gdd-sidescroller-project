@@ -10,7 +10,7 @@ public final class Global {
 
     // Development settings
     public static final boolean DEV_USE_SHORT_STAGE_TIMERS = true;
-    public static final int DEV_STAGE_DURATION_SECONDS = 60;
+    public static final int DEV_STAGE_DURATION_SECONDS = 1;
     public static final boolean DEV_SHOW_ENTITY_HITBOXES = false;
 
     // Level files
@@ -85,6 +85,7 @@ public final class Global {
 
     // Boss
     public static final int BOSS_MAX_HEALTH = 50;
+    public static final int BOSS_SCALE = 8;
     public static final int BOSS_PHASE_TWO_HEALTH = BOSS_MAX_HEALTH / 2;
     public static final int BOSS_CONTACT_DAMAGE = 1;
     public static final int BOSS_PHASE_ONE_COOLDOWN_TICKS = secondsToTicks(3);
