@@ -457,9 +457,11 @@ public class Scene1 extends JPanel implements GameScene {
 
             int centerX = mine.getCenterX();
             int centerY = mine.getCenterY();
-            explosions.add(new Explosion(centerX, centerY, MINE_EXPLOSION_RADIUS));
+            Explosion explosion = new Explosion(
+                    centerX, centerY, MINE_EXPLOSION_RADIUS);
+            explosions.add(explosion);
 
-            if (distanceTo(centerX, centerY, player) <= MINE_EXPLOSION_RADIUS) {
+            if (explosion.reaches(player)) {
                 player.damage(MINE_DAMAGE);
             }
 
@@ -468,9 +470,7 @@ public class Scene1 extends JPanel implements GameScene {
                     continue;
                 }
 
-                boolean insideExplosion = distanceTo(centerX, centerY, enemy) <= MINE_EXPLOSION_RADIUS;
-
-                if (!insideExplosion) {
+                if (!explosion.reaches(enemy)) {
                     continue;
                 }
 
@@ -483,18 +483,11 @@ public class Scene1 extends JPanel implements GameScene {
 
             for (Mine nearby : mines) {
                 if (nearby.isVisible()
-                        && distanceTo(centerX, centerY, nearby)
-                        <= MINE_EXPLOSION_RADIUS) {
+                        && explosion.reaches(nearby)) {
                     queue.add(nearby);
                 }
             }
         }
-    }
-
-    private double distanceTo(int x, int y, gdd.sprite.Sprite sprite) {
-        double centerX = sprite.getX() + sprite.getRenderWidth() / 2.0;
-        double centerY = sprite.getY() + sprite.getRenderHeight() / 2.0;
-        return Math.hypot(centerX - x, centerY - y);
     }
 
     private void addSmallExplosion(gdd.sprite.Sprite sprite) {

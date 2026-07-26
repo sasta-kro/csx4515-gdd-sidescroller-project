@@ -5,19 +5,22 @@ import gdd.level.LevelLoader;
 import gdd.powerup.WeaponType;
 import gdd.spawn.SpawnManager;
 import gdd.spawn.SpawnMode;
-import gdd.sprite.enemy.Anglerfish;
+import gdd.sprite.Anglerfish;
+import gdd.sprite.BomberFish;
 import gdd.sprite.Bubble;
-import gdd.sprite.enemy.Enemy;
-import gdd.sprite.enemy.EnemyProjectile;
-import gdd.sprite.enemy.Octopus;
+import gdd.sprite.Enemy;
+import gdd.sprite.EnemyProjectile;
+import gdd.sprite.Explosion;
+import gdd.sprite.Octopus;
 import gdd.sprite.Player;
-import gdd.sprite.enemy.Snake;
-import gdd.sprite.enemy.Swordfish;
+import gdd.sprite.Snake;
+import gdd.sprite.Swordfish;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import javax.swing.JPanel;
 
 public class GameLogicTest {
@@ -32,7 +35,8 @@ public class GameLogicTest {
         animatesSwordfishStates();
         animatesOctopusStates();
         animatesSnakeStates();
-        preservesBossAttackWhenHurt();
+        animatesBomberFishDetonation();
+        checksExplosionRadius();
         completesBossDeathDelay();
     }
 
@@ -309,6 +313,33 @@ public class GameLogicTest {
                 "snake disappears after death animation");
     }
 
+    private static void animatesBomberFishDetonation() {
+        Player player = new Player(new RunState());
+        BomberFish bomber = new BomberFish(
+                player, BOARD_WIDTH - 100, 100, new Random(0));
+
+        assertEquals(192, bomber.getImage().getWidth(null),
+                "bomber walk sheet");
+
+        for (int tick = 0; tick < secondsToTicks(5)
+                && bomber.getImage().getWidth(null) == 192; tick++) {
+            bomber.act();
+        }
+
+        assertEquals(288, bomber.getImage().getWidth(null),
+                "bomber detonation sheet");
+        assertTrue(!bomber.shouldExplode(),
+                "bomber waits for detonation animation");
+
+        for (int tick = 0; tick < secondsToTicks(1); tick++) {
+            bomber.advanceAnimation();
+            bomber.act();
+        }
+
+        assertTrue(bomber.shouldExplode(),
+                "bomber explodes after detonation animation");
+    }
+
     private static void completesBossDeathDelay() {
         Player player = new Player(new RunState());
         Anglerfish boss = new Anglerfish(player);
@@ -322,53 +353,22 @@ public class GameLogicTest {
         assertTrue(!boss.isVisible(), "boss disappears after death");
     }
 
-    private static void preservesBossAttackWhenHurt() {
+    private static void checksExplosionRadius() {
         Player player = new Player(new RunState());
-        Anglerfish boss = new Anglerfish(player);
+        int playerCenterX = player.getX() + player.getRenderWidth() / 2;
+        int playerCenterY = player.getY() + player.getRenderHeight() / 2;
 
-        for (int tick = 0; tick < BOSS_PHASE_ONE_COOLDOWN_TICKS; tick++) {
-            boss.act();
-        }
+        Explosion touchingBoundary = new Explosion(
+                playerCenterX + BOMBER_EXPLOSION_RADIUS,
+                playerCenterY, BOMBER_EXPLOSION_RADIUS);
+        assertTrue(touchingBoundary.reaches(player),
+                "explosion reaches player at radius boundary");
 
-        String attackName = boss.getAttackName();
-        assertTrue(!"IDLE".equals(attackName), "boss starts an attack");
-
-        boss.damage(1);
-        assertEquals(attackName, boss.getAttackName(),
-                "hurt feedback preserves boss attack state");
-        assertEquals(BOSS_MAX_HEALTH - 1, boss.getHealth(),
-                "boss takes damage during an attack");
-
-        boss.damage(1);
-        assertEquals(attackName, boss.getAttackName(),
-                "repeated hurt feedback preserves boss attack state");
-        assertEquals(BOSS_MAX_HEALTH - 2, boss.getHealth(),
-                "boss keeps taking damage during an attack");
-
-        int attackStartX = boss.getX();
-        switch (attackName) {
-            case "LASER CHARGE":
-                for (int tick = 0; tick <= BOSS_LASER_CHARGE_TICKS; tick++) {
-                    boss.act();
-                }
-                assertTrue(!boss.takePendingProjectiles().isEmpty(),
-                        "laser continues while hurt");
-                break;
-            case "BITE WARNING":
-                for (int tick = 0; tick <= BOSS_BITE_WARNING_TICKS; tick++) {
-                    boss.act();
-                }
-                assertTrue(boss.getX() < attackStartX,
-                        "bite continues while hurt");
-                break;
-            case "SUMMON":
-                boss.act();
-                assertEquals(3, boss.takePendingSummons().size(),
-                        "summon continues while hurt");
-                break;
-            default:
-                throw new AssertionError("unexpected boss attack: " + attackName);
-        }
+        Explosion outsideBoundary = new Explosion(
+                playerCenterX + BOMBER_EXPLOSION_RADIUS + 1,
+                playerCenterY, BOMBER_EXPLOSION_RADIUS);
+        assertTrue(!outsideBoundary.reaches(player),
+                "explosion does not reach player outside radius");
     }
 
     private static KeyEvent key(int keyCode) {

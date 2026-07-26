@@ -10,8 +10,8 @@ public final class Global {
 
     // Development settings
     public static final boolean DEV_USE_SHORT_STAGE_TIMERS = true;
-    public static final int DEV_STAGE_DURATION_SECONDS = 1;
-    public static final boolean DEV_SHOW_ENTITY_HITBOXES = false;
+    public static final int DEV_STAGE_DURATION_SECONDS = 15;
+    public static final boolean DEV_SHOW_ENTITY_HITBOXES = true;
 
     // Level files
     public static final String SCENE1_TERRAIN_PATH = "src/levels/scene1-test-terrain.csv";
@@ -94,6 +94,8 @@ public final class Global {
     public static final int BOSS_LASER_DURATION_TICKS = secondsToTicks(2);
     public static final int BOSS_LASER_INTERVAL_TICKS = secondsToTicks(0.10);
     public static final int BOSS_BITE_WARNING_TICKS = secondsToTicks(0.75);
+    public static final int BOMBER_EXPLOSION_RADIUS = 50;
+    public static final int BOMBER_EXPLOSION_DAMAGE = 1;
     public static final int BOSS_DEATH_TICKS = secondsToTicks(1.5);
     public static final int VICTORY_INPUT_DELAY_TICKS = secondsToTicks(3);
 
