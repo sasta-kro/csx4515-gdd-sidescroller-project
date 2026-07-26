@@ -1,0 +1,54 @@
+package gdd;
+
+import static gdd.Global.*;
+import gdd.sprite.Player;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+
+public class PlayerAnimationTest {
+
+    public static void main(String[] args) {
+        Player player = new Player(new RunState());
+        player.setX(0);
+        player.setY(0);
+
+        assertEquals(1024, player.getImage().getWidth(null),
+                "player asset-sheet width");
+        assertEquals(1536, player.getImage().getHeight(null),
+                "player asset-sheet height");
+
+        int firstFrameHash = renderHash(player);
+        for (int tick = 0; tick < secondsToTicks(0.12); tick++) {
+            player.advanceAnimation();
+        }
+        int secondFrameHash = renderHash(player);
+
+        if (firstFrameHash == secondFrameHash) {
+            throw new AssertionError(
+                    "player animation did not advance to a different clip");
+        }
+    }
+
+    private static int renderHash(Player player) {
+        BufferedImage rendered = new BufferedImage(
+                PLAYER_WIDTH, PLAYER_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = rendered.createGraphics();
+        player.draw(graphics);
+        graphics.dispose();
+
+        int hash = 1;
+        for (int y = 0; y < rendered.getHeight(); y++) {
+            for (int x = 0; x < rendered.getWidth(); x++) {
+                hash = 31 * hash + rendered.getRGB(x, y);
+            }
+        }
+        return hash;
+    }
+
+    private static void assertEquals(int expected, int actual, String label) {
+        if (expected != actual) {
+            throw new AssertionError(label + ": expected " + expected
+                    + ", got " + actual);
+        }
+    }
+}

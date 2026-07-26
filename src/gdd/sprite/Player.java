@@ -14,12 +14,68 @@ import javax.swing.ImageIcon;
 public class Player extends Sprite {
 
     private static final String ASSET_SHEET_PATH = "src/images/player/player_fish_spritesheet.png";
+
+    // orange fish
     /// Rectangle values are: top-left x, top-left y, width, height in source-image pixels.
     private static final List<Rectangle> originalAnimationClips = List.of(
             new Rectangle(64*8, 64*9, 64, 64),
             new Rectangle(64*9, 64*9, 64, 64),
             new Rectangle(64*10, 64*9, 64, 64),
             new Rectangle(64*11, 64*9, 64, 64)
+    );
+
+    // pink fish
+    /// Rectangle values are: top-left x, top-left y, width, height in source-image pixels.
+    private static final List<Rectangle> speedAnimationClips = List.of(
+            new Rectangle(64*4, 64*17, 64, 64),
+            new Rectangle(64*5, 64*17, 64, 64),
+            new Rectangle(64*6, 64*17, 64, 64),
+            new Rectangle(64*7, 64*17, 64, 64)
+    );
+
+    // cyan fish
+    /// Rectangle values are: top-left x, top-left y, width, height in source-image pixels.
+    private static final List<Rectangle> multiShotAnimationClips = List.of(
+            new Rectangle(64*4, 64*9, 64, 64),
+            new Rectangle(64*5, 64*9, 64, 64),
+            new Rectangle(64*6, 64*9, 64, 64),
+            new Rectangle(64*7, 64*9, 64, 64)
+    );
+
+    // yellow fish
+    /// Rectangle values are: top-left x, top-left y, width, height in source-image pixels.
+    private static final List<Rectangle> megaShotAnimationClips = List.of(
+            new Rectangle(64*12, 64*9, 64, 64),
+            new Rectangle(64*13, 64*9, 64, 64),
+            new Rectangle(64*14, 64*9, 64, 64),
+            new Rectangle(64*15, 64*9, 64, 64)
+    );
+
+    // purple fish
+    /// Rectangle values are: top-left x, top-left y, width, height in source-image pixels.
+    private static final List<Rectangle> splitShotAnimationClips = List.of(
+            new Rectangle(64*8, 64, 64, 64),
+            new Rectangle(64*9, 64, 64, 64),
+            new Rectangle(64*10, 64, 64, 64),
+            new Rectangle(64*11, 64, 64, 64)
+    );
+
+    // green fish (few frames only)
+    /// Rectangle values are: top-left x, top-left y, width, height in source-image pixels.
+    private static final List<Rectangle> healAnimationClips = List.of(
+            new Rectangle(0, 64*17, 64, 64),
+            new Rectangle(64, 64*17, 64, 64),
+            new Rectangle(64*2, 64*17, 64, 64),
+            new Rectangle(64*3, 64*17, 64, 64)
+    );
+
+    // red fish (few frames only)
+    /// Rectangle values are: top-left x, top-left y, width, height in source-image pixels.
+    private static final List<Rectangle> damageAnimationClips = List.of(
+            new Rectangle(64*12, 64*17, 64, 64),
+            new Rectangle(64*13, 64*17, 64, 64),
+            new Rectangle(64*14, 64*17, 64, 64),
+            new Rectangle(64*15, 64*17, 64, 64)
     );
 
     private boolean movingUp;
@@ -57,7 +113,33 @@ public class Player extends Sprite {
     private void loadPlayerAnimation() {
         var assetSheet = new ImageIcon(ASSET_SHEET_PATH);
         setImage(assetSheet.getImage());
-        setAnimationFrames(originalAnimationClips);
+        updateAnimationFrames();
+    }
+
+    private void updateAnimationFrames() {
+        if (invincibilityTicks > 0) {
+            setAnimationFrames(damageAnimationClips);
+            return;
+        }
+
+        if (healFlashTicks > 0) {
+            setAnimationFrames(healAnimationClips);
+            return;
+        }
+
+        switch (weaponType) {
+            case MULTI_SHOT -> setAnimationFrames(multiShotAnimationClips);
+            case MEGA_SHOT -> setAnimationFrames(megaShotAnimationClips);
+            case SPLIT_SHOT -> setAnimationFrames(splitShotAnimationClips);
+
+            default -> {
+                if (speedLevel > 0) {
+                    setAnimationFrames(speedAnimationClips);
+                } else {
+                    setAnimationFrames(originalAnimationClips);
+                }
+            }
+        }
     }
 
     @Override
@@ -92,11 +174,11 @@ public class Player extends Sprite {
     }
 
     private void updateCounters() {
-        if (invincibilityTicks > 0) {
-            invincibilityTicks--;
+        if (invincibilityTicks > 0 && --invincibilityTicks == 0) {
+            updateAnimationFrames();
         }
-        if (healFlashTicks > 0) {
-            healFlashTicks--;
+        if (healFlashTicks > 0 && --healFlashTicks == 0) {
+            updateAnimationFrames();
         }
         if (shotCooldownTicks > 0) {
             shotCooldownTicks--;
@@ -107,6 +189,7 @@ public class Player extends Sprite {
 
         if (speedPowerupTicks > 0 && --speedPowerupTicks == 0) {
             speedLevel = 0;
+            updateAnimationFrames();
         }
 
         if (weaponPowerupTicks > 0 && --weaponPowerupTicks == 0) {
@@ -184,17 +267,20 @@ public class Player extends Sprite {
 
         health = Math.max(0, health - amount);
         invincibilityTicks = PLAYER_INVINCIBILITY_TICKS;
+        updateAnimationFrames();
         return true;
     }
 
     public void heal() {
         health = Math.min(PLAYER_MAX_HEALTH, health + 1);
         healFlashTicks = secondsToTicks(0.25);
+        updateAnimationFrames();
     }
 
     public void applySpeedUp() {
         speedLevel = Math.min(2, speedLevel + 1);
         speedPowerupTicks = SPEED_POWERUP_TICKS;
+        updateAnimationFrames();
     }
 
     public void applyMultiShot() {
@@ -205,6 +291,7 @@ public class Player extends Sprite {
         multiShotLevel = Math.min(4, multiShotLevel + 1);
         weaponPowerupTicks = MULTI_SHOT_TICKS;
         burstRemaining = 0;
+        updateAnimationFrames();
     }
 
     public void applyMegaShot() {
@@ -212,6 +299,7 @@ public class Player extends Sprite {
         multiShotLevel = 0;
         weaponPowerupTicks = WEAPON_POWERUP_TICKS;
         burstRemaining = 0;
+        updateAnimationFrames();
     }
 
     public void applySplitShot() {
@@ -219,6 +307,7 @@ public class Player extends Sprite {
         multiShotLevel = 0;
         weaponPowerupTicks = WEAPON_POWERUP_TICKS;
         burstRemaining = 0;
+        updateAnimationFrames();
     }
 
     private void clearWeapon() {
@@ -227,6 +316,7 @@ public class Player extends Sprite {
         weaponPowerupTicks = 0;
         burstRemaining = 0;
         burstIntervalTicks = 0;
+        updateAnimationFrames();
     }
 
     public void syncTo(RunState state) {
