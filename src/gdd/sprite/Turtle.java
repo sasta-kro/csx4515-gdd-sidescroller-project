@@ -11,7 +11,7 @@ public class Turtle extends Enemy {
     private static final double TRACK_SPEED = 1.25;
     private static final String WALK_SHEET_PATH = "src/images/enemies/turtle/Walk.png";
     private static final String HURT_SHEET_PATH = "src/images/enemies/turtle/Hurt.png";
-    private static final String DEATH_SHEET_PATH = "src/images/enemies/turtle/Attack.png";
+    private static final String DEATH_SHEET_PATH = "src/images/enemies/turtle/Death.png";
 
     private static final ImageIcon walkSheet = new ImageIcon(WALK_SHEET_PATH);
     private static final ImageIcon hurtSheet = new ImageIcon(HURT_SHEET_PATH);
@@ -64,6 +64,7 @@ public class Turtle extends Enemy {
         double targetX = player.getX() - x;
         double targetY = player.getY() - y;
         double length = Math.max(1.0, Math.hypot(targetX, targetY));
+        setFlippedHorizontally(targetX < (double) this.getRenderWidth() /2);
 
         x += targetX / length * TRACK_SPEED;
         y += targetY / length * TRACK_SPEED;
