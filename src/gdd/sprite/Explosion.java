@@ -12,22 +12,23 @@ public class Explosion extends Sprite {
     private static final ImageIcon explosionSheet = new ImageIcon(EXPLOSION_SHEET_PATH);
 
     private static final List<Rectangle> explosionAnimationClips = List.of(
-            new Rectangle(0, 0, 66, 82),
-            new Rectangle(66, 0, 66, 82),
-            new Rectangle(66*2, 0, 66, 82),
-            new Rectangle(66*3, 0, 66, 82),
-            new Rectangle(66*4, 0, 66, 82),
-            new Rectangle(66*5, 0, 66, 82),
-            new Rectangle(66*6, 0, 66, 82),
-            new Rectangle(66*7, 0, 66, 82),
-            new Rectangle(66*8, 0, 66, 82),
-            new Rectangle(66*9, 0, 66, 82)
+            new Rectangle(0, 22, 60, 60),
+            new Rectangle(60, 22, 60, 60),
+            new Rectangle(60*2, 22, 60, 60),
+            new Rectangle(60*3, 22, 60, 60),
+            new Rectangle(60*4, 22, 60, 60),
+            new Rectangle(60*5, 22, 60, 60)
+//            new Rectangle(60*6, 22, 60, 60),
+//            new Rectangle(60*7, 22, 60, 60),
+//            new Rectangle(60*8, 22, 60, 60),
+//            new Rectangle(60*9, 22, 60, 60),
+//            new Rectangle(60*10, 22, 60, 60)
     );
 
     private final int radius;
 
     public Explosion(int centerX, int centerY) {
-        this(centerX, centerY, 28);
+        this(centerX, centerY, 30);
     }
 
     public Explosion(int centerX, int centerY, int radius) {
