@@ -28,6 +28,7 @@ public final class Global {
     public static final double RENDER_SCALE = 1.0 ;
     public static final double HITBOX_SCALE = 1.0;
     public static final int WORLD_SCROLL_SPEED = 2;
+    public static final int TILE_SIZE = 50;
 
     // Player
     public static final int PLAYER_START_X = 90;

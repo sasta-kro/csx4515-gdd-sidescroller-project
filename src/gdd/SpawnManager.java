@@ -26,6 +26,7 @@ public class SpawnManager {
     private final Player player;
     private final int stageNumber;
     private final Map<Integer, List<SpawnDetails>> scriptedSpawns = new HashMap<>();
+    private final List<SpawnDetails> pendingWorldEvents = new ArrayList<>();
     private SpawnMode mode = SpawnMode.RANDOM;
     private int nextEnemyTick;
     private int nextPowerupTick;
@@ -41,7 +42,8 @@ public class SpawnManager {
         int initialDelay = secondsToTicks(INITIAL_SPAWN_DELAY_SECONDS);
         nextEnemyTick = initialDelay;
         nextPowerupTick = initialDelay + POWERUP_SPAWN_MIN_TICKS;
-        loadScriptedTemplate();
+        scriptedSpawns.putAll(LevelLoader.loadEvents(
+                "src/levels/scene" + stageNumber + "-events.csv"));
     }
 
     public void update(int stageTick, List<Enemy> enemies,
@@ -74,6 +76,9 @@ public class SpawnManager {
         for (SpawnDetails detail : details) {
             if (detail.type.startsWith("PowerUp-")) {
                 powerUps.add(createPowerUp(detail.type, detail.x, detail.y));
+            } else if (detail.type.equals("Mine")
+                    || detail.type.equals("Coral")) {
+                pendingWorldEvents.add(detail);
             } else {
                 enemies.add(createEnemy(detail.type, detail.x, detail.y));
             }
@@ -158,27 +163,10 @@ public class SpawnManager {
         }
     }
 
-    private void loadScriptedTemplate() {
-        int delay = secondsToTicks(INITIAL_SPAWN_DELAY_SECONDS);
-        addScripted(delay, new SpawnDetails("Jellyfish", BOARD_WIDTH + 30, 180));
-        addScripted(delay + secondsToTicks(1.5),
-                new SpawnDetails("Turtle", BOARD_WIDTH + 30, 430));
-        addScripted(delay + secondsToTicks(4),
-                new SpawnDetails("PowerUp-Speed", BOARD_WIDTH + 30, 280));
-
-        if (stageNumber == 2) {
-            addScripted(delay + secondsToTicks(3),
-                    new SpawnDetails("Octopus", BOARD_WIDTH + 30, 160));
-            addScripted(delay + secondsToTicks(5),
-                    new SpawnDetails("Swordfish", BOARD_WIDTH + 30, 360));
-            addScripted(delay + secondsToTicks(7),
-                    new SpawnDetails("SnakeTop", BOARD_WIDTH - 80, 0));
-        }
-    }
-
-    private void addScripted(int tick, SpawnDetails details) {
-        scriptedSpawns.computeIfAbsent(tick, ignored -> new ArrayList<>())
-                .add(details);
+    public List<SpawnDetails> takeWorldEvents() {
+        List<SpawnDetails> events = new ArrayList<>(pendingWorldEvents);
+        pendingWorldEvents.clear();
+        return events;
     }
 
     private int randomBetween(int min, int max) {

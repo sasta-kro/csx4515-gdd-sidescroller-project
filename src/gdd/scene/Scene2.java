@@ -2,8 +2,12 @@ package gdd.scene;
 
 import gdd.Game;
 import static gdd.Global.*;
+import gdd.LevelLoader;
 import gdd.RunState;
+import gdd.SpawnDetails;
 import gdd.SpawnManager;
+import gdd.SpawnMode;
+import gdd.TileMap;
 import gdd.TransitionMode;
 import gdd.powerup.PowerUp;
 import gdd.sprite.Bubble;
@@ -52,6 +56,7 @@ public class Scene2 extends JPanel implements GameScene {
 
     private Player player;
     private SpawnManager spawnManager;
+    private TileMap tileMap;
 
     /// Timer in ticks/frames for how long the player has been in this stage
     private int stageTick;
@@ -99,7 +104,13 @@ public class Scene2 extends JPanel implements GameScene {
         player = new Player(runState);
         spawnManager = new SpawnManager(player, 2);
         spawnManager.setMode(DEFAULT_SPAWN_MODE);
-        loadPlaceholderStageContent();
+        if (DEFAULT_SPAWN_MODE == SpawnMode.SCRIPTED) {
+            tileMap = new TileMap(LevelLoader.loadTerrain(
+                    "src/levels/scene2-terrain.csv"));
+        } else {
+            tileMap = null;
+            loadPlaceholderStageContent();
+        }
     }
 
     private void loadPlaceholderStageContent() {
@@ -146,6 +157,7 @@ public class Scene2 extends JPanel implements GameScene {
         updatePlayer();
 
         spawnManager.update(stageTick, enemies, powerUps);
+        spawnScriptedWorldEvents();
 
         spawnPlaceholderObstacles();
         updateEnemies();
@@ -219,7 +231,12 @@ public class Scene2 extends JPanel implements GameScene {
         int oldY = player.getY();
         player.act();
 
-        if (intersectsWall(player.getBounds())) {
+        if (intersectsTerrain(player.getBounds())) {
+            player.restorePosition(oldX, oldY);
+            if (WALL_DAMAGE_ENABLED) {
+                player.damage(WALL_DAMAGE);
+            }
+        } else if (intersectsWall(player.getBounds())) {
             player.restorePosition(oldX, oldY);
             resolveWallOverlap();
             if (WALL_DAMAGE_ENABLED) {
@@ -310,9 +327,23 @@ public class Scene2 extends JPanel implements GameScene {
     }
 
     private void spawnPlaceholderObstacles() {
+        if (DEFAULT_SPAWN_MODE == SpawnMode.SCRIPTED) {
+            return;
+        }
+
         if (stageTick > 0 && stageTick % secondsToTicks(11) == 0) {
             corals.add(new Coral(BOARD_WIDTH + 40,
                     BOARD_HEIGHT - CORAL_HEIGHT - 42));
+        }
+    }
+
+    private void spawnScriptedWorldEvents() {
+        for (SpawnDetails event : spawnManager.takeWorldEvents()) {
+            if (!event.type.equals("Coral")) {
+                throw new IllegalArgumentException(
+                        "Scene 2 does not support event type: " + event.type);
+            }
+            corals.add(new Coral(event.x, event.y));
         }
     }
 
@@ -357,7 +388,9 @@ public class Scene2 extends JPanel implements GameScene {
             }
 
             // bubble pops if it touches a wall
-            if (bubble.isVisible() && intersectsWall(bubble.getBounds())) {
+            if (bubble.isVisible()
+                    && (intersectsTerrain(bubble.getBounds())
+                    || intersectsWall(bubble.getBounds()))) {
                 bubble.die();
             }
         }
@@ -375,7 +408,9 @@ public class Scene2 extends JPanel implements GameScene {
                 continue;
             }
 
-            if (projectile.isVisible() && intersectsWall(projectile.getBounds())) {
+            if (projectile.isVisible()
+                    && (intersectsTerrain(projectile.getBounds())
+                    || intersectsWall(projectile.getBounds()))) {
                 projectile.die();
             }
         }
@@ -423,6 +458,10 @@ public class Scene2 extends JPanel implements GameScene {
             }
         }
         return false;
+    }
+
+    private boolean intersectsTerrain(Rectangle bounds) {
+        return tileMap != null && tileMap.intersects(bounds, stageTick);
     }
 
     private void resolveWallOverlap() {
@@ -502,6 +541,7 @@ public class Scene2 extends JPanel implements GameScene {
         explosions.clear();
         corals.clear();
         walls.clear();
+        tileMap = null;
     }
 
     @Override
@@ -509,6 +549,9 @@ public class Scene2 extends JPanel implements GameScene {
         super.paintComponent(g);
 
         drawBackground(g);
+        if (tileMap != null) {
+            tileMap.draw(g, stageTick);
+        }
         drawTransition(g);
         drawWalls(g);
         drawEntities(g);

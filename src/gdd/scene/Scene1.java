@@ -2,8 +2,12 @@ package gdd.scene;
 
 import gdd.Game;
 import static gdd.Global.*;
+import gdd.LevelLoader;
 import gdd.RunState;
+import gdd.SpawnDetails;
 import gdd.SpawnManager;
+import gdd.SpawnMode;
+import gdd.TileMap;
 import gdd.TransitionMode;
 import gdd.powerup.PowerUp;
 import gdd.sprite.Bubble;
@@ -51,6 +55,7 @@ public class Scene1 extends JPanel implements GameScene {
 
     private Player player;
     private SpawnManager spawnManager;
+    private TileMap tileMap;
 
     /// Timer in ticks/frames for how long the player has been in this stage
     private int stageTick;
@@ -98,7 +103,13 @@ public class Scene1 extends JPanel implements GameScene {
         player = new Player(runState);
         spawnManager = new SpawnManager(player, 1);
         spawnManager.setMode(DEFAULT_SPAWN_MODE);
-        loadPlaceholderStageContent();
+        if (DEFAULT_SPAWN_MODE == SpawnMode.SCRIPTED) {
+            tileMap = new TileMap(LevelLoader.loadTerrain(
+                    "src/levels/scene1-terrain.csv"));
+        } else {
+            tileMap = null;
+            loadPlaceholderStageContent();
+        }
     }
 
     private void loadPlaceholderStageContent() {
@@ -142,6 +153,7 @@ public class Scene1 extends JPanel implements GameScene {
         updatePlayer();
 
         spawnManager.update(stageTick, enemies, powerUps);
+        spawnScriptedWorldEvents();
 
         spawnPlaceholderObstacles();
         updateEnemies();
@@ -210,7 +222,17 @@ public class Scene1 extends JPanel implements GameScene {
     }
 
     private void updatePlayer() {
+        int oldX = player.getX();
+        int oldY = player.getY();
         player.act();
+
+        if (intersectsTerrain(player.getBounds())) {
+            player.restorePosition(oldX, oldY);
+            if (WALL_DAMAGE_ENABLED) {
+                player.damage(WALL_DAMAGE);
+            }
+        }
+
         playerBubbles.addAll(player.createBubbles());
     }
 
@@ -290,10 +312,24 @@ public class Scene1 extends JPanel implements GameScene {
     }
 
     private void spawnPlaceholderObstacles() {
+        if (DEFAULT_SPAWN_MODE == SpawnMode.SCRIPTED) {
+            return;
+        }
+
         if (stageTick > 0 && stageTick % secondsToTicks(9) == 0) {
             int y = 90 + (stageTick / secondsToTicks(9) * 97)
                     % (BOARD_HEIGHT - 190);
             mines.add(new Mine(BOARD_WIDTH + 40, y));
+        }
+    }
+
+    private void spawnScriptedWorldEvents() {
+        for (SpawnDetails event : spawnManager.takeWorldEvents()) {
+            if (!event.type.equals("Mine")) {
+                throw new IllegalArgumentException(
+                        "Scene 1 does not support event type: " + event.type);
+            }
+            mines.add(new Mine(event.x, event.y));
         }
     }
 
@@ -336,6 +372,10 @@ public class Scene1 extends JPanel implements GameScene {
                     break;
                 }
             }
+
+            if (bubble.isVisible() && intersectsTerrain(bubble.getBounds())) {
+                bubble.die();
+            }
         }
     }
 
@@ -359,7 +399,15 @@ public class Scene1 extends JPanel implements GameScene {
                 }
             }
 
+            if (projectile.isVisible()
+                    && intersectsTerrain(projectile.getBounds())) {
+                projectile.die();
+            }
         }
+    }
+
+    private boolean intersectsTerrain(java.awt.Rectangle bounds) {
+        return tileMap != null && tileMap.intersects(bounds, stageTick);
     }
 
     private void handleEnemyContact() {
@@ -493,6 +541,7 @@ public class Scene1 extends JPanel implements GameScene {
         enemyProjectiles.clear();
         explosions.clear();
         mines.clear();
+        tileMap = null;
     }
 
     @Override
@@ -500,6 +549,9 @@ public class Scene1 extends JPanel implements GameScene {
         super.paintComponent(g);
 
         drawBackground(g);
+        if (tileMap != null) {
+            tileMap.draw(g, stageTick);
+        }
         drawTransition(g);
         drawEntities(g);
         drawHud(g);
