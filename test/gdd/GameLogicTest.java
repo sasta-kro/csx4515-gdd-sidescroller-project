@@ -6,6 +6,7 @@ import gdd.powerup.WeaponType;
 import gdd.spawn.SpawnManager;
 import gdd.spawn.SpawnMode;
 import gdd.sprite.Anglerfish;
+import gdd.sprite.BomberFish;
 import gdd.sprite.Bubble;
 import gdd.sprite.Enemy;
 import gdd.sprite.EnemyProjectile;
@@ -19,6 +20,7 @@ import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import javax.swing.JPanel;
 
 public class GameLogicTest {
@@ -33,6 +35,7 @@ public class GameLogicTest {
         animatesSwordfishStates();
         animatesOctopusStates();
         animatesSnakeStates();
+        animatesBomberFishDetonation();
         checksExplosionRadius();
         completesBossDeathDelay();
     }
@@ -308,6 +311,33 @@ public class GameLogicTest {
         }
         assertTrue(!dyingSnake.isVisible(),
                 "snake disappears after death animation");
+    }
+
+    private static void animatesBomberFishDetonation() {
+        Player player = new Player(new RunState());
+        BomberFish bomber = new BomberFish(
+                player, BOARD_WIDTH - 100, 100, new Random(0));
+
+        assertEquals(192, bomber.getImage().getWidth(null),
+                "bomber walk sheet");
+
+        for (int tick = 0; tick < secondsToTicks(5)
+                && bomber.getImage().getWidth(null) == 192; tick++) {
+            bomber.act();
+        }
+
+        assertEquals(288, bomber.getImage().getWidth(null),
+                "bomber detonation sheet");
+        assertTrue(!bomber.shouldExplode(),
+                "bomber waits for detonation animation");
+
+        for (int tick = 0; tick < secondsToTicks(1); tick++) {
+            bomber.advanceAnimation();
+            bomber.act();
+        }
+
+        assertTrue(bomber.shouldExplode(),
+                "bomber explodes after detonation animation");
     }
 
     private static void completesBossDeathDelay() {
