@@ -134,7 +134,7 @@ public class Anglerfish extends Enemy {
                 break;
             case BITE_OUT:
                 x -= 11;
-                if (getX() <= 30) {
+                if (getBounds().x <= 0) {
                     state = AttackState.BITE_RETURN;
                 }
                 break;
