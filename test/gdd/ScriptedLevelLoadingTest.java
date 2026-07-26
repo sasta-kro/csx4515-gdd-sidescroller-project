@@ -1,7 +1,11 @@
 package gdd;
 
 import static gdd.Global.*;
+import gdd.level.LevelLoader;
 import gdd.powerup.PowerUp;
+import gdd.spawn.SpawnDetails;
+import gdd.spawn.SpawnManager;
+import gdd.spawn.SpawnMode;
 import gdd.sprite.Enemy;
 import gdd.sprite.Player;
 import java.util.ArrayList;

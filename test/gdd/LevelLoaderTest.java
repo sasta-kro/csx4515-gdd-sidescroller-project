@@ -1,6 +1,9 @@
 package gdd;
 
 import static gdd.Global.*;
+import gdd.level.LevelLoader;
+import gdd.level.TileMap;
+import gdd.spawn.SpawnDetails;
 import java.awt.Rectangle;
 import java.nio.file.Files;
 import java.nio.file.Path;

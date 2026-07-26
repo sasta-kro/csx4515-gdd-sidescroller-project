@@ -1,7 +1,10 @@
 package gdd;
 
 import static gdd.Global.*;
+import gdd.level.LevelLoader;
 import gdd.powerup.WeaponType;
+import gdd.spawn.SpawnManager;
+import gdd.spawn.SpawnMode;
 import gdd.sprite.Anglerfish;
 import gdd.sprite.Bubble;
 import gdd.sprite.Enemy;

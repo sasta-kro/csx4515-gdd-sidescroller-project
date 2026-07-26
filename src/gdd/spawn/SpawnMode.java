@@ -1,4 +1,4 @@
-package gdd;
+package gdd.spawn;
 
 public enum SpawnMode {
     RANDOM,

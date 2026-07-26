@@ -185,13 +185,13 @@ Core state:
   - Score, health, and carried player position.
   - Reset for Stage 1 and base reset for Stage 2 development start.
 
-- `src/gdd/SpawnManager.java`
+- `src/gdd/spawn/SpawnManager.java`
   - Random and scripted modes.
   - Stage-specific enemy pools.
   - Enemy and power-up timing.
-  - Readable Java scripted-spawn entries.
+  - Consumes scripted schedules loaded from the level CSV files.
 
-- `src/gdd/SpawnMode.java`
+- `src/gdd/spawn/SpawnMode.java`
   - `RANDOM` and `SCRIPTED`.
 
 Scenes:

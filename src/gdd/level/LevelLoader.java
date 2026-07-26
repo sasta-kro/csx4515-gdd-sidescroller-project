@@ -1,6 +1,7 @@
-package gdd;
+package gdd.level;
 
 import static gdd.Global.*;
+import gdd.spawn.SpawnDetails;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;

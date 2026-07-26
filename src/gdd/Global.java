@@ -1,5 +1,6 @@
 package gdd;
 
+import gdd.spawn.SpawnMode;
 import java.awt.Color;
 
 public final class Global {

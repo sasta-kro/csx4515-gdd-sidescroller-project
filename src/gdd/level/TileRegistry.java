@@ -1,4 +1,4 @@
-package gdd;
+package gdd.level;
 
 import java.awt.Rectangle;
 import java.util.LinkedHashMap;

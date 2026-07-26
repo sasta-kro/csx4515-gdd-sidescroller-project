@@ -21,7 +21,7 @@ const scene1TestEvents = readFileSync(
   "utf8",
 );
 const tileRegistry = readFileSync(
-  new URL("../../src/gdd/TileRegistry.java", import.meta.url),
+  new URL("../../src/gdd/level/TileRegistry.java", import.meta.url),
   "utf8",
 );
 const scriptMatch = html.match(

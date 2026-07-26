@@ -1,4 +1,4 @@
-package gdd;
+package gdd.spawn;
 
 import static gdd.Global.*;
 import gdd.powerup.Heal;

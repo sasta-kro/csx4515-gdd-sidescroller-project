@@ -1,4 +1,4 @@
-package gdd;
+package gdd.level;
 
 import static gdd.Global.*;
 import java.awt.Graphics;
