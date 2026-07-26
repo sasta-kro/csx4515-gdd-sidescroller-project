@@ -50,4 +50,13 @@ public class Explosion extends Sprite {
     public int getRadius() {
         return radius;
     }
+
+    public boolean reaches(Sprite sprite) {
+        double centerX = getX() + radius;
+        double centerY = getY() + radius;
+        double spriteCenterX = sprite.getX() + sprite.getRenderWidth() / 2.0;
+        double spriteCenterY = sprite.getY() + sprite.getRenderHeight() / 2.0;
+        return Math.hypot(spriteCenterX - centerX,
+                spriteCenterY - centerY) <= radius;
+    }
 }

@@ -174,11 +174,14 @@ public class BossScene extends JPanel implements GameScene {
                 BomberFish bomber = (BomberFish) enemy;
 
                 if (bomber.isVisible() && bomber.shouldExplode()) {
-                    explosions.add(new Explosion(
+                    Explosion explosion = new Explosion(
                             bomber.getX() + bomber.getRenderWidth() / 2,
                             bomber.getY() + bomber.getRenderHeight() / 2,
-                            50));
-                    player.damage(1);
+                            BOMBER_EXPLOSION_RADIUS);
+                    explosions.add(explosion);
+                    if (explosion.reaches(player)) {
+                        player.damage(BOMBER_EXPLOSION_DAMAGE);
+                    }
                     bomber.die();
                 }
             }

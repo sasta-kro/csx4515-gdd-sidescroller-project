@@ -94,6 +94,8 @@ public final class Global {
     public static final int BOSS_LASER_DURATION_TICKS = secondsToTicks(2);
     public static final int BOSS_LASER_INTERVAL_TICKS = secondsToTicks(0.10);
     public static final int BOSS_BITE_WARNING_TICKS = secondsToTicks(0.75);
+    public static final int BOMBER_EXPLOSION_RADIUS = 50;
+    public static final int BOMBER_EXPLOSION_DAMAGE = 1;
     public static final int BOSS_DEATH_TICKS = secondsToTicks(1.5);
     public static final int VICTORY_INPUT_DELAY_TICKS = secondsToTicks(3);
 

@@ -9,6 +9,7 @@ import gdd.sprite.Anglerfish;
 import gdd.sprite.Bubble;
 import gdd.sprite.Enemy;
 import gdd.sprite.EnemyProjectile;
+import gdd.sprite.Explosion;
 import gdd.sprite.Octopus;
 import gdd.sprite.Player;
 import gdd.sprite.Snake;
@@ -32,6 +33,7 @@ public class GameLogicTest {
         animatesSwordfishStates();
         animatesOctopusStates();
         animatesSnakeStates();
+        checksExplosionRadius();
         completesBossDeathDelay();
     }
 
@@ -319,6 +321,24 @@ public class GameLogicTest {
 
         assertTrue(boss.isDeathFinished(), "boss death delay completes");
         assertTrue(!boss.isVisible(), "boss disappears after death");
+    }
+
+    private static void checksExplosionRadius() {
+        Player player = new Player(new RunState());
+        int playerCenterX = player.getX() + player.getRenderWidth() / 2;
+        int playerCenterY = player.getY() + player.getRenderHeight() / 2;
+
+        Explosion touchingBoundary = new Explosion(
+                playerCenterX + BOMBER_EXPLOSION_RADIUS,
+                playerCenterY, BOMBER_EXPLOSION_RADIUS);
+        assertTrue(touchingBoundary.reaches(player),
+                "explosion reaches player at radius boundary");
+
+        Explosion outsideBoundary = new Explosion(
+                playerCenterX + BOMBER_EXPLOSION_RADIUS + 1,
+                playerCenterY, BOMBER_EXPLOSION_RADIUS);
+        assertTrue(!outsideBoundary.reaches(player),
+                "explosion does not reach player outside radius");
     }
 
     private static KeyEvent key(int keyCode) {
