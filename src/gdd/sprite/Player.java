@@ -15,7 +15,7 @@ public class Player extends Sprite {
 
     private static final String ASSET_SHEET_PATH = "src/images/player/player_fish_spritesheet.png";
     /// Rectangle values are: top-left x, top-left y, width, height in source-image pixels.
-    private static final List<Rectangle> ANIMATION_CLIPS = List.of(
+    private static final List<Rectangle> originalAnimationClips = List.of(
             new Rectangle(64*8, 64*9, 64, 64),
             new Rectangle(64*9, 64*9, 64, 64),
             new Rectangle(64*10, 64*9, 64, 64),
@@ -57,7 +57,7 @@ public class Player extends Sprite {
     private void loadPlayerAnimation() {
         var assetSheet = new ImageIcon(ASSET_SHEET_PATH);
         setImage(assetSheet.getImage());
-        setAnimationFrames(ANIMATION_CLIPS);
+        setAnimationFrames(originalAnimationClips);
     }
 
     @Override
