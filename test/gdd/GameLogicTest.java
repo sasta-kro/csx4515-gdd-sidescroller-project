@@ -6,6 +6,7 @@ import gdd.sprite.Anglerfish;
 import gdd.sprite.Bubble;
 import gdd.sprite.Enemy;
 import gdd.sprite.Player;
+import gdd.sprite.Swordfish;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -21,6 +22,7 @@ public class GameLogicTest {
         persistsPowerupsBetweenStages();
         emitsSixBubbleBurstAtLevelFour();
         followsScriptedSpawnSchedule();
+        animatesSwordfishStates();
         completesBossDeathDelay();
     }
 
@@ -134,6 +136,44 @@ public class GameLogicTest {
 
         manager.update(firstSpawn, enemies, powerUps);
         assertEquals(1, enemies.size(), "first scripted spawn");
+    }
+
+    private static void animatesSwordfishStates() {
+        Player player = new Player(new RunState());
+        Swordfish swordfish = new Swordfish(player, 600, 300);
+
+        assertEquals(192, swordfish.getImage().getWidth(null),
+                "swordfish walk sheet");
+
+        assertTrue(!swordfish.damage(1), "swordfish survives first hit");
+        assertEquals(96, swordfish.getImage().getWidth(null),
+                "swordfish hurt sheet");
+
+        for (int tick = 0; tick < secondsToTicks(0.25); tick++) {
+            swordfish.advanceAnimation();
+            swordfish.act();
+        }
+        assertEquals(192, swordfish.getImage().getWidth(null),
+                "swordfish returns to walk sheet");
+
+        Swordfish dashingSwordfish = new Swordfish(player, 600, 300);
+        for (int tick = 0; tick < secondsToTicks(0.75); tick++) {
+            dashingSwordfish.act();
+        }
+        assertEquals(288, dashingSwordfish.getImage().getWidth(null),
+                "swordfish attack sheet");
+
+        Swordfish dyingSwordfish = new Swordfish(player, 600, 300);
+        assertTrue(dyingSwordfish.damage(2), "swordfish lethal hit");
+        assertTrue(dyingSwordfish.getImage() != dashingSwordfish.getImage(),
+                "swordfish death sheet");
+
+        for (int tick = 0; tick < TARGET_FPS; tick++) {
+            dyingSwordfish.advanceAnimation();
+            dyingSwordfish.act();
+        }
+        assertTrue(!dyingSwordfish.isVisible(),
+                "swordfish disappears after death animation");
     }
 
     private static void completesBossDeathDelay() {
