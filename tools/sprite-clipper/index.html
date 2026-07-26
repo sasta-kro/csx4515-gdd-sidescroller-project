@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Ocean Invaders Sprite Clipper</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header class="app-bar">
+        <div class="brand">
+            <span class="brand-mark">SC</span>
+            <div>
+                <strong>Sprite Clipper</strong>
+                <span id="image-summary">No image loaded</span>
+            </div>
+        </div>
+
+        <div class="toolbar-group">
+            <label class="button primary" for="image-input">Open PNG</label>
+            <input id="image-input" type="file" accept="image/png,image/webp,image/jpeg" hidden>
+            <label class="button" for="project-input">Open Project</label>
+            <input id="project-input" type="file" accept=".json,application/json" hidden>
+            <button id="save-project" type="button">Save Project</button>
+        </div>
+
+        <div class="toolbar-group">
+            <button id="undo" class="icon-button" type="button" title="Undo" aria-label="Undo">↶</button>
+            <button id="redo" class="icon-button" type="button" title="Redo" aria-label="Redo">↷</button>
+            <button id="fit-image" class="icon-button" type="button" title="Fit image" aria-label="Fit image">⌗</button>
+            <span id="zoom-label" class="zoom-label">100%</span>
+            <button id="export-java" class="button primary" type="button">Export Java</button>
+        </div>
+    </header>
+
+    <main class="workspace">
+        <aside class="panel left-panel">
+            <section class="panel-section">
+                <h2>Tools</h2>
+                <div class="tool-grid" role="toolbar" aria-label="Canvas tools">
+                    <button class="tool active" data-tool="select" type="button" title="Select and resize frames">
+                        <span class="tool-symbol">↖</span>
+                        <span>Select</span>
+                    </button>
+                    <button class="tool" data-tool="frame" type="button" title="Draw a frame rectangle">
+                        <span class="tool-symbol">□</span>
+                        <span>Frame</span>
+                    </button>
+                    <button class="tool" data-tool="pan" type="button" title="Pan the canvas">
+                        <span class="tool-symbol">✥</span>
+                        <span>Pan</span>
+                    </button>
+                    <button class="tool" data-tool="guide-v" type="button" title="Place a vertical guide">
+                        <span class="tool-symbol">│</span>
+                        <span>V Guide</span>
+                    </button>
+                    <button class="tool" data-tool="guide-h" type="button" title="Place a horizontal guide">
+                        <span class="tool-symbol">─</span>
+                        <span>H Guide</span>
+                    </button>
+                    <button id="clear-guides" class="tool" type="button" title="Remove all guides">
+                        <span class="tool-symbol">×</span>
+                        <span>Guides</span>
+                    </button>
+                </div>
+            </section>
+
+            <section class="panel-section">
+                <div class="section-heading">
+                    <h2>Generate Frames</h2>
+                    <button id="fit-preset" class="text-button" type="button">Fit image</button>
+                </div>
+
+                <label class="field">
+                    <span>Layout</span>
+                    <select id="preset-layout">
+                        <option value="horizontal">Horizontal strip</option>
+                        <option value="vertical">Vertical strip</option>
+                        <option value="grid">Grid</option>
+                    </select>
+                </label>
+
+                <div class="field-row">
+                    <label class="field">
+                        <span>Columns</span>
+                        <input id="preset-columns" type="number" min="1" value="4">
+                    </label>
+                    <label class="field">
+                        <span>Rows</span>
+                        <input id="preset-rows" type="number" min="1" value="1">
+                    </label>
+                </div>
+
+                <div class="field-row">
+                    <label class="field">
+                        <span>Start X</span>
+                        <input id="preset-x" type="number" min="0" value="0">
+                    </label>
+                    <label class="field">
+                        <span>Start Y</span>
+                        <input id="preset-y" type="number" min="0" value="0">
+                    </label>
+                </div>
+
+                <div class="field-row">
+                    <label class="field">
+                        <span>Frame W</span>
+                        <input id="preset-width" type="number" min="1" value="48">
+                    </label>
+                    <label class="field">
+                        <span>Frame H</span>
+                        <input id="preset-height" type="number" min="1" value="48">
+                    </label>
+                </div>
+
+                <div class="field-row">
+                    <label class="field">
+                        <span>Gap X</span>
+                        <input id="preset-gap-x" type="number" min="0" value="0">
+                    </label>
+                    <label class="field">
+                        <span>Gap Y</span>
+                        <input id="preset-gap-y" type="number" min="0" value="0">
+                    </label>
+                </div>
+
+                <button id="generate-preset" class="button full-width primary" type="button">Replace With Preset</button>
+            </section>
+
+            <section class="panel-section canvas-settings">
+                <h2>Canvas</h2>
+                <label class="check-field">
+                    <input id="pixel-grid" type="checkbox">
+                    <span>Pixel grid</span>
+                </label>
+                <label class="check-field">
+                    <input id="dim-outside" type="checkbox" checked>
+                    <span>Dim outside frames</span>
+                </label>
+                <label class="check-field">
+                    <input id="snap-pixels" type="checkbox" checked>
+                    <span>Snap to pixels</span>
+                </label>
+            </section>
+        </aside>
+
+        <section class="editor-column">
+            <div id="canvas-shell" class="canvas-shell" tabindex="0">
+                <canvas id="editor-canvas"></canvas>
+                <div id="empty-state" class="empty-state">
+                    <strong>Open a sprite sheet</strong>
+                    <span>PNG, WebP, or JPEG</span>
+                </div>
+                <div class="canvas-status">
+                    <span id="cursor-position">x 0, y 0</span>
+                    <span id="selection-summary">0 frames</span>
+                </div>
+            </div>
+
+            <section class="frame-strip">
+                <div class="strip-heading">
+                    <h2>Frame Order</h2>
+                    <div class="strip-actions">
+                        <button id="move-frame-left" class="icon-button" type="button" title="Move frame earlier" aria-label="Move frame earlier">←</button>
+                        <button id="move-frame-right" class="icon-button" type="button" title="Move frame later" aria-label="Move frame later">→</button>
+                        <button id="duplicate-frame" type="button">Duplicate</button>
+                        <button id="delete-frame" class="danger" type="button">Delete</button>
+                    </div>
+                </div>
+                <div id="frame-list" class="frame-list"></div>
+            </section>
+        </section>
+
+        <aside class="panel right-panel">
+            <section class="panel-section inspector-section">
+                <div class="section-heading">
+                    <h2>Frame Inspector</h2>
+                    <span id="selected-frame-number" class="badge">None</span>
+                </div>
+                <div id="frame-fields" class="inspector-fields">
+                    <div class="field-row">
+                        <label class="field">
+                            <span>X</span>
+                            <input id="frame-x" type="number" min="0">
+                        </label>
+                        <label class="field">
+                            <span>Y</span>
+                            <input id="frame-y" type="number" min="0">
+                        </label>
+                    </div>
+                    <div class="field-row">
+                        <label class="field">
+                            <span>Width</span>
+                            <input id="frame-width" type="number" min="1">
+                        </label>
+                        <label class="field">
+                            <span>Height</span>
+                            <input id="frame-height" type="number" min="1">
+                        </label>
+                    </div>
+                </div>
+                <div id="multi-selection-note" class="selection-note" hidden>
+                    Move or resize the group on the canvas.
+                </div>
+            </section>
+
+            <section class="panel-section preview-section">
+                <div class="section-heading">
+                    <h2>Animation Preview</h2>
+                    <button id="play-preview" class="icon-button active" type="button" title="Pause preview" aria-label="Pause preview">Ⅱ</button>
+                </div>
+                <div class="preview-stage">
+                    <canvas id="preview-canvas" width="260" height="210"></canvas>
+                </div>
+                <div class="field-row">
+                    <label class="field">
+                        <span>Render W</span>
+                        <input id="render-width" type="number" min="1" value="144">
+                    </label>
+                    <label class="field">
+                        <span>Render H</span>
+                        <input id="render-height" type="number" min="1" value="144">
+                    </label>
+                </div>
+                <label class="field">
+                    <span>Frames per second</span>
+                    <input id="preview-fps" type="range" min="1" max="24" value="8">
+                    <output id="preview-fps-value">8 fps</output>
+                </label>
+                <div id="preview-warning" class="warning" hidden></div>
+            </section>
+
+            <section class="panel-section export-section">
+                <h2>Java Export</h2>
+                <label class="field">
+                    <span>Variable name</span>
+                    <input id="variable-name" type="text" value="idleAnimationClips" spellcheck="false">
+                </label>
+                <textarea id="java-output" rows="10" readonly spellcheck="false"></textarea>
+                <div class="button-row">
+                    <button id="copy-java" class="button primary" type="button">Copy Java</button>
+                    <button id="download-java" type="button">Download</button>
+                </div>
+            </section>
+        </aside>
+    </main>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
