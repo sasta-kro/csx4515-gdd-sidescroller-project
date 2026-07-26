@@ -9,9 +9,24 @@ import javax.swing.ImageIcon;
 public class Jellyfish extends Enemy {
 
     private static final String IDLE_SHEET_PATH = "src/images/enemies/jellyfish/Idle.png";
+    private static final String ATTACK_SHEET_PATH = "src/images/enemies/jellyfish/Attack.png";
     private static final String DEATH_SHEET_PATH = "src/images/enemies/jellyfish/Death.png";
+    private static final int ATTACK_COOLDOWN_TICKS = secondsToTicks(2);
+    private static final int ATTACK_ANIMATION_CYCLES = 1;
+    private static final double HITBOX_SCALE = 0.4;
+
+    private static final ImageIcon idleSheet = new ImageIcon(IDLE_SHEET_PATH);
+    private static final ImageIcon attackSheet = new ImageIcon(ATTACK_SHEET_PATH);
+    private static final ImageIcon deathSheet = new ImageIcon(DEATH_SHEET_PATH);
 
     private static final List<Rectangle> idleAnimationClips = List.of(
+            new Rectangle(0, 0, 48, 48),
+            new Rectangle(48, 0, 48, 48),
+            new Rectangle(48*2, 0, 48, 48),
+            new Rectangle(48*3, 0, 48, 48)
+    );
+
+    private static final List<Rectangle> attackAnimationClips = List.of(
             new Rectangle(0, 0, 48, 48),
             new Rectangle(48, 0, 48, 48),
             new Rectangle(48*2, 0, 48, 48),
@@ -29,16 +44,16 @@ public class Jellyfish extends Enemy {
 
     private final double centerY;
     private double wave;
+    private int attackCooldownTicks = ATTACK_COOLDOWN_TICKS;
+    private int attackCyclesRemaining;
 
     public Jellyfish(Player player, int x, int y) {
         super(player, x, y, 34*2, 42*2, 1, ENEMY_CONTACT_DAMAGE, 100, new Color(130, 210, 235));
 
         centerY = y;
         wave = Math.random() * Math.PI * 2;
-        var idleSheet = new ImageIcon(IDLE_SHEET_PATH);
-        setImage(idleSheet.getImage());
-        setHitboxScale(0.5);
-        setAnimationFrames(idleAnimationClips);
+        setHitboxScale(HITBOX_SCALE);
+        updateAnimationFrames();
     }
 
     @Override
@@ -50,12 +65,45 @@ public class Jellyfish extends Enemy {
             return;
         }
 
+        if (attackCyclesRemaining > 0 && isAnimationFinished()) {
+            attackCyclesRemaining--;
+
+            if (attackCyclesRemaining == 0) {
+                attackCooldownTicks = ATTACK_COOLDOWN_TICKS;
+            }
+            updateAnimationFrames();
+        } else if (attackCyclesRemaining == 0 && --attackCooldownTicks <= 0) {
+            attackCyclesRemaining = ATTACK_ANIMATION_CYCLES;
+            updateAnimationFrames();
+        }
+
         moveWithWorld();
         wave += 0.055;
         y = centerY + Math.sin(wave) * 34;
         if (getX() + getRenderWidth() < 0) {
             die();
         }
+    }
+
+    private void updateAnimationFrames() {
+        if (isDying()) {
+            setImage(deathSheet.getImage());
+            setAnimationFrames(deathAnimationClips);
+            setAnimationLooping(false);
+            return;
+        }
+
+        if (attackCyclesRemaining > 0) {
+            setImage(attackSheet.getImage());
+            setAnimationFrames(attackAnimationClips);
+            setHitboxScale(0.8);
+            setAnimationLooping(false);
+            return;
+        }
+
+        setImage(idleSheet.getImage());
+        setAnimationFrames(idleAnimationClips);
+        setHitboxScale(HITBOX_SCALE);
     }
 
     @Override
@@ -68,10 +116,7 @@ public class Jellyfish extends Enemy {
         if (health <= 0) {
             health = 0;
             setDying(true);
-            var deathSheet = new ImageIcon(DEATH_SHEET_PATH);
-            setImage(deathSheet.getImage());
-            setAnimationFrames(deathAnimationClips);
-            setAnimationLooping(false);
+            updateAnimationFrames();
             return true;
         }
         return false;
