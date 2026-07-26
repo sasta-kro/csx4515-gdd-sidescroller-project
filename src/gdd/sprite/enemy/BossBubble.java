@@ -1,4 +1,4 @@
-package gdd.sprite;
+package gdd.sprite.enemy;
 
 import java.awt.Color;
 

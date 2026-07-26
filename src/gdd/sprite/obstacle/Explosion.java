@@ -1,6 +1,7 @@
-package gdd.sprite;
+package gdd.sprite.obstacle;
 
-import static gdd.Global.*;
+import gdd.sprite.Sprite;
+
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.util.List;

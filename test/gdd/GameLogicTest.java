@@ -5,14 +5,14 @@ import gdd.level.LevelLoader;
 import gdd.powerup.WeaponType;
 import gdd.spawn.SpawnManager;
 import gdd.spawn.SpawnMode;
-import gdd.sprite.Anglerfish;
+import gdd.sprite.enemy.Anglerfish;
 import gdd.sprite.Bubble;
-import gdd.sprite.Enemy;
-import gdd.sprite.EnemyProjectile;
-import gdd.sprite.Octopus;
+import gdd.sprite.enemy.Enemy;
+import gdd.sprite.enemy.EnemyProjectile;
+import gdd.sprite.enemy.Octopus;
 import gdd.sprite.Player;
-import gdd.sprite.Snake;
-import gdd.sprite.Swordfish;
+import gdd.sprite.enemy.Snake;
+import gdd.sprite.enemy.Swordfish;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
@@ -32,6 +32,7 @@ public class GameLogicTest {
         animatesSwordfishStates();
         animatesOctopusStates();
         animatesSnakeStates();
+        preservesBossAttackWhenHurt();
         completesBossDeathDelay();
     }
 
@@ -319,6 +320,55 @@ public class GameLogicTest {
 
         assertTrue(boss.isDeathFinished(), "boss death delay completes");
         assertTrue(!boss.isVisible(), "boss disappears after death");
+    }
+
+    private static void preservesBossAttackWhenHurt() {
+        Player player = new Player(new RunState());
+        Anglerfish boss = new Anglerfish(player);
+
+        for (int tick = 0; tick < BOSS_PHASE_ONE_COOLDOWN_TICKS; tick++) {
+            boss.act();
+        }
+
+        String attackName = boss.getAttackName();
+        assertTrue(!"IDLE".equals(attackName), "boss starts an attack");
+
+        boss.damage(1);
+        assertEquals(attackName, boss.getAttackName(),
+                "hurt feedback preserves boss attack state");
+        assertEquals(BOSS_MAX_HEALTH - 1, boss.getHealth(),
+                "boss takes damage during an attack");
+
+        boss.damage(1);
+        assertEquals(attackName, boss.getAttackName(),
+                "repeated hurt feedback preserves boss attack state");
+        assertEquals(BOSS_MAX_HEALTH - 2, boss.getHealth(),
+                "boss keeps taking damage during an attack");
+
+        int attackStartX = boss.getX();
+        switch (attackName) {
+            case "LASER CHARGE":
+                for (int tick = 0; tick <= BOSS_LASER_CHARGE_TICKS; tick++) {
+                    boss.act();
+                }
+                assertTrue(!boss.takePendingProjectiles().isEmpty(),
+                        "laser continues while hurt");
+                break;
+            case "BITE WARNING":
+                for (int tick = 0; tick <= BOSS_BITE_WARNING_TICKS; tick++) {
+                    boss.act();
+                }
+                assertTrue(boss.getX() < attackStartX,
+                        "bite continues while hurt");
+                break;
+            case "SUMMON":
+                boss.act();
+                assertEquals(3, boss.takePendingSummons().size(),
+                        "summon continues while hurt");
+                break;
+            default:
+                throw new AssertionError("unexpected boss attack: " + attackName);
+        }
     }
 
     private static KeyEvent key(int keyCode) {
