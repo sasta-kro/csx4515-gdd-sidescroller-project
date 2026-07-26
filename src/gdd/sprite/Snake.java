@@ -97,7 +97,7 @@ public class Snake extends Enemy {
     }
 
     private void faceVerticalDirection() {
-        setRotationDegrees(verticalDirection > 0 ? -90 : 90);
+        setRotationDegrees(verticalDirection > 0 ? 90 : -90);
     }
 
     private void updateAnimationFrames() {
