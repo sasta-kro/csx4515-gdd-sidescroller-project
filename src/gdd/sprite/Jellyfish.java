@@ -37,6 +37,7 @@ public class Jellyfish extends Enemy {
         wave = Math.random() * Math.PI * 2;
         var idleSheet = new ImageIcon(IDLE_SHEET_PATH);
         setImage(idleSheet.getImage());
+        setHitboxScale(0.5);
         setAnimationFrames(idleAnimationClips);
     }
 
