@@ -10,7 +10,7 @@ public final class Global {
     // Development settings
     public static final boolean DEV_USE_SHORT_STAGE_TIMERS = true;
     public static final int DEV_STAGE_DURATION_SECONDS = 60;
-    public static final boolean DEV_SHOW_ENTITY_HITBOXES = true;
+    public static final boolean DEV_SHOW_ENTITY_HITBOXES = false;
 
     // Window and timing
     public static final int BOARD_WIDTH = 716;
@@ -66,7 +66,7 @@ public final class Global {
     public static final int RANDOM_SPAWN_MAX_TICKS = secondsToTicks(1.8);
 
     // Obstacles
-    public static final int MINE_SIZE = 34;
+    public static final int MINE_SIZE = 45*2;
     public static final int MINE_DAMAGE = 1;
     public static final int MINE_EXPLOSION_RADIUS = 62;
     public static final int CORAL_WIDTH = 44;
@@ -91,9 +91,9 @@ public final class Global {
     // Placeholder colors. Replacing a sprite image does not change its hitbox.
     public static final Color COLOR_PLAYER = new Color(245, 139, 45);
     public static final Color COLOR_SPEED = new Color(255, 105, 180);
-    public static final Color COLOR_MULTI = new Color(154, 88, 220);
+    public static final Color COLOR_MULTI = new Color(88, 220, 216);
     public static final Color COLOR_MEGA = new Color(255, 214, 64);
-    public static final Color COLOR_SPLIT = new Color(195, 145, 255);
+    public static final Color COLOR_SPLIT = new Color(154, 88, 220);
     public static final Color COLOR_HEAL = new Color(78, 220, 120);
 
     public static int stageDurationTicks() {
