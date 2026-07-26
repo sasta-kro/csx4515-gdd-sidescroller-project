@@ -19,7 +19,7 @@ public class Snake extends Enemy {
     private static final String HURT_SHEET_PATH = "src/images/enemies/snake/Hurt.png";
     private static final String ATTACK_SHEET_PATH = "src/images/enemies/snake/Attack.png";
     private static final String DEATH_SHEET_PATH = "src/images/enemies/snake/Death.png";
-    private static final int ATTACK_COOLDOWN_TICKS = secondsToTicks(2);
+    private static final int ATTACK_COOLDOWN_TICKS = secondsToTicks(1);
 
     private static final ImageIcon idleSheet = new ImageIcon(IDLE_SHEET_PATH);
     private static final ImageIcon hurtSheet = new ImageIcon(HURT_SHEET_PATH);
@@ -60,9 +60,7 @@ public class Snake extends Enemy {
     private int attackCooldownTicks = ATTACK_COOLDOWN_TICKS;
 
     public Snake(Player player, int x, boolean fromTop) {
-        super(player, x, fromTop ? -70 : BOARD_HEIGHT,
-                48*2, 48*2, 2, ENEMY_CONTACT_DAMAGE, 150,
-                new Color(100, 205, 125));
+        super(player, x, fromTop ? -70 : BOARD_HEIGHT, 48*2, 48*2, 2, ENEMY_CONTACT_DAMAGE, 150, new Color(100, 205, 125));
         verticalDirection = fromTop ? 1 : -1;
         faceVerticalDirection();
         updateAnimationFrames();
