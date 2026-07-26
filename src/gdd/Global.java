@@ -7,14 +7,17 @@ public final class Global {
     private Global() {
     }
 
+    // Development settings
+    public static final boolean DEV_USE_SHORT_STAGE_TIMERS = true;
+    public static final int DEV_STAGE_DURATION_SECONDS = 20;
+    public static final boolean DEV_SHOW_ENTITY_HITBOXES = false;
+
     // Window and timing
     public static final int BOARD_WIDTH = 716;
     public static final int BOARD_HEIGHT = 700;
     public static final int TARGET_FPS = 60;
     public static final int TIMER_DELAY_MS = 1000 / TARGET_FPS;
-    public static final boolean USE_DEVELOPMENT_TIMERS = true;
     public static final int STAGE_DURATION_SECONDS = 5 * 60;
-    public static final int DEVELOPMENT_STAGE_DURATION_SECONDS = 20;
     public static final int INITIAL_SPAWN_DELAY_SECONDS = 2;
     public static final SpawnMode DEFAULT_SPAWN_MODE = SpawnMode.RANDOM;
     public static final TransitionMode SCENE_TRANSITION_MODE = TransitionMode.SEAMLESS;
@@ -94,8 +97,8 @@ public final class Global {
     public static final Color COLOR_HEAL = new Color(78, 220, 120);
 
     public static int stageDurationTicks() {
-        if (USE_DEVELOPMENT_TIMERS) {
-            return secondsToTicks(DEVELOPMENT_STAGE_DURATION_SECONDS);
+        if (DEV_USE_SHORT_STAGE_TIMERS) {
+            return secondsToTicks(DEV_STAGE_DURATION_SECONDS);
         }
         else {
             return secondsToTicks(STAGE_DURATION_SECONDS);

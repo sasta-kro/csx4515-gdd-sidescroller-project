@@ -34,6 +34,7 @@ public class Explosion extends Sprite {
         g.fillOval(getX(), getY(), getRenderWidth(), getRenderHeight());
         g.setColor(Color.WHITE);
         g.drawOval(getX(), getY(), getRenderWidth(), getRenderHeight());
+        drawHitbox(g);
     }
 
     public int getRadius() {

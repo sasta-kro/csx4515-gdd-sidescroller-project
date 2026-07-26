@@ -56,24 +56,40 @@ public abstract class Sprite {
             } else {
                 g.drawImage(activeImage, getX(), getY(), renderWidth, renderHeight, null);
             }
+        } else {
+            // temporary placeholder drawing until all assets are loaded
+            g.setColor(placeholderColor);
+            g.fillRect(getX(), getY(), renderWidth, renderHeight);
+            g.setColor(new Color(255, 255, 255, 130));
+            g.drawRect(getX(), getY(), renderWidth, renderHeight);
+
+            if (renderWidth >= 24 && renderHeight >= 20) {
+                g.setFont(new Font("SansSerif", Font.PLAIN, scaledFontSize(12)));
+                String label = getClass().getSimpleName().substring(0, 1);
+                int textX = getX() + (renderWidth - g.getFontMetrics()
+                        .stringWidth(label)) / 2;
+                int textY = getY() + (renderHeight + g.getFontMetrics()
+                        .getAscent()) / 2 - 2;
+                g.drawString(label, textX, textY);
+            }
+        }
+
+        drawHitbox(g);
+    }
+
+    protected void drawHitbox(Graphics g) {
+        if (!DEV_SHOW_ENTITY_HITBOXES) {
             return;
         }
 
-        // temporary placeholder drawing until all assets are loaded
-        g.setColor(placeholderColor);
-        g.fillRect(getX(), getY(), renderWidth, renderHeight);
-        g.setColor(new Color(255, 255, 255, 130));
-        g.drawRect(getX(), getY(), renderWidth, renderHeight);
+        Graphics2D debugGraphics = (Graphics2D) g.create();
+        Rectangle bounds = getBounds();
 
-        if (renderWidth >= 24 && renderHeight >= 20) {
-            g.setFont(new Font("SansSerif", Font.PLAIN, scaledFontSize(12)));
-            String label = getClass().getSimpleName().substring(0, 1);
-            int textX = getX() + (renderWidth - g.getFontMetrics()
-                    .stringWidth(label)) / 2;
-            int textY = getY() + (renderHeight + g.getFontMetrics()
-                    .getAscent()) / 2 - 2;
-            g.drawString(label, textX, textY);
-        }
+        debugGraphics.setColor(new Color(255, 40, 40, 60));
+        debugGraphics.fill(bounds);
+        debugGraphics.setColor(Color.RED);
+        debugGraphics.draw(bounds);
+        debugGraphics.dispose();
     }
 
     public Rectangle getBounds() {
