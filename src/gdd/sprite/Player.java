@@ -54,10 +54,10 @@ public class Player extends Sprite {
     // purple fish
     /// Rectangle values are: top-left x, top-left y, width, height in source-image pixels.
     private static final List<Rectangle> splitShotAnimationClips = List.of(
-            new Rectangle(64*8, 64, 64, 64),
-            new Rectangle(64*9, 64, 64, 64),
-            new Rectangle(64*10, 64, 64, 64),
-            new Rectangle(64*11, 64, 64, 64)
+            new Rectangle(0, 64*9, 64, 64),
+            new Rectangle(64, 64*9, 64, 64),
+            new Rectangle(64*2, 64*9, 64, 64),
+            new Rectangle(64*3, 64*9, 64, 64)
     );
 
     // green fish (few frames only)
