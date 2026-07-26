@@ -21,7 +21,6 @@ public class Anglerfish extends Enemy {
         BITE_OUT,
         BITE_RETURN,
         SUMMON,
-        HURT,
         DYING
     }
 
@@ -78,6 +77,7 @@ public class Anglerfish extends Enemy {
     private int stateTicks;
     private int attackCooldown = BOSS_PHASE_ONE_COOLDOWN_TICKS;
     private int laserInterval;
+    private boolean hurt;
     private boolean deathFinished;
     private double idleWave;
 
@@ -105,9 +105,9 @@ public class Anglerfish extends Enemy {
             return;
         }
 
-        if (state == AttackState.HURT && isAnimationFinished()) {
-            x = homeX;
-            returnToIdle();
+        if (hurt && isAnimationFinished()) {
+            hurt = false;
+            updateAnimationFrames();
         }
 
         updatePhaseColor();
@@ -148,8 +148,6 @@ public class Anglerfish extends Enemy {
             case SUMMON:
                 createSummons();
                 returnToIdle();
-                break;
-            case HURT:
                 break;
             default:
                 break;
@@ -222,7 +220,7 @@ public class Anglerfish extends Enemy {
             return;
         }
 
-        if (state == AttackState.HURT) {
+        if (hurt) {
             setImage(hurtSheet.getImage());
             setAnimationFrames(hurtAnimationClips);
             setAnimationLooping(false);
@@ -263,6 +261,7 @@ public class Anglerfish extends Enemy {
         health -= amount;
         if (health <= 0) {
             health = 0;
+            hurt = false;
             state = AttackState.DYING;
             stateTicks = BOSS_DEATH_TICKS;
             setDying(true);
@@ -270,7 +269,7 @@ public class Anglerfish extends Enemy {
             return true;
         }
 
-        state = AttackState.HURT;
+        hurt = true;
         updateAnimationFrames();
         return false;
     }
