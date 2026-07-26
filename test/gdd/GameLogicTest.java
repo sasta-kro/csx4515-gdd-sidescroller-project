@@ -15,7 +15,6 @@ import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import javax.swing.JPanel;
 
 public class GameLogicTest {
@@ -132,8 +131,9 @@ public class GameLogicTest {
 
     private static void followsScriptedSpawnSchedule() {
         Player player = new Player(new RunState());
-        SpawnManager manager = new SpawnManager(player, 1, new Random(1));
-        manager.setMode(SpawnMode.SCRIPTED);
+        SpawnManager manager = new SpawnManager(player, 1,
+                SpawnMode.SCRIPTED,
+                LevelLoader.loadEvents(SCENE1_EVENTS_PATH));
         List<Enemy> enemies = new ArrayList<>();
         List<gdd.powerup.PowerUp> powerUps = new ArrayList<>();
 

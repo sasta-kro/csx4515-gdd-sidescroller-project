@@ -26,6 +26,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -102,15 +103,18 @@ public class Scene2 extends JPanel implements GameScene {
         transitioning = false;
         playerDeathTicks = 0;
         player = new Player(runState);
-        spawnManager = new SpawnManager(player, 2);
-        spawnManager.setMode(DEFAULT_SPAWN_MODE);
+        Map<Integer, List<SpawnDetails>> scriptedSpawns = Map.of();
         if (DEFAULT_SPAWN_MODE == SpawnMode.SCRIPTED) {
+            scriptedSpawns = LevelLoader.loadEvents(
+                    SCENE2_EVENTS_PATH);
             tileMap = new TileMap(LevelLoader.loadTerrain(
-                    "src/levels/scene2-terrain.csv"));
+                    SCENE2_TERRAIN_PATH));
         } else {
             tileMap = null;
             loadPlaceholderStageContent();
         }
+        spawnManager = new SpawnManager(player, 2,
+                DEFAULT_SPAWN_MODE, scriptedSpawns);
     }
 
     private void loadPlaceholderStageContent() {
@@ -156,8 +160,8 @@ public class Scene2 extends JPanel implements GameScene {
         updateBackgroundScroll();
         updatePlayer();
 
-        spawnManager.update(stageTick, enemies, powerUps);
-        spawnScriptedWorldEvents();
+        spawnScriptedWorldEvents(spawnManager.update(
+                stageTick, enemies, powerUps));
 
         spawnPlaceholderObstacles();
         updateEnemies();
@@ -337,8 +341,9 @@ public class Scene2 extends JPanel implements GameScene {
         }
     }
 
-    private void spawnScriptedWorldEvents() {
-        for (SpawnDetails event : spawnManager.takeWorldEvents()) {
+    private void spawnScriptedWorldEvents(
+            List<SpawnDetails> worldEvents) {
+        for (SpawnDetails event : worldEvents) {
             if (!event.type.equals("Coral")) {
                 throw new IllegalArgumentException(
                         "Scene 2 does not support event type: " + event.type);

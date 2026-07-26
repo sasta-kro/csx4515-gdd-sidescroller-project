@@ -11,8 +11,12 @@ public final class Global {
     public static final boolean DEV_USE_SHORT_STAGE_TIMERS = true;
     public static final int DEV_STAGE_DURATION_SECONDS = 60;
     public static final boolean DEV_SHOW_ENTITY_HITBOXES = false;
-    public static final String DEV_SCENE1_TERRAIN_PATH = "src/levels/scene1-test-terrain.csv";
-    public static final String DEV_SCENE1_EVENTS_PATH = "src/levels/scene1-test-events.csv";
+
+    // Level files
+    public static final String SCENE1_TERRAIN_PATH = "src/levels/scene1-test-terrain.csv";
+    public static final String SCENE1_EVENTS_PATH = "src/levels/scene1-test-events.csv";
+    public static final String SCENE2_TERRAIN_PATH = "src/levels/scene2-terrain.csv";
+    public static final String SCENE2_EVENTS_PATH = "src/levels/scene2-events.csv";
 
     // Window and timing
     public static final int BOARD_WIDTH = 716;

@@ -15,7 +15,6 @@ import gdd.sprite.Snake;
 import gdd.sprite.Swordfish;
 import gdd.sprite.Turtle;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -25,43 +24,27 @@ public class SpawnManager {
     private final Random random;
     private final Player player;
     private final int stageNumber;
-    private final Map<Integer, List<SpawnDetails>> scriptedSpawns = new HashMap<>();
-    private final List<SpawnDetails> pendingWorldEvents = new ArrayList<>();
-    private SpawnMode mode = SpawnMode.RANDOM;
+    private final SpawnMode mode;
+    private final Map<Integer, List<SpawnDetails>> scriptedSpawns;
     private int nextEnemyTick;
     private int nextPowerupTick;
 
-    public SpawnManager(Player player, int stageNumber) {
-        this(player, stageNumber,
-                "src/levels/scene" + stageNumber + "-events.csv",
-                new Random());
-    }
-
-    public SpawnManager(Player player, int stageNumber, String eventsPath) {
-        this(player, stageNumber, eventsPath, new Random());
-    }
-
-    SpawnManager(Player player, int stageNumber, Random random) {
-        this(player, stageNumber,
-                "src/levels/scene" + stageNumber + "-events.csv", random);
-    }
-
-    private SpawnManager(Player player, int stageNumber, String eventsPath,
-            Random random) {
+    public SpawnManager(Player player, int stageNumber, SpawnMode mode,
+            Map<Integer, List<SpawnDetails>> scriptedSpawns) {
         this.player = player;
         this.stageNumber = stageNumber;
-        this.random = random;
+        this.mode = mode;
+        this.scriptedSpawns = scriptedSpawns;
+        random = new Random();
         int initialDelay = secondsToTicks(INITIAL_SPAWN_DELAY_SECONDS);
         nextEnemyTick = initialDelay;
         nextPowerupTick = initialDelay + POWERUP_SPAWN_MIN_TICKS;
-        scriptedSpawns.putAll(LevelLoader.loadEvents(eventsPath));
     }
 
-    public void update(int stageTick, List<Enemy> enemies,
+    public List<SpawnDetails> update(int stageTick, List<Enemy> enemies,
             List<PowerUp> powerUps) {
         if (mode == SpawnMode.SCRIPTED) {
-            spawnScripted(stageTick, enemies, powerUps);
-            return;
+            return spawnScripted(stageTick, enemies, powerUps);
         }
 
         if (stageTick >= nextEnemyTick) {
@@ -75,25 +58,30 @@ public class SpawnManager {
             nextPowerupTick = stageTick + randomBetween(
                     POWERUP_SPAWN_MIN_TICKS, POWERUP_SPAWN_MAX_TICKS);
         }
+
+        return List.of();
     }
 
-    private void spawnScripted(int stageTick, List<Enemy> enemies,
+    private List<SpawnDetails> spawnScripted(int stageTick,
+            List<Enemy> enemies,
             List<PowerUp> powerUps) {
         List<SpawnDetails> details = scriptedSpawns.get(stageTick);
         if (details == null) {
-            return;
+            return List.of();
         }
 
+        List<SpawnDetails> worldEvents = new ArrayList<>();
         for (SpawnDetails detail : details) {
             if (detail.type.startsWith("PowerUp-")) {
                 powerUps.add(createPowerUp(detail.type, detail.x, detail.y));
             } else if (detail.type.equals("Mine")
                     || detail.type.equals("Coral")) {
-                pendingWorldEvents.add(detail);
+                worldEvents.add(detail);
             } else {
                 enemies.add(createEnemy(detail.type, detail.x, detail.y));
             }
         }
+        return worldEvents;
     }
 
     private Enemy createRandomEnemy() {
@@ -174,21 +162,7 @@ public class SpawnManager {
         }
     }
 
-    public List<SpawnDetails> takeWorldEvents() {
-        List<SpawnDetails> events = new ArrayList<>(pendingWorldEvents);
-        pendingWorldEvents.clear();
-        return events;
-    }
-
     private int randomBetween(int min, int max) {
         return min + random.nextInt(Math.max(1, max - min + 1));
-    }
-
-    public SpawnMode getMode() {
-        return mode;
-    }
-
-    public void setMode(SpawnMode mode) {
-        this.mode = mode;
     }
 }
