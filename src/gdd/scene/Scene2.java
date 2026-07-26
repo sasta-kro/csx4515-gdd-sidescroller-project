@@ -574,8 +574,25 @@ public class Scene2 extends JPanel implements GameScene {
 
         double progress = 1.0 - transitionTicks / (double) SEAMLESS_TRANSITION_TICKS;
         int nextBackgroundX = (int) Math.round(BOARD_WIDTH - progress * BOARD_WIDTH);
-        g.setColor(new Color(3, 24, 45));
-        g.fillRect(nextBackgroundX, 42, BOARD_WIDTH - nextBackgroundX, BOARD_HEIGHT - 42);
+        Graphics transitionGraphics = g.create();
+        transitionGraphics.clipRect(nextBackgroundX, 42,
+                BOARD_WIDTH - nextBackgroundX, BOARD_HEIGHT - 42);
+
+        for (int y = 0; y < getHeight(); y += BACKGROUND_TILE_HEIGHT) {
+            for (int x = nextBackgroundX;
+                    x < getWidth(); x += BACKGROUND_TILE_WIDTH) {
+                transitionGraphics.drawImage(backgroundImage.getImage(), x, y,
+                        BACKGROUND_TILE_WIDTH, BACKGROUND_TILE_HEIGHT, null);
+            }
+        }
+
+        for (int x = nextBackgroundX;
+                x < getWidth(); x += MIDGROUND_WIDTH) {
+            transitionGraphics.drawImage(midgroundImage.getImage(), x, 0,
+                    MIDGROUND_WIDTH, MIDGROUND_HEIGHT, null);
+        }
+
+        transitionGraphics.dispose();
     }
 
     private void drawBackground(Graphics g) {
