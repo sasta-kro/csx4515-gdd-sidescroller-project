@@ -51,7 +51,7 @@ public class Swordfish extends Enemy {
     }
 
     private State state = State.CHARGING;
-    private int chargeTicks = secondsToTicks(0.75);
+    private int chargeTicks = secondsToTicks(1.75);
     private double dashX;
     private double dashY;
     private boolean hurt;
@@ -60,6 +60,8 @@ public class Swordfish extends Enemy {
         super(player, x, y, 48*3, 48*3, 2,
                 ENEMY_CONTACT_DAMAGE, 200, new Color(80, 165, 220));
         setHitboxScale(0.85, 0.3);
+
+        setFlippedHorizontally(true);
         updateAnimationFrames();
     }
 

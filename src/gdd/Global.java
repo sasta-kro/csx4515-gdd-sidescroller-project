@@ -9,7 +9,7 @@ public final class Global {
 
     // Development settings
     public static final boolean DEV_USE_SHORT_STAGE_TIMERS = true;
-    public static final int DEV_STAGE_DURATION_SECONDS = 20;
+    public static final int DEV_STAGE_DURATION_SECONDS = 60;
     public static final boolean DEV_SHOW_ENTITY_HITBOXES = true;
 
     // Window and timing
