@@ -8,8 +8,10 @@ import gdd.sprite.Enemy;
 import gdd.sprite.EnemyProjectile;
 import gdd.sprite.Octopus;
 import gdd.sprite.Player;
+import gdd.sprite.Snake;
 import gdd.sprite.Swordfish;
 import java.awt.Image;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +29,7 @@ public class GameLogicTest {
         followsScriptedSpawnSchedule();
         animatesSwordfishStates();
         animatesOctopusStates();
+        animatesSnakeStates();
         completesBossDeathDelay();
     }
 
@@ -244,6 +247,62 @@ public class GameLogicTest {
         }
         assertTrue(!dyingOctopus.isVisible(),
                 "octopus disappears after death animation");
+    }
+
+    private static void animatesSnakeStates() {
+        Player player = new Player(new RunState());
+        Snake topSnake = new Snake(player, 400, true);
+        Snake bottomSnake = new Snake(player, 500, false);
+        Image idleSheet = topSnake.getImage();
+
+        int topStartY = topSnake.getY();
+        int bottomStartY = bottomSnake.getY();
+        topSnake.act();
+        bottomSnake.act();
+        assertTrue(topSnake.getY() > topStartY,
+                "top snake moves downward");
+        assertTrue(bottomSnake.getY() < bottomStartY,
+                "bottom snake moves upward");
+
+        Rectangle idleBounds = topSnake.getBounds();
+        for (int tick = 0; tick < secondsToTicks(3)
+                && topSnake.getImage() == idleSheet; tick++) {
+            topSnake.act();
+        }
+        assertTrue(topSnake.getImage() != idleSheet,
+                "snake attack sheet");
+        assertTrue(topSnake.getBounds().width > idleBounds.width,
+                "snake attack hitbox grows horizontally");
+        assertTrue(topSnake.getBounds().height > idleBounds.height,
+                "snake attack hitbox grows vertically");
+
+        for (int tick = 0; tick < secondsToTicks(0.7); tick++) {
+            topSnake.advanceAnimation();
+            topSnake.act();
+        }
+        assertTrue(topSnake.getImage() == idleSheet,
+                "snake returns to idle after attack");
+
+        Snake hurtSnake = new Snake(player, 400, true);
+        assertTrue(!hurtSnake.damage(1), "snake survives first hit");
+        assertEquals(96, hurtSnake.getImage().getWidth(null),
+                "snake hurt sheet");
+
+        for (int tick = 0; tick < secondsToTicks(0.25); tick++) {
+            hurtSnake.advanceAnimation();
+            hurtSnake.act();
+        }
+        assertTrue(hurtSnake.getImage() == idleSheet,
+                "snake returns to idle after hurt");
+
+        Snake dyingSnake = new Snake(player, 400, true);
+        assertTrue(dyingSnake.damage(2), "snake lethal hit");
+        for (int tick = 0; tick < TARGET_FPS; tick++) {
+            dyingSnake.advanceAnimation();
+            dyingSnake.act();
+        }
+        assertTrue(!dyingSnake.isVisible(),
+                "snake disappears after death animation");
     }
 
     private static void completesBossDeathDelay() {

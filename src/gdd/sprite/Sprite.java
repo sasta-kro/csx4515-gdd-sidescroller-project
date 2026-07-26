@@ -24,6 +24,7 @@ public abstract class Sprite {
     private int width;
     private int height;
     private boolean flippedHorizontally;
+    private double rotationRadians;
     private double renderScale = RENDER_SCALE;
     private double horizontalHitboxScale = HITBOX_SCALE;
     private double verticalHitboxScale = HITBOX_SCALE;
@@ -52,11 +53,7 @@ public abstract class Sprite {
 
         Image activeImage = getActiveImage();
         if (activeImage != null) {
-            if (flippedHorizontally) {
-                g.drawImage(activeImage, getX() + renderWidth, getY(), -renderWidth, renderHeight, null);
-            } else {
-                g.drawImage(activeImage, getX(), getY(), renderWidth, renderHeight, null);
-            }
+            drawImage(g, activeImage, renderWidth, renderHeight);
         } else {
             // temporary placeholder drawing until all assets are loaded
             g.setColor(placeholderColor);
@@ -76,6 +73,24 @@ public abstract class Sprite {
         }
 
         drawHitbox(g);
+    }
+
+    private void drawImage(Graphics g, Image activeImage,
+            int renderWidth, int renderHeight) {
+        Graphics2D spriteGraphics = (Graphics2D) g.create();
+        spriteGraphics.rotate(rotationRadians,
+                getX() + renderWidth / 2.0,
+                getY() + renderHeight / 2.0);
+
+        if (flippedHorizontally) {
+            spriteGraphics.drawImage(activeImage,
+                    getX() + renderWidth, getY(),
+                    -renderWidth, renderHeight, null);
+        } else {
+            spriteGraphics.drawImage(activeImage,
+                    getX(), getY(), renderWidth, renderHeight, null);
+        }
+        spriteGraphics.dispose();
     }
 
     protected void drawHitbox(Graphics g) {
@@ -183,6 +198,10 @@ public abstract class Sprite {
 
     public void setFlippedHorizontally(boolean flippedHorizontally) {
         this.flippedHorizontally = flippedHorizontally;
+    }
+
+    public void setRotationDegrees(double rotationDegrees) {
+        rotationRadians = Math.toRadians(rotationDegrees);
     }
 
     public Image getImage() {
