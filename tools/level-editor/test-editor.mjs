@@ -12,6 +12,14 @@ const scene1Events = readFileSync(
   new URL("../../src/levels/scene1-events.csv", import.meta.url),
   "utf8",
 );
+const scene1TestTerrain = readFileSync(
+  new URL("../../src/levels/scene1-test-terrain.csv", import.meta.url),
+  "utf8",
+);
+const scene1TestEvents = readFileSync(
+  new URL("../../src/levels/scene1-test-events.csv", import.meta.url),
+  "utf8",
+);
 const tileRegistry = readFileSync(
   new URL("../../src/gdd/TileRegistry.java", import.meta.url),
   "utf8",
@@ -118,6 +126,7 @@ const context = vm.createContext({
 
 const tests = `
 assert.ok(columns === 735);
+assert.equal(stageTicks, 18000);
 
 placeTile(2, 3, 10);
 assert.equal(tileAt(2, 3), 10);
@@ -181,11 +190,23 @@ for (const match of tileRegistry.matchAll(
   assert.deepEqual(editorTile.footprint, [wide, high]);
 }
 assert.equal(Object.keys(TILES).length, 22);
+
+const testTerrain = parseTerrain(scene1TestTerrain);
+const testEvents = parseEvents(scene1TestEvents);
+assert.equal(testTerrain.width, 159);
+assert.equal(testEvents.length, 35);
+
+document.getElementById("durationSeconds").value = "60";
+resizeDuration();
+assert.equal(stageTicks, 3600);
+assert.equal(requiredColumns(), 159);
 `;
 
 context.assert = assert;
 context.scene1Terrain = scene1Terrain;
 context.scene1Events = scene1Events;
+context.scene1TestTerrain = scene1TestTerrain;
+context.scene1TestEvents = scene1TestEvents;
 context.tileRegistry = tileRegistry;
 vm.runInContext(
   `${configSource}\n${scriptMatch[1]}\n${tests}`,

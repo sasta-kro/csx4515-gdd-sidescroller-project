@@ -101,11 +101,12 @@ public class Scene1 extends JPanel implements GameScene {
         transitioning = false;
         playerDeathTicks = 0;
         player = new Player(runState);
-        spawnManager = new SpawnManager(player, 1);
+        spawnManager = new SpawnManager(player, 1,
+                DEV_SCENE1_EVENTS_PATH);
         spawnManager.setMode(DEFAULT_SPAWN_MODE);
         if (DEFAULT_SPAWN_MODE == SpawnMode.SCRIPTED) {
             tileMap = new TileMap(LevelLoader.loadTerrain(
-                    "src/levels/scene1-terrain.csv"));
+                    DEV_SCENE1_TERRAIN_PATH));
         } else {
             tileMap = null;
             loadPlaceholderStageContent();

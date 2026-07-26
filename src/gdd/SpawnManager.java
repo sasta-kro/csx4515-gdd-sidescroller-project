@@ -32,18 +32,29 @@ public class SpawnManager {
     private int nextPowerupTick;
 
     public SpawnManager(Player player, int stageNumber) {
-        this(player, stageNumber, new Random());
+        this(player, stageNumber,
+                "src/levels/scene" + stageNumber + "-events.csv",
+                new Random());
+    }
+
+    public SpawnManager(Player player, int stageNumber, String eventsPath) {
+        this(player, stageNumber, eventsPath, new Random());
     }
 
     SpawnManager(Player player, int stageNumber, Random random) {
+        this(player, stageNumber,
+                "src/levels/scene" + stageNumber + "-events.csv", random);
+    }
+
+    private SpawnManager(Player player, int stageNumber, String eventsPath,
+            Random random) {
         this.player = player;
         this.stageNumber = stageNumber;
         this.random = random;
         int initialDelay = secondsToTicks(INITIAL_SPAWN_DELAY_SECONDS);
         nextEnemyTick = initialDelay;
         nextPowerupTick = initialDelay + POWERUP_SPAWN_MIN_TICKS;
-        scriptedSpawns.putAll(LevelLoader.loadEvents(
-                "src/levels/scene" + stageNumber + "-events.csv"));
+        scriptedSpawns.putAll(LevelLoader.loadEvents(eventsPath));
     }
 
     public void update(int stageTick, List<Enemy> enemies,

@@ -62,7 +62,7 @@ window.EDITOR_CONFIG = {
       sprite: "../../src/images/enemies/snake/Walk.png", source: [0, 0, 48, 48], rotation: -90, snake: true },
 
     { type: "Mine", code: "M", category: "obstacle", stages: [1],
-      color: "#8f9299", size: [34, 34], defaultX: 756,
+      color: "#8f9299", size: [90, 90], defaultX: 756,
       sprite: "../../src/images/mines/mine.png" },
     { type: "Coral", code: "C", category: "obstacle", stages: [2],
       color: "#ed7f72", size: [44, 62], defaultX: 756,
@@ -81,6 +81,7 @@ window.EDITOR_CONFIG = {
   ],
 
   defaultColumns: 735,
+  defaultDurationSeconds: 300,
   defaultStage: "scene1",
   startInSpriteView: true,
 };

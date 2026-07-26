@@ -12,7 +12,7 @@ Open `index.html` in a browser. There is no build step and no server.
 3. Use Enemies, Obstacles, and Powerups to place spawn events.
 4. Select an event marker to edit its tick and vertical position.
 5. Use Viewport Preview to inspect the exact 716 by 700 game viewport at a tick.
-6. Save both CSV files and place them in `src/levels/`.
+6. Set the file prefix, save both CSV files, and place them in `src/levels/`.
 
 The editor downloads:
 
@@ -22,6 +22,13 @@ scene1-events.csv
 ```
 
 The same names are used for Scene 2.
+
+The Duration field controls the editor timeline and required terrain width. Loading a
+terrain file infers its duration. A 60-second level uses 159 columns.
+
+The file prefix is preserved when files are loaded. Loading
+`scene1-test-terrain.csv` and `scene1-test-events.csv` therefore saves back to the same
+test filenames instead of replacing the normal Scene 1 files.
 
 ## Views
 

@@ -165,11 +165,19 @@
       <option value="scene1">Scene 1</option>
       <option value="scene2">Scene 2</option>
     </select>
+    <label for="levelName">File prefix</label>
+    <input id="levelName" value="scene1" style="width:120px">
   </div>
   <div class="group">
     <label for="columns">Columns</label>
     <input id="columns" type="number" min="16" max="1000" value="735">
     <button id="resizeLevel">Resize</button>
+  </div>
+  <div class="group">
+    <label for="durationSeconds">Duration</label>
+    <input id="durationSeconds" type="number" min="10" max="600" value="300">
+    <span>sec</span>
+    <button id="setDuration">Set</button>
   </div>
   <div class="group">
     <button id="loadFiles">Load CSVs</button>
@@ -258,8 +266,6 @@ const SCREEN_W = 716;
 const SCREEN_H = 700;
 const FPS = 60;
 const SCROLL = 2;
-const STAGE_TICKS = 18000;
-const REQUIRED_COLUMNS = Math.ceil((STAGE_TICKS * SCROLL + SCREEN_W) / TILE);
 const CFG = window.EDITOR_CONFIG;
 const TILES = CFG.tiles;
 const TILE_IDS = Object.keys(TILES).map(Number).sort((a, b) => a - b);
@@ -273,6 +279,7 @@ const previewCanvas = $("previewCanvas");
 const preview = previewCanvas.getContext("2d");
 
 let columns = CFG.defaultColumns;
+let stageTicks = CFG.defaultDurationSeconds * FPS;
 let terrain = new Int16Array(ROWS * columns);
 let events = [];
 let nextEventId = 1;
@@ -345,9 +352,21 @@ function formatTime(tick) {
   return `${minutes}:${String(Math.floor(seconds % 60)).padStart(2, "0")}.${String(Math.floor(seconds * 10) % 10)}`;
 }
 
+function requiredColumns() {
+  return Math.ceil((stageTicks * SCROLL + SCREEN_W) / TILE);
+}
+
+function setDurationControls() {
+  $("durationSeconds").value = stageTicks / FPS;
+  $("previewTick").max = stageTicks;
+  $("previewRange").max = stageTicks;
+  $("eventTick").max = stageTicks;
+}
+
 function snapshot() {
   return {
     columns,
+    stageTicks,
     terrain: terrain.slice(),
     events: events.map(event => ({ ...event })),
     nextEventId,
@@ -356,10 +375,12 @@ function snapshot() {
 
 function restore(state) {
   columns = state.columns;
+  stageTicks = state.stageTicks;
   terrain = state.terrain.slice();
   events = state.events.map(event => ({ ...event }));
   nextEventId = state.nextEventId;
   $("columns").value = columns;
+  setDurationControls();
   selectedEventId = null;
   drawAll();
 }
@@ -460,15 +481,25 @@ function resizeLevel() {
     }
     columns = next;
     terrain = resized;
-    events = events.filter(event => event.tick <= STAGE_TICKS);
+    events = events.filter(event => event.tick <= stageTicks);
+  });
+}
+
+function resizeDuration() {
+  const seconds = Math.max(10,
+    Math.min(600, Number($("durationSeconds").value) || stageTicks / FPS));
+  edit(() => {
+    stageTicks = Math.round(seconds * FPS);
+    events = events.filter(event => event.tick <= stageTicks);
+    setDurationControls();
   });
 }
 
 function placeEvent(worldX, worldY) {
   const definition = TYPE_BY_NAME[selectedEventType];
   const tick = worldXToTick(worldX);
-  if (tick < 0 || tick > STAGE_TICKS) {
-    toast("Events must be between tick 0 and 18000");
+  if (tick < 0 || tick > stageTicks) {
+    toast(`Events must be between tick 0 and ${stageTicks}`);
     return;
   }
 
@@ -619,7 +650,7 @@ function drawRuler(height, width) {
   layout.fillRect(0, 0, width, height);
   layout.strokeStyle = "#3a464a";
   layout.beginPath();
-  for (let tick = 0; tick <= STAGE_TICKS; tick += 300) {
+  for (let tick = 0; tick <= stageTicks; tick += 300) {
     const x = tickToWorldX(tick) * zoom;
     layout.moveTo(x, 18);
     layout.lineTo(x, height);
@@ -628,7 +659,7 @@ function drawRuler(height, width) {
   layout.fillStyle = "#cdd9d4";
   layout.font = "10px sans-serif";
   layout.textAlign = "center";
-  for (let tick = 0; tick <= STAGE_TICKS; tick += 600) {
+  for (let tick = 0; tick <= stageTicks; tick += 600) {
     const x = tickToWorldX(tick) * zoom;
     layout.fillText(formatTime(tick), x, 12);
     layout.fillText(`t${tick}`, x, 27);
@@ -639,7 +670,7 @@ function drawRuler(height, width) {
 
 function drawPreview() {
   preview.imageSmoothingEnabled = false;
-  const tick = Math.max(0, Math.min(STAGE_TICKS, Number($("previewTick").value) || 0));
+  const tick = Math.max(0, Math.min(stageTicks, Number($("previewTick").value) || 0));
   drawPreviewBackground(tick);
   drawPreviewTerrain(tick);
 
@@ -811,7 +842,7 @@ function updateSelectedEvent() {
     const current = events.find(item => item.id === eventId);
     current.type = $("eventType").value;
     const definition = TYPE_BY_NAME[current.type];
-    current.tick = Math.max(0, Math.min(STAGE_TICKS, Number($("eventTick").value) || 0));
+    current.tick = Math.max(0, Math.min(stageTicks, Number($("eventTick").value) || 0));
     current.x = definition.snake
       ? Math.max(0, Math.min(SCREEN_W - definition.size[0], Number($("eventX").value) || 0))
       : definition.defaultX;
@@ -834,8 +865,12 @@ function updateStatus() {
 
 function updateWarnings() {
   const warnings = [];
-  if (columns < REQUIRED_COLUMNS) {
-    warnings.push({ level: "error", text: `Terrain covers less than 5:00. Use at least ${REQUIRED_COLUMNS} columns.` });
+  const minimumColumns = requiredColumns();
+  if (columns < minimumColumns) {
+    warnings.push({
+      level: "error",
+      text: `Terrain covers less than ${formatTime(stageTicks)}. Use at least ${minimumColumns} columns.`,
+    });
   }
 
   for (let column = 0; column < columns; column++) {
@@ -854,6 +889,9 @@ function updateWarnings() {
     }
     if (!definition.stages.includes(stageNumber())) {
       warnings.push({ level: "error", text: `${event.type} is not allowed in this stage.`, tick: event.tick });
+    }
+    if (event.tick > stageTicks) {
+      warnings.push({ level: "error", text: `${event.type} is after the stage ends.`, tick: event.tick });
     }
     if (definition.snake) {
       const worldColumn = Math.floor((event.tick * SCROLL + event.x) / TILE);
@@ -911,10 +949,14 @@ function download(name, contents) {
 }
 
 function saveFiles() {
-  const stage = $("stage").value;
-  download(`${stage}-terrain.csv`, terrainCsv());
-  setTimeout(() => download(`${stage}-events.csv`, eventsCsv()), 200);
-  toast(`Saved ${stage} terrain and events`);
+  const prefix = $("levelName").value.trim();
+  if (!/^[a-zA-Z0-9_-]+$/.test(prefix)) {
+    alert("File prefix can only contain letters, numbers, hyphens, and underscores");
+    return;
+  }
+  download(`${prefix}-terrain.csv`, terrainCsv());
+  setTimeout(() => download(`${prefix}-events.csv`, eventsCsv()), 200);
+  toast(`Saved ${prefix} terrain and events`);
 }
 
 function dataLines(text) {
@@ -980,7 +1022,7 @@ function parseEvents(text) {
       throw new Error(`Event row ${index + 1} needs integer tick, x, and y values`);
     }
     if (!TYPE_BY_NAME[type]) throw new Error(`Unknown event type ${type}`);
-    if (tick < 0 || tick > STAGE_TICKS) throw new Error(`Event tick ${tick} is outside the stage`);
+    if (tick < 0) throw new Error(`Event tick ${tick} is negative`);
     return { id: nextEventId++, tick, type, x, y };
   });
 }
@@ -994,12 +1036,18 @@ async function loadFiles(files) {
     else if (/event|spawn/i.test(file.name)) loadedEvents = parseEvents(text);
     const match = file.name.match(/^(scene[12])-/i);
     if (match) $("stage").value = match[1].toLowerCase();
+    const prefix = file.name.match(/^(.+)-(terrain|events|spawns)\.csv$/i);
+    if (prefix) $("levelName").value = prefix[1];
   }
   edit(() => {
     if (loadedTerrain) {
       columns = loadedTerrain.width;
       terrain = loadedTerrain.values;
       $("columns").value = columns;
+      const coverageTicks = Math.floor((columns * TILE - SCREEN_W) / SCROLL);
+      stageTicks = Math.max(FPS * 10,
+        Math.floor(coverageTicks / FPS) * FPS);
+      setDurationControls();
     }
     if (loadedEvents) events = loadedEvents;
   });
@@ -1163,6 +1211,7 @@ for (const button of document.querySelectorAll(".tab")) {
   button.onclick = () => setTab(button.dataset.tab);
 }
 $("resizeLevel").onclick = resizeLevel;
+$("setDuration").onclick = resizeDuration;
 $("saveFiles").onclick = saveFiles;
 $("loadFiles").onclick = () => $("fileInput").click();
 $("fileInput").onchange = event => loadFiles([...event.target.files]).catch(error => alert(error.message));
@@ -1176,13 +1225,14 @@ $("stage").onchange = () => {
   const available = typesFor(tab);
   if (tab !== "terrain" && available.length) selectedEventType = available[0].type;
   selectedEventId = null;
+  $("levelName").value = $("stage").value;
   drawAll();
 };
 $("layoutView").onclick = () => showView(false);
 $("previewView").onclick = () => showView(true);
 $("previewRange").oninput = () => { $("previewTick").value = $("previewRange").value; drawPreview(); };
 $("previewTick").oninput = () => {
-  const tick = Math.max(0, Math.min(STAGE_TICKS, Number($("previewTick").value) || 0));
+  const tick = Math.max(0, Math.min(stageTicks, Number($("previewTick").value) || 0));
   $("previewRange").value = tick;
   drawPreview();
 };
@@ -1206,7 +1256,9 @@ window.addEventListener("keydown", event => {
 });
 
 $("stage").value = CFG.defaultStage;
+$("levelName").value = CFG.defaultStage;
 $("columns").value = columns;
+setDurationControls();
 drawAll();
 </script>
 </body>
