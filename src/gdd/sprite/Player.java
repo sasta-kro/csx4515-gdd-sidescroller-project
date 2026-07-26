@@ -97,15 +97,14 @@ public class Player extends Sprite {
     private int burstIntervalTicks;
 
     public Player(RunState state) {
-        super(state.getPlayerX(), state.getPlayerY(),
-                PLAYER_WIDTH, PLAYER_HEIGHT, COLOR_PLAYER);
+        super(state.getPlayerX(), state.getPlayerY(), PLAYER_WIDTH, PLAYER_HEIGHT, COLOR_PLAYER);
         health = state.getHealth();
         speedLevel = state.getSpeedLevel();
         speedPowerupTicks = state.getSpeedPowerupTicks();
         weaponType = state.getWeaponType();
         multiShotLevel = state.getMultiShotLevel();
         weaponPowerupTicks = state.getWeaponPowerupTicks();
-        setHitboxScale(0.88);
+        setHitboxScale(0.88, 0.80);
         setFlippedHorizontally(true);
         loadPlayerAnimation();
     }

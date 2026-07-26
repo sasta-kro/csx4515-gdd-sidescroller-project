@@ -25,7 +25,8 @@ public abstract class Sprite {
     private int height;
     private boolean flippedHorizontally;
     private double renderScale = RENDER_SCALE;
-    private double hitboxScale = HITBOX_SCALE;
+    private double horizontalHitboxScale = HITBOX_SCALE;
+    private double verticalHitboxScale = HITBOX_SCALE;
     private Color placeholderColor;
     private final List<Image> animationFrames = new ArrayList<>();
     private int currentAnimationFrame;
@@ -95,8 +96,10 @@ public abstract class Sprite {
     public Rectangle getBounds() {
         int renderWidth = getRenderWidth();
         int renderHeight = getRenderHeight();
-        int hitboxWidth = Math.max(1, (int) Math.round(renderWidth * hitboxScale));
-        int hitboxHeight = Math.max(1, (int) Math.round(renderHeight * hitboxScale));
+        int hitboxWidth = Math.max(1,
+                (int) Math.round(renderWidth * horizontalHitboxScale));
+        int hitboxHeight = Math.max(1,
+                (int) Math.round(renderHeight * verticalHitboxScale));
         int offsetX = (renderWidth - hitboxWidth) / 2;
         int offsetY = (renderHeight - hitboxHeight) / 2;
         return new Rectangle(getX() + offsetX, getY() + offsetY,
@@ -172,8 +175,10 @@ public abstract class Sprite {
         this.renderScale = Math.max(0.1, renderScale);
     }
 
-    public void setHitboxScale(double hitboxScale) {
-        this.hitboxScale = Math.max(0.1, hitboxScale);
+    public void setHitboxScale(double horizontalHitboxScale,
+            double verticalHitboxScale) {
+        this.horizontalHitboxScale = Math.max(0.1, horizontalHitboxScale);
+        this.verticalHitboxScale = Math.max(0.1, verticalHitboxScale);
     }
 
     public void setFlippedHorizontally(boolean flippedHorizontally) {

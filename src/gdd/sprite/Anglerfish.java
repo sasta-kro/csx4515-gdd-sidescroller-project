@@ -35,7 +35,7 @@ public class Anglerfish extends Enemy {
                 BOSS_MAX_HEALTH, BOSS_CONTACT_DAMAGE, 5000,
                 new Color(54, 115, 82));
         homeX = getX();
-        setHitboxScale(0.92);
+        setHitboxScale(0.92, 0.92);
     }
 
     @Override

@@ -14,7 +14,7 @@ public class Bubble extends Sprite {
         this.damage = damage;
         this.speed = speed;
         this.playerOwned = playerOwned;
-        setHitboxScale(0.85);
+        setHitboxScale(0.85, 0.85);
     }
 
     @Override

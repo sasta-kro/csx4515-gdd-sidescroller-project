@@ -17,7 +17,7 @@ public abstract class Enemy extends Sprite {
         this.health = health;
         this.contactDamage = contactDamage;
         this.scoreValue = scoreValue;
-        setHitboxScale(0.9);
+        setHitboxScale(0.9, 0.9);
     }
 
     protected void moveWithWorld() {

@@ -10,7 +10,7 @@ public final class Global {
     // Development settings
     public static final boolean DEV_USE_SHORT_STAGE_TIMERS = true;
     public static final int DEV_STAGE_DURATION_SECONDS = 20;
-    public static final boolean DEV_SHOW_ENTITY_HITBOXES = false;
+    public static final boolean DEV_SHOW_ENTITY_HITBOXES = true;
 
     // Window and timing
     public static final int BOARD_WIDTH = 716;
@@ -32,8 +32,8 @@ public final class Global {
     // Player
     public static final int PLAYER_START_X = 90;
     public static final int PLAYER_START_Y = BOARD_HEIGHT / 2;
-    public static final int PLAYER_WIDTH = 51;
-    public static final int PLAYER_HEIGHT = 43;
+    public static final int PLAYER_WIDTH = 48;
+    public static final int PLAYER_HEIGHT = 48;
     public static final int PLAYER_MAX_HEALTH = 5;
     public static final int PLAYER_BASE_SPEED = 4;
     public static final int PLAYER_SPEED_LEVEL_1 = 5;
