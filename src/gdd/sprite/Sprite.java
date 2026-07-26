@@ -221,6 +221,10 @@ public abstract class Sprite {
         return animationFinished;
     }
 
+    protected int getCurrentAnimationFrame() {
+        return currentAnimationFrame;
+    }
+
     public void advanceAnimation() {
         // check for no animation (static image)
         if (animationFrames.size() < 2 || animationFinished) {

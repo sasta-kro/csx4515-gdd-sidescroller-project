@@ -199,7 +199,7 @@ public class GameLogicTest {
         assertTrue(octopus.getImage() != idleSheet,
                 "octopus attack sheet");
 
-        for (int tick = 0; tick < secondsToTicks(0.7) - 1; tick++) {
+        for (int tick = 0; tick < secondsToTicks(0.35) - 1; tick++) {
             octopus.advanceAnimation();
             octopus.act();
             rock = octopus.shootRockIfReady();
@@ -209,9 +209,18 @@ public class GameLogicTest {
         octopus.advanceAnimation();
         octopus.act();
         rock = octopus.shootRockIfReady();
-        assertTrue(rock != null, "rock spawns after attack animation");
+        assertTrue(rock != null, "rock spawns at attack midpoint");
+        assertEquals(octopus.getY() + octopus.getRenderHeight() / 2,
+                rock.getY() + rock.getRenderHeight() / 2,
+                "rock vertical spawn midpoint");
+
+        for (int tick = 0; tick < secondsToTicks(0.35); tick++) {
+            octopus.advanceAnimation();
+            octopus.act();
+            octopus.shootRockIfReady();
+        }
         assertTrue(octopus.getImage() == idleSheet,
-                "octopus returns to idle sheet");
+                "octopus returns to idle after attack");
 
         assertTrue(!octopus.damage(1), "octopus survives first hit");
         assertEquals(96, octopus.getImage().getWidth(null),

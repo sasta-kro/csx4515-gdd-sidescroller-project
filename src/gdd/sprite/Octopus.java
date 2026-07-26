@@ -60,6 +60,7 @@ public class Octopus extends Enemy {
     private double wave;
     private int rockCooldown;
     private boolean rockReady;
+    private boolean rockThrown;
     private State state = State.IDLE;
 
     public Octopus(Player player, int x, int y) {
@@ -100,27 +101,42 @@ public class Octopus extends Enemy {
     }
 
     public EnemyProjectile shootRockIfReady() {
-        if (!rockReady || !isVisible()
-                || state == State.HURT || state == State.DYING) {
+        if (!isVisible() || state == State.HURT || state == State.DYING) {
             return null;
         }
 
         if (state == State.IDLE) {
+            if (!rockReady) {
+                return null;
+            }
+
+            rockReady = false;
+            rockThrown = false;
             state = State.ATTACKING;
             updateAnimationFrames();
             return null;
         }
 
-        if (!isAnimationFinished()) {
-            return null;
+        if (!rockThrown
+                && getCurrentAnimationFrame() >= attackAnimationClips.size() / 2) {
+            rockThrown = true;
+            rockCooldown = nextRockCooldown();
+            return createRock();
         }
 
-        state = State.IDLE;
-        rockReady = false;
-        rockCooldown = nextRockCooldown();
-        updateAnimationFrames();
-        return new EnemyProjectile(getX() - 14,
-                getY() + getRenderHeight() / 2);
+        if (isAnimationFinished()) {
+            state = State.IDLE;
+            updateAnimationFrames();
+        }
+
+        return null;
+    }
+
+    private EnemyProjectile createRock() {
+        EnemyProjectile rock = new EnemyProjectile(getX() - 16, getY());
+        rock.setY(getY()
+                + (getRenderHeight() - rock.getRenderHeight()) / 2);
+        return rock;
     }
 
     private void updateAnimationFrames() {
@@ -170,6 +186,9 @@ public class Octopus extends Enemy {
             return true;
         }
 
+        if (state == State.ATTACKING && !rockThrown) {
+            rockReady = true;
+        }
         state = State.HURT;
         updateAnimationFrames();
         return false;
