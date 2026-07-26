@@ -28,26 +28,17 @@ import javax.swing.Timer;
 
 public class Scene2 extends JPanel implements GameScene {
 
-    private static final String BACKGROUND_IMAGE_PATH
-            = "src/images/background/scene2_bg/background.png";
-    private static final String MIDGROUND_IMAGE_PATH
-            = "src/images/background/scene2_bg/midground.png";
+    private static final String BACKGROUND_IMAGE_PATH = "src/images/background/scene2_bg/background.png";
+    private static final String MIDGROUND_IMAGE_PATH = "src/images/background/scene2_bg/midground.png";
 
-    private static final ImageIcon backgroundImage
-            = new ImageIcon(BACKGROUND_IMAGE_PATH);
-    private static final ImageIcon midgroundImage
-            = new ImageIcon(MIDGROUND_IMAGE_PATH);
-    private static final double BACKGROUND_SCALE
-            = BOARD_HEIGHT / (double) midgroundImage.getIconHeight();
+    private static final ImageIcon backgroundImage = new ImageIcon(BACKGROUND_IMAGE_PATH);
+    private static final ImageIcon midgroundImage = new ImageIcon(MIDGROUND_IMAGE_PATH);
+    private static final double BACKGROUND_SCALE = BOARD_HEIGHT / (double) midgroundImage.getIconHeight();
     private static final double BACKGROUND_TILE_SCALE = BACKGROUND_SCALE * 2;
-    private static final int BACKGROUND_TILE_WIDTH
-            = (int) Math.round(backgroundImage.getIconWidth() * BACKGROUND_TILE_SCALE);
-    private static final int BACKGROUND_TILE_HEIGHT
-            = (int) Math.round(backgroundImage.getIconHeight() * BACKGROUND_TILE_SCALE);
-    private static final int MIDGROUND_WIDTH
-            = (int) Math.round(midgroundImage.getIconWidth() * BACKGROUND_SCALE);
-    private static final int MIDGROUND_HEIGHT
-            = (int) Math.round(midgroundImage.getIconHeight() * BACKGROUND_SCALE);
+    private static final int BACKGROUND_TILE_WIDTH = (int) Math.round(backgroundImage.getIconWidth() * BACKGROUND_TILE_SCALE);
+    private static final int BACKGROUND_TILE_HEIGHT = (int) Math.round(backgroundImage.getIconHeight() * BACKGROUND_TILE_SCALE);
+    private static final int MIDGROUND_WIDTH = (int) Math.round(midgroundImage.getIconWidth() * BACKGROUND_SCALE);
+    private static final int MIDGROUND_HEIGHT = (int) Math.round(midgroundImage.getIconHeight() * BACKGROUND_SCALE);
 
     private Game game;
     private RunState runState;

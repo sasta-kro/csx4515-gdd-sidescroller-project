@@ -32,13 +32,13 @@ public class Scene1 extends JPanel implements GameScene {
     private static final String BACKGROUND_IMAGE_PATH = "src/images/background/scene1_bg/background.png";
     private static final String MIDGROUND_1_IMAGE_PATH = "src/images/background/scene1_bg/midground1.png";
     private static final String MIDGROUND_2_IMAGE_PATH = "src/images/background/scene1_bg/midground2.png";
-    private static final int BACKGROUND_SCALE = 2;
 
     private static final ImageIcon backgroundImage = new ImageIcon(BACKGROUND_IMAGE_PATH);
     private static final ImageIcon midground1Image = new ImageIcon(MIDGROUND_1_IMAGE_PATH);
     private static final ImageIcon midground2Image = new ImageIcon(MIDGROUND_2_IMAGE_PATH);
-    private static final int BACKGROUND_WIDTH = backgroundImage.getIconWidth() * BACKGROUND_SCALE;
-    private static final int BACKGROUND_HEIGHT = backgroundImage.getIconHeight() * BACKGROUND_SCALE;
+    private static final double BACKGROUND_SCALE = BOARD_HEIGHT / (double) backgroundImage.getIconHeight();
+    private static final int BACKGROUND_WIDTH = (int) Math.round(backgroundImage.getIconWidth() * BACKGROUND_SCALE);
+    private static final int BACKGROUND_HEIGHT = (int) Math.round(backgroundImage.getIconHeight() * BACKGROUND_SCALE);
 
     private Game game;
     private RunState runState;
