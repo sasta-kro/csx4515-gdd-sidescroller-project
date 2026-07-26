@@ -1,12 +1,15 @@
-package gdd.sprite;
+package gdd.sprite.enemy;
+
+import gdd.sprite.Player;
 
 import static gdd.Global.*;
 import java.awt.Color;
 import java.awt.Rectangle;
 import java.util.List;
+import java.util.Random;
 import javax.swing.ImageIcon;
 
-public class Snake extends Enemy {
+public class Octopus extends Enemy {
 
     private enum State {
         IDLE,
@@ -15,11 +18,10 @@ public class Snake extends Enemy {
         DYING
     }
 
-    private static final String IDLE_SHEET_PATH = "src/images/enemies/snake/Walk.png";
-    private static final String HURT_SHEET_PATH = "src/images/enemies/snake/Hurt.png";
-    private static final String ATTACK_SHEET_PATH = "src/images/enemies/snake/Attack.png";
-    private static final String DEATH_SHEET_PATH = "src/images/enemies/snake/Death.png";
-    private static final int ATTACK_COOLDOWN_TICKS = secondsToTicks(1);
+    private static final String IDLE_SHEET_PATH = "src/images/enemies/octopus/Idle.png";
+    private static final String HURT_SHEET_PATH = "src/images/enemies/octopus/Hurt.png";
+    private static final String ATTACK_SHEET_PATH = "src/images/enemies/octopus/Attack.png";
+    private static final String DEATH_SHEET_PATH = "src/images/enemies/octopus/Death.png";
 
     private static final ImageIcon idleSheet = new ImageIcon(IDLE_SHEET_PATH);
     private static final ImageIcon hurtSheet = new ImageIcon(HURT_SHEET_PATH);
@@ -55,14 +57,21 @@ public class Snake extends Enemy {
             new Rectangle(48*5, 0, 48, 48)
     );
 
-    private final int verticalDirection;
+    private final Random random = new Random();
+    private final double centerY;
+    private double wave;
+    private int rockCooldown;
+    private boolean rockReady;
+    private boolean rockThrown;
     private State state = State.IDLE;
-    private int attackCooldownTicks = ATTACK_COOLDOWN_TICKS;
 
-    public Snake(Player player, int x, boolean fromTop) {
-        super(player, x, fromTop ? -70 : BOARD_HEIGHT, 48*2, 48*2, 2, ENEMY_CONTACT_DAMAGE, 150, new Color(100, 205, 125));
-        verticalDirection = fromTop ? 1 : -1;
-        faceVerticalDirection();
+    public Octopus(Player player, int x, int y) {
+        super(player, x, y, 48*2, 48*2, 2,
+                ENEMY_CONTACT_DAMAGE, 200, new Color(190, 95, 190));
+        centerY = y;
+        rockCooldown = nextRockCooldown();
+        setHitboxScale(0.55, 0.65);
+        setFlippedHorizontally(true);
         updateAnimationFrames();
     }
 
@@ -78,52 +87,90 @@ public class Snake extends Enemy {
         if (state == State.HURT && isAnimationFinished()) {
             state = State.IDLE;
             updateAnimationFrames();
-        } else if (state == State.ATTACKING && isAnimationFinished()) {
-            state = State.IDLE;
-            attackCooldownTicks = ATTACK_COOLDOWN_TICKS;
-            updateAnimationFrames();
-        } else if (state == State.IDLE && --attackCooldownTicks <= 0) {
-            state = State.ATTACKING;
-            updateAnimationFrames();
         }
 
         moveWithWorld();
-        y += verticalDirection * 3;
-        if (isOutsideViewport()) {
+        wave += 0.045;
+        y = centerY + Math.sin(wave) * 44;
+
+        if (!rockReady && state == State.IDLE && --rockCooldown <= 0) {
+            rockReady = true;
+        }
+
+        if (getX() + getRenderWidth() < 0) {
             die();
         }
     }
 
-    private void faceVerticalDirection() {
-        setRotationDegrees(verticalDirection > 0 ? 90 : -90);
+    public EnemyProjectile shootRockIfReady() {
+        if (!isVisible() || state == State.HURT || state == State.DYING) {
+            return null;
+        }
+
+        if (state == State.IDLE) {
+            if (!rockReady) {
+                return null;
+            }
+
+            rockReady = false;
+            rockThrown = false;
+            state = State.ATTACKING;
+            updateAnimationFrames();
+            return null;
+        }
+
+        if (!rockThrown
+                && getCurrentAnimationFrame() >= attackAnimationClips.size() / 2) {
+            rockThrown = true;
+            rockCooldown = nextRockCooldown();
+            return createRock();
+        }
+
+        if (isAnimationFinished()) {
+            state = State.IDLE;
+            updateAnimationFrames();
+        }
+
+        return null;
+    }
+
+    private EnemyProjectile createRock() {
+        EnemyProjectile rock = new EnemyProjectile(getX() - 16, getY());
+        rock.setY(getY()
+                + (getRenderHeight() - rock.getRenderHeight()) / 2);
+        return rock;
     }
 
     private void updateAnimationFrames() {
         switch (state) {
             case DYING -> {
                 setImage(deathSheet.getImage());
+                setAnimationInterval(7);
                 setAnimationFrames(deathAnimationClips);
                 setAnimationLooping(false);
-                setHitboxScale(0.35, 0.85);
             }
             case HURT -> {
                 setImage(hurtSheet.getImage());
+                setAnimationInterval(7);
                 setAnimationFrames(hurtAnimationClips);
                 setAnimationLooping(false);
-                setHitboxScale(0.35, 0.85);
             }
             case ATTACKING -> {
                 setImage(attackSheet.getImage());
+                setAnimationInterval(7);
                 setAnimationFrames(attackAnimationClips);
                 setAnimationLooping(false);
-                setHitboxScale(0.7, 0.95);
             }
             case IDLE -> {
                 setImage(idleSheet.getImage());
+                setAnimationInterval(14);
                 setAnimationFrames(idleAnimationClips);
-                setHitboxScale(0.35, 0.85);
             }
         }
+    }
+
+    private int nextRockCooldown() {
+        return secondsToTicks(2 + random.nextDouble() * 2);
     }
 
     @Override
@@ -141,8 +188,10 @@ public class Snake extends Enemy {
             return true;
         }
 
+        if (state == State.ATTACKING && !rockThrown) {
+            rockReady = true;
+        }
         state = State.HURT;
-        attackCooldownTicks = ATTACK_COOLDOWN_TICKS;
         updateAnimationFrames();
         return false;
     }

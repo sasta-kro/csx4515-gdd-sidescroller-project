@@ -1,4 +1,7 @@
-package gdd.sprite;
+package gdd.sprite.enemy;
+
+import gdd.sprite.Player;
+import gdd.sprite.Sprite;
 
 import static gdd.Global.*;
 import java.awt.Color;

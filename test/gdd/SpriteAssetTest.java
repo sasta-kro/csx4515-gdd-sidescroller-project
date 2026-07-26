@@ -1,8 +1,8 @@
 package gdd;
 
 import static gdd.Global.*;
-import gdd.sprite.Coral;
-import gdd.sprite.EnemyProjectile;
+import gdd.sprite.obstacle.Coral;
+import gdd.sprite.enemy.EnemyProjectile;
 
 public class SpriteAssetTest {
 
