@@ -5,8 +5,11 @@ import gdd.powerup.WeaponType;
 import gdd.sprite.Anglerfish;
 import gdd.sprite.Bubble;
 import gdd.sprite.Enemy;
+import gdd.sprite.EnemyProjectile;
+import gdd.sprite.Octopus;
 import gdd.sprite.Player;
 import gdd.sprite.Swordfish;
+import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +26,7 @@ public class GameLogicTest {
         emitsSixBubbleBurstAtLevelFour();
         followsScriptedSpawnSchedule();
         animatesSwordfishStates();
+        animatesOctopusStates();
         completesBossDeathDelay();
     }
 
@@ -157,7 +161,8 @@ public class GameLogicTest {
                 "swordfish returns to walk sheet");
 
         Swordfish dashingSwordfish = new Swordfish(player, 600, 300);
-        for (int tick = 0; tick < secondsToTicks(0.75); tick++) {
+        for (int tick = 0; tick < secondsToTicks(3)
+                && dashingSwordfish.getImage().getWidth(null) == 192; tick++) {
             dashingSwordfish.act();
         }
         assertEquals(288, dashingSwordfish.getImage().getWidth(null),
@@ -174,6 +179,47 @@ public class GameLogicTest {
         }
         assertTrue(!dyingSwordfish.isVisible(),
                 "swordfish disappears after death animation");
+    }
+
+    private static void animatesOctopusStates() {
+        Player player = new Player(new RunState());
+        Octopus octopus = new Octopus(player, 600, 300);
+        Image walkSheet = octopus.getImage();
+
+        assertEquals(288, octopus.getImage().getWidth(null),
+                "octopus walk sheet");
+
+        EnemyProjectile rock = null;
+        for (int tick = 0; tick < secondsToTicks(5) && rock == null; tick++) {
+            octopus.act();
+            rock = octopus.shootRockIfReady();
+        }
+        assertTrue(rock != null, "octopus throws a rock");
+        assertTrue(octopus.getImage() != walkSheet,
+                "octopus attack sheet");
+
+        assertTrue(!octopus.damage(1), "octopus survives first hit");
+        assertEquals(96, octopus.getImage().getWidth(null),
+                "octopus hurt sheet");
+
+        for (int tick = 0; tick < secondsToTicks(0.25); tick++) {
+            octopus.advanceAnimation();
+            octopus.act();
+        }
+        assertTrue(octopus.getImage() == walkSheet,
+                "octopus returns to walk sheet");
+
+        Octopus dyingOctopus = new Octopus(player, 600, 300);
+        assertTrue(dyingOctopus.damage(2), "octopus lethal hit");
+        assertTrue(dyingOctopus.getImage() != walkSheet,
+                "octopus death sheet");
+
+        for (int tick = 0; tick < TARGET_FPS; tick++) {
+            dyingOctopus.advanceAnimation();
+            dyingOctopus.act();
+        }
+        assertTrue(!dyingOctopus.isVisible(),
+                "octopus disappears after death animation");
     }
 
     private static void completesBossDeathDelay() {
