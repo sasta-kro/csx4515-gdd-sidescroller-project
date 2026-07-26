@@ -53,15 +53,14 @@ public final class Global {
     public static final int POWERUP_HEIGHT = 28;
     public static final double POWERUP_WAVE_AMPLITUDE = 18.0;
     public static final double POWERUP_WAVE_SPEED = 0.08;
-    public static final int POWERUP_SPAWN_MIN_TICKS = secondsToTicks(4);
-    public static final int POWERUP_SPAWN_MAX_TICKS = secondsToTicks(8);
+    public static final int POWERUP_SPAWN_MIN_TICKS = secondsToTicks(2);
+    public static final int POWERUP_SPAWN_MAX_TICKS = secondsToTicks(4);
 
     // Enemies
     public static final int ENEMY_CONTACT_DAMAGE = 1;
     public static final int ENEMY_PROJECTILE_DAMAGE = 1;
     public static final int RANDOM_SPAWN_MIN_TICKS = secondsToTicks(0.8);
     public static final int RANDOM_SPAWN_MAX_TICKS = secondsToTicks(1.8);
-
 
     // Obstacles
     public static final int MINE_SIZE = 34;

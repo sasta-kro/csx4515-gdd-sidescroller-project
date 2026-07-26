@@ -432,8 +432,11 @@ public class Scene1 extends JPanel implements GameScene {
         return Math.hypot(centerX - x, centerY - y);
     }
 
-    // TODO: enemy shouldnt explode when dying, it should play the death animation instaead
     private void addSmallExplosion(gdd.sprite.Sprite sprite) {
+        if (sprite.isDying()) {
+            return;
+        }
+
         explosions.add(new Explosion(
                 sprite.getX() + sprite.getRenderWidth() / 2,
                 sprite.getY() + sprite.getRenderHeight() / 2));

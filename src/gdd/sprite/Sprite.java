@@ -30,6 +30,8 @@ public abstract class Sprite {
     private final List<Image> animationFrames = new ArrayList<>();
     private int currentAnimationFrame;
     private int ticksSinceLastAnimationFrameChange;
+    private boolean animationLooping = true;
+    private boolean animationFinished;
     /// number of ticks each animation frame remains visible. equivalent to animating on 2s, 3s, 4s, etc
     private final int animationInterval = 7;
 
@@ -89,6 +91,8 @@ public abstract class Sprite {
         return other != null
                 && isVisible()
                 && other.isVisible()
+                && !isDying()
+                && !other.isDying()
                 && getBounds().intersects(other.getBounds());
     }
 
@@ -180,11 +184,21 @@ public abstract class Sprite {
 
         currentAnimationFrame = 0;
         ticksSinceLastAnimationFrameChange = 0;
+        animationLooping = true;
+        animationFinished = false;
+    }
+
+    protected void setAnimationLooping(boolean animationLooping) {
+        this.animationLooping = animationLooping;
+    }
+
+    protected boolean isAnimationFinished() {
+        return animationFinished;
     }
 
     public void advanceAnimation() {
         // check for no animation (static image)
-        if (animationFrames.size() < 2) {
+        if (animationFrames.size() < 2 || animationFinished) {
             return;
         }
 
@@ -199,7 +213,12 @@ public abstract class Sprite {
 
             // if out of bounds, circle back to frame 0
             if (currentAnimationFrame >= animationFrames.size()) {
-                currentAnimationFrame = 0;
+                if (animationLooping) {
+                    currentAnimationFrame = 0;
+                } else {
+                    currentAnimationFrame = animationFrames.size() - 1;
+                    animationFinished = true;
+                }
             }
         }
     }
