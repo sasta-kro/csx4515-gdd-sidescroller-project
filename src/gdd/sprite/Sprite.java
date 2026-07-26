@@ -34,7 +34,7 @@ public abstract class Sprite {
     private boolean animationLooping = true;
     private boolean animationFinished;
     /// number of ticks each animation frame remains visible. equivalent to animating on 2s, 3s, 4s, etc
-    private final int animationInterval = 7;
+    private int animationInterval = 7;
 
     protected Sprite(int x, int y, int width, int height, Color color) {
         this.x = x;
@@ -211,6 +211,10 @@ public abstract class Sprite {
 
     protected void setAnimationLooping(boolean animationLooping) {
         this.animationLooping = animationLooping;
+    }
+
+    protected void setAnimationInterval(int animationInterval) {
+        this.animationInterval = animationInterval;
     }
 
     protected boolean isAnimationFinished() {

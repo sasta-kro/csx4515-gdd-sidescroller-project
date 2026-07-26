@@ -184,19 +184,34 @@ public class GameLogicTest {
     private static void animatesOctopusStates() {
         Player player = new Player(new RunState());
         Octopus octopus = new Octopus(player, 600, 300);
-        Image walkSheet = octopus.getImage();
+        Image idleSheet = octopus.getImage();
 
         assertEquals(288, octopus.getImage().getWidth(null),
-                "octopus walk sheet");
+                "octopus idle sheet");
 
         EnemyProjectile rock = null;
-        for (int tick = 0; tick < secondsToTicks(5) && rock == null; tick++) {
+        for (int tick = 0; tick < secondsToTicks(5)
+                && octopus.getImage() == idleSheet; tick++) {
             octopus.act();
             rock = octopus.shootRockIfReady();
         }
-        assertTrue(rock != null, "octopus throws a rock");
-        assertTrue(octopus.getImage() != walkSheet,
+        assertTrue(rock == null, "rock waits for attack animation");
+        assertTrue(octopus.getImage() != idleSheet,
                 "octopus attack sheet");
+
+        for (int tick = 0; tick < secondsToTicks(0.7) - 1; tick++) {
+            octopus.advanceAnimation();
+            octopus.act();
+            rock = octopus.shootRockIfReady();
+            assertTrue(rock == null, "rock does not spawn during attack");
+        }
+
+        octopus.advanceAnimation();
+        octopus.act();
+        rock = octopus.shootRockIfReady();
+        assertTrue(rock != null, "rock spawns after attack animation");
+        assertTrue(octopus.getImage() == idleSheet,
+                "octopus returns to idle sheet");
 
         assertTrue(!octopus.damage(1), "octopus survives first hit");
         assertEquals(96, octopus.getImage().getWidth(null),
@@ -206,12 +221,12 @@ public class GameLogicTest {
             octopus.advanceAnimation();
             octopus.act();
         }
-        assertTrue(octopus.getImage() == walkSheet,
-                "octopus returns to walk sheet");
+        assertTrue(octopus.getImage() == idleSheet,
+                "octopus returns to idle sheet");
 
         Octopus dyingOctopus = new Octopus(player, 600, 300);
         assertTrue(dyingOctopus.damage(2), "octopus lethal hit");
-        assertTrue(dyingOctopus.getImage() != walkSheet,
+        assertTrue(dyingOctopus.getImage() != idleSheet,
                 "octopus death sheet");
 
         for (int tick = 0; tick < TARGET_FPS; tick++) {

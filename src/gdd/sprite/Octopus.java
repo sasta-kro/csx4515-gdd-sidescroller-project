@@ -9,17 +9,24 @@ import javax.swing.ImageIcon;
 
 public class Octopus extends Enemy {
 
-    private static final String WALK_SHEET_PATH = "src/images/enemies/octopus/Walk.png";
+    private enum State {
+        IDLE,
+        ATTACKING,
+        HURT,
+        DYING
+    }
+
+    private static final String IDLE_SHEET_PATH = "src/images/enemies/octopus/Idle.png";
     private static final String HURT_SHEET_PATH = "src/images/enemies/octopus/Hurt.png";
     private static final String ATTACK_SHEET_PATH = "src/images/enemies/octopus/Attack.png";
     private static final String DEATH_SHEET_PATH = "src/images/enemies/octopus/Death.png";
 
-    private static final ImageIcon walkSheet = new ImageIcon(WALK_SHEET_PATH);
+    private static final ImageIcon idleSheet = new ImageIcon(IDLE_SHEET_PATH);
     private static final ImageIcon hurtSheet = new ImageIcon(HURT_SHEET_PATH);
     private static final ImageIcon attackSheet = new ImageIcon(ATTACK_SHEET_PATH);
     private static final ImageIcon deathSheet = new ImageIcon(DEATH_SHEET_PATH);
 
-    private static final List<Rectangle> walkAnimationClips = List.of(
+    private static final List<Rectangle> idleAnimationClips = List.of(
             new Rectangle(0, 0, 48, 48),
             new Rectangle(48, 0, 48, 48),
             new Rectangle(48*2, 0, 48, 48),
@@ -53,8 +60,7 @@ public class Octopus extends Enemy {
     private double wave;
     private int rockCooldown;
     private boolean rockReady;
-    private boolean attacking;
-    private boolean hurt;
+    private State state = State.IDLE;
 
     public Octopus(Player player, int x, int y) {
         super(player, x, y, 48*2, 48*2, 2,
@@ -62,23 +68,21 @@ public class Octopus extends Enemy {
         centerY = y;
         rockCooldown = nextRockCooldown();
         setHitboxScale(0.55, 0.65);
+        setFlippedHorizontally(true);
         updateAnimationFrames();
     }
 
     @Override
     public void act() {
-        if (isDying()) {
+        if (state == State.DYING) {
             if (isAnimationFinished()) {
                 die();
             }
             return;
         }
 
-        if (hurt && isAnimationFinished()) {
-            hurt = false;
-            updateAnimationFrames();
-        } else if (attacking && isAnimationFinished()) {
-            attacking = false;
+        if (state == State.HURT && isAnimationFinished()) {
+            state = State.IDLE;
             updateAnimationFrames();
         }
 
@@ -86,9 +90,8 @@ public class Octopus extends Enemy {
         wave += 0.045;
         y = centerY + Math.sin(wave) * 44;
 
-        if (--rockCooldown <= 0) {
+        if (!rockReady && state == State.IDLE && --rockCooldown <= 0) {
             rockReady = true;
-            rockCooldown = nextRockCooldown();
         }
 
         if (getX() + getRenderWidth() < 0) {
@@ -97,40 +100,55 @@ public class Octopus extends Enemy {
     }
 
     public EnemyProjectile shootRockIfReady() {
-        if (!rockReady || !isVisible() || isDying() || hurt) {
+        if (!rockReady || !isVisible()
+                || state == State.HURT || state == State.DYING) {
             return null;
         }
 
+        if (state == State.IDLE) {
+            state = State.ATTACKING;
+            updateAnimationFrames();
+            return null;
+        }
+
+        if (!isAnimationFinished()) {
+            return null;
+        }
+
+        state = State.IDLE;
         rockReady = false;
-        attacking = true;
+        rockCooldown = nextRockCooldown();
         updateAnimationFrames();
-        return new EnemyProjectile(getX() - 14, getY() + getRenderHeight() / 2);
+        return new EnemyProjectile(getX() - 14,
+                getY() + getRenderHeight() / 2);
     }
 
     private void updateAnimationFrames() {
-        if (isDying()) {
-            setImage(deathSheet.getImage());
-            setAnimationFrames(deathAnimationClips);
-            setAnimationLooping(false);
-            return;
+        switch (state) {
+            case DYING -> {
+                setImage(deathSheet.getImage());
+                setAnimationInterval(7);
+                setAnimationFrames(deathAnimationClips);
+                setAnimationLooping(false);
+            }
+            case HURT -> {
+                setImage(hurtSheet.getImage());
+                setAnimationInterval(7);
+                setAnimationFrames(hurtAnimationClips);
+                setAnimationLooping(false);
+            }
+            case ATTACKING -> {
+                setImage(attackSheet.getImage());
+                setAnimationInterval(7);
+                setAnimationFrames(attackAnimationClips);
+                setAnimationLooping(false);
+            }
+            case IDLE -> {
+                setImage(idleSheet.getImage());
+                setAnimationInterval(14);
+                setAnimationFrames(idleAnimationClips);
+            }
         }
-
-        if (hurt) {
-            setImage(hurtSheet.getImage());
-            setAnimationFrames(hurtAnimationClips);
-            setAnimationLooping(false);
-            return;
-        }
-
-        if (attacking) {
-            setImage(attackSheet.getImage());
-            setAnimationFrames(attackAnimationClips);
-            setAnimationLooping(false);
-            return;
-        }
-
-        setImage(walkSheet.getImage());
-        setAnimationFrames(walkAnimationClips);
     }
 
     private int nextRockCooldown() {
@@ -146,13 +164,13 @@ public class Octopus extends Enemy {
         health -= amount;
         if (health <= 0) {
             health = 0;
+            state = State.DYING;
             setDying(true);
             updateAnimationFrames();
             return true;
         }
 
-        attacking = false;
-        hurt = true;
+        state = State.HURT;
         updateAnimationFrames();
         return false;
     }
