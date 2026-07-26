@@ -2,39 +2,49 @@ package gdd.sprite;
 
 import static gdd.Global.*;
 import java.awt.Color;
-import java.awt.Graphics;
+import java.awt.Rectangle;
+import java.util.List;
+import javax.swing.ImageIcon;
 
 public class Explosion extends Sprite {
 
-    private int remainingTicks;
+    private static final String EXPLOSION_SHEET_PATH = "src/images/mines/explosion.png";
+    private static final ImageIcon explosionSheet = new ImageIcon(EXPLOSION_SHEET_PATH);
+
+    private static final List<Rectangle> explosionAnimationClips = List.of(
+            new Rectangle(0, 22, 60, 60),
+            new Rectangle(60, 22, 60, 60),
+            new Rectangle(60*2, 22, 60, 60),
+            new Rectangle(60*3, 22, 60, 60),
+            new Rectangle(60*4, 22, 60, 60),
+            new Rectangle(60*5, 22, 60, 60)
+//            new Rectangle(60*6, 22, 60, 60),
+//            new Rectangle(60*7, 22, 60, 60),
+//            new Rectangle(60*8, 22, 60, 60),
+//            new Rectangle(60*9, 22, 60, 60),
+//            new Rectangle(60*10, 22, 60, 60)
+    );
+
     private final int radius;
 
     public Explosion(int centerX, int centerY) {
-        this(centerX, centerY, 28);
+        this(centerX, centerY, 30);
     }
 
     public Explosion(int centerX, int centerY, int radius) {
-        super(centerX - radius, centerY - radius,
-                radius * 2, radius * 2, new Color(255, 150, 50, 170));
+        super(centerX - radius, centerY - radius, radius * 2, radius * 2, new Color(255, 150, 50, 170));
         this.radius = radius;
-        remainingTicks = secondsToTicks(0.35);
+        setImage(explosionSheet.getImage());
+        setAnimationFrames(explosionAnimationClips);
+        setAnimationInterval(5);
+        setAnimationLooping(false);
     }
 
     @Override
     public void act() {
-        remainingTicks--;
-        if (remainingTicks <= 0) {
+        if (isAnimationFinished()) {
             die();
         }
-    }
-
-    @Override
-    public void draw(Graphics g) {
-        g.setColor(new Color(255, 170, 55, 150));
-        g.fillOval(getX(), getY(), getRenderWidth(), getRenderHeight());
-        g.setColor(Color.WHITE);
-        g.drawOval(getX(), getY(), getRenderWidth(), getRenderHeight());
-        drawHitbox(g);
     }
 
     public int getRadius() {
