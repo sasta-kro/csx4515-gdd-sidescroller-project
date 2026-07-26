@@ -23,10 +23,22 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class Scene1 extends JPanel implements GameScene {
+
+    private static final String BACKGROUND_IMAGE_PATH = "src/images/background/scene1_bg/background.png";
+    private static final String MIDGROUND_1_IMAGE_PATH = "src/images/background/scene1_bg/midground1.png";
+    private static final String MIDGROUND_2_IMAGE_PATH = "src/images/background/scene1_bg/midground2.png";
+    private static final int BACKGROUND_SCALE = 2;
+
+    private static final ImageIcon backgroundImage = new ImageIcon(BACKGROUND_IMAGE_PATH);
+    private static final ImageIcon midground1Image = new ImageIcon(MIDGROUND_1_IMAGE_PATH);
+    private static final ImageIcon midground2Image = new ImageIcon(MIDGROUND_2_IMAGE_PATH);
+    private static final int BACKGROUND_WIDTH = backgroundImage.getIconWidth() * BACKGROUND_SCALE;
+    private static final int BACKGROUND_HEIGHT = backgroundImage.getIconHeight() * BACKGROUND_SCALE;
 
     private Game game;
     private RunState runState;
@@ -89,7 +101,6 @@ public class Scene1 extends JPanel implements GameScene {
         loadPlaceholderStageContent();
     }
 
-    // TODO: parallax bg (or the other way around??)
     private void loadPlaceholderStageContent() {
         mines.add(new Mine(BOARD_WIDTH + 120, 180));
         mines.add(new Mine(BOARD_WIDTH + 520, 460));
@@ -163,8 +174,9 @@ public class Scene1 extends JPanel implements GameScene {
     private void updateBackgroundScroll() {
         // The near and far background layers are moving at different speeds.
         // These offsets are changing here, and gameTick() is repainting afterward.
-        backgroundOffsetNear = (backgroundOffsetNear + WORLD_SCROLL_SPEED) % 90;
-        backgroundOffsetFar = (backgroundOffsetFar + 1) % 150;
+        backgroundOffsetNear
+                = (backgroundOffsetNear + WORLD_SCROLL_SPEED) % BACKGROUND_WIDTH;
+        backgroundOffsetFar = (backgroundOffsetFar + 1) % BACKGROUND_WIDTH;
     }
 
     private void updatePlayerDeath() {
@@ -509,18 +521,21 @@ public class Scene1 extends JPanel implements GameScene {
     }
 
     private void drawBackground(Graphics g) {
-        g.setColor(new Color(4, 56, 88));
-        g.fillRect(0, 0, getWidth(), getHeight());
+        int backgroundY = getHeight() - BACKGROUND_HEIGHT;
 
-        g.setColor(new Color(30, 105, 135, 130));
-        for (int x = -backgroundOffsetFar; x < getWidth(); x += 150) {
-            g.fillRect(x, 90 + (x & 63), 38, 18);
-        }
+        drawBackgroundLayer(g, backgroundImage,
+                backgroundOffsetFar, backgroundY);
+        drawBackgroundLayer(g, midground1Image,
+                backgroundOffsetFar, backgroundY);
+        drawBackgroundLayer(g, midground2Image,
+                backgroundOffsetNear, backgroundY);
+    }
 
-        g.setColor(new Color(95, 195, 215, 150));
-        for (int x = -backgroundOffsetNear; x < getWidth(); x += 90) {
-            g.drawOval(x, 150 + Math.abs(x % 240), 12, 12);
-            g.drawOval(x + 20, 180 + Math.abs(x % 170), 6, 6);
+    private void drawBackgroundLayer(Graphics g, ImageIcon layer,
+            int offset, int y) {
+        for (int x = -offset; x < getWidth(); x += BACKGROUND_WIDTH) {
+            g.drawImage(layer.getImage(), x, y,
+                    BACKGROUND_WIDTH, BACKGROUND_HEIGHT, null);
         }
     }
 
