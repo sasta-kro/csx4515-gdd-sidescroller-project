@@ -8,6 +8,12 @@ import javax.swing.ImageIcon;
 
 public class Turtle extends Enemy {
 
+    private enum State {
+        IDLE,
+        HURT,
+        DYING
+    }
+
     private static final double TRACK_SPEED = 1.25;
     private static final String WALK_SHEET_PATH = "src/images/enemies/turtle/Walk.png";
     private static final String HURT_SHEET_PATH = "src/images/enemies/turtle/Hurt.png";
@@ -38,7 +44,7 @@ public class Turtle extends Enemy {
             new Rectangle(48*5, 0, 48, 48)
     );
 
-    private boolean hurt;
+    private State state = State.IDLE;
 
     public Turtle(Player player, int x, int y) {
         super(player, x, y, 48*3, 48*3, 2, ENEMY_CONTACT_DAMAGE, 250, new Color(80, 175, 105));
@@ -49,15 +55,15 @@ public class Turtle extends Enemy {
 
     @Override
     public void act() {
-        if (isDying()) {
+        if (state == State.DYING) {
             if (isAnimationFinished()) {
                 die();
             }
             return;
         }
 
-        if (hurt && isAnimationFinished()) {
-            hurt = false;
+        if (state == State.HURT && isAnimationFinished()) {
+            state = State.IDLE;
             updateAnimationFrames();
         }
 
@@ -76,14 +82,14 @@ public class Turtle extends Enemy {
     }
 
     private void updateAnimationFrames() {
-        if (isDying()) {
+        if (state == State.DYING) {
             setImage(deathSheet.getImage());
             setAnimationFrames(deathAnimationClips);
             setAnimationLooping(false);
             return;
         }
 
-        if (hurt) {
+        if (state == State.HURT) {
             setImage(hurtSheet.getImage());
             setAnimationFrames(hurtAnimationClips);
             setAnimationLooping(false);
@@ -103,12 +109,13 @@ public class Turtle extends Enemy {
         health -= amount;
         if (health <= 0) {
             health = 0;
+            state = State.DYING;
             setDying(true);
             updateAnimationFrames();
             return true;
         }
 
-        hurt = true;
+        state = State.HURT;
         updateAnimationFrames();
         return false;
     }
