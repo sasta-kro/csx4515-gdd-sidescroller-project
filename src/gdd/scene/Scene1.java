@@ -523,19 +523,15 @@ public class Scene1 extends JPanel implements GameScene {
     private void drawBackground(Graphics g) {
         int backgroundY = getHeight() - BACKGROUND_HEIGHT;
 
-        drawBackgroundLayer(g, backgroundImage,
-                backgroundOffsetFar, backgroundY);
-        drawBackgroundLayer(g, midground1Image,
-                backgroundOffsetFar, backgroundY);
-        drawBackgroundLayer(g, midground2Image,
-                backgroundOffsetNear, backgroundY);
+        drawBackgroundLayer(g, backgroundImage, backgroundOffsetFar, backgroundY);
+        drawBackgroundLayer(g, midground1Image, backgroundOffsetFar, backgroundY);
+        drawBackgroundLayer(g, midground2Image, backgroundOffsetNear, backgroundY);
     }
 
     private void drawBackgroundLayer(Graphics g, ImageIcon layer,
             int offset, int y) {
         for (int x = -offset; x < getWidth(); x += BACKGROUND_WIDTH) {
-            g.drawImage(layer.getImage(), x, y,
-                    BACKGROUND_WIDTH, BACKGROUND_HEIGHT, null);
+            g.drawImage(layer.getImage(), x, y, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, null);
         }
     }
 
