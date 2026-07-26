@@ -29,8 +29,8 @@ public final class Global {
     // Player
     public static final int PLAYER_START_X = 90;
     public static final int PLAYER_START_Y = BOARD_HEIGHT / 2;
-    public static final int PLAYER_WIDTH = 44;
-    public static final int PLAYER_HEIGHT = 28;
+    public static final int PLAYER_WIDTH = 44*2;
+    public static final int PLAYER_HEIGHT = 28*2;
     public static final int PLAYER_MAX_HEALTH = 5;
     public static final int PLAYER_BASE_SPEED = 4;
     public static final int PLAYER_SPEED_LEVEL_1 = 5;

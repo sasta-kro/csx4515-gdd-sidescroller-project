@@ -5,11 +5,22 @@ import static gdd.Global.*;
 import gdd.powerup.WeaponType;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Rectangle;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.ImageIcon;
 
 public class Player extends Sprite {
+
+    private static final String ASSET_SHEET_PATH = "src/images/player/player_fish_spritesheet.png";
+    /// Rectangle values are: top-left x, top-left y, width, height in source-image pixels.
+    private static final List<Rectangle> ANIMATION_CLIPS = List.of(
+            new Rectangle(64*8, 64*9, 64, 64),
+            new Rectangle(64*9, 64*9, 64, 64),
+            new Rectangle(64*10, 64*9, 64, 64),
+            new Rectangle(64*11, 64*9, 64, 64)
+    );
 
     private boolean movingUp;
     private boolean movingDown;
@@ -39,7 +50,14 @@ public class Player extends Sprite {
         multiShotLevel = state.getMultiShotLevel();
         weaponPowerupTicks = state.getWeaponPowerupTicks();
         setHitboxScale(0.88);
-        setPlaceholderColor(getActiveColor());
+        setFlippedHorizontally(true);
+        loadPlayerAnimation();
+    }
+
+    private void loadPlayerAnimation() {
+        var assetSheet = new ImageIcon(ASSET_SHEET_PATH);
+        setImage(assetSheet.getImage());
+        setAnimationFrames(ANIMATION_CLIPS);
     }
 
     @Override

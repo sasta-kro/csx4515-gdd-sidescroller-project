@@ -4,8 +4,10 @@ import static gdd.Global.*;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,14 +23,15 @@ public abstract class Sprite {
 
     private int width;
     private int height;
+    private boolean flippedHorizontally;
     private double renderScale = RENDER_SCALE;
     private double hitboxScale = HITBOX_SCALE;
     private Color placeholderColor;
     private final List<Image> animationFrames = new ArrayList<>();
     private int currentAnimationFrame;
     private int ticksSinceLastAnimationFrameChange;
-    /// number of ticks each image remains visible. equivalent to animating on 2s, 3s, 4s, etc.
-    private int animationInterval = 1;
+    /// number of ticks each animation frame remains visible. equivalent to animating on 2s, 3s, 4s, etc
+    private final int animationInterval = 7;
 
     protected Sprite(int x, int y, int width, int height, Color color) {
         this.x = x;
@@ -46,10 +49,15 @@ public abstract class Sprite {
 
         Image activeImage = getActiveImage();
         if (activeImage != null) {
-            g.drawImage(activeImage, getX(), getY(), renderWidth, renderHeight, null);
+            if (flippedHorizontally) {
+                g.drawImage(activeImage, getX() + renderWidth, getY(), -renderWidth, renderHeight, null);
+            } else {
+                g.drawImage(activeImage, getX(), getY(), renderWidth, renderHeight, null);
+            }
             return;
         }
 
+        // temporary placeholder drawing until all assets are loaded
         g.setColor(placeholderColor);
         g.fillRect(getX(), getY(), renderWidth, renderHeight);
         g.setColor(new Color(255, 255, 255, 130));
@@ -148,6 +156,10 @@ public abstract class Sprite {
         this.hitboxScale = Math.max(0.1, hitboxScale);
     }
 
+    public void setFlippedHorizontally(boolean flippedHorizontally) {
+        this.flippedHorizontally = flippedHorizontally;
+    }
+
     public Image getImage() {
         return image;
     }
@@ -156,12 +168,18 @@ public abstract class Sprite {
         this.image = image;
     }
 
-    public void setAnimationFrames(List<Image> frames, int intervalTicks) {
+    /// Cuts and caches animation frames from the sprite sheet image.
+    public void setAnimationFrames(List<Rectangle> clips) {
+        BufferedImage sheet = toBufferedImage(image);
         animationFrames.clear();
-        animationFrames.addAll(frames);
+
+        for (Rectangle clip : clips) {
+            animationFrames.add(sheet.getSubimage(
+                    clip.x, clip.y, clip.width, clip.height));
+        }
+
         currentAnimationFrame = 0;
         ticksSinceLastAnimationFrameChange = 0;
-        animationInterval = Math.max(1, intervalTicks);
     }
 
     public void advanceAnimation() {
@@ -191,6 +209,21 @@ public abstract class Sprite {
             return animationFrames.get(currentAnimationFrame);
         }
         return image;
+    }
+
+    private BufferedImage toBufferedImage(Image source) {
+        // if image already exists, just return the cached one
+        if (source instanceof BufferedImage bufferedImage) {
+            return bufferedImage;
+        }
+
+        BufferedImage bufferedImage = new BufferedImage(
+                source.getWidth(null), source.getHeight(null),
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = bufferedImage.createGraphics();
+        graphics.drawImage(source, 0, 0, null);
+        graphics.dispose();
+        return bufferedImage;
     }
 
     public Color getPlaceholderColor() {
