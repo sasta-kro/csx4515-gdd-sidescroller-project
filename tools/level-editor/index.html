@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ocean Invaders Level Editor</title>
+<style>
+  :root {
+    --bg: #101417;
+    --panel: #191f22;
+    --panel2: #232b2e;
+    --line: #3a464a;
+    --text: #eef5f2;
+    --muted: #9aa9a4;
+    --accent: #55d6a5;
+    --accent2: #ff9d66;
+    --danger: #ff665f;
+    --warning: #ffd166;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 13px/1.35 ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    overflow: hidden;
+  }
+  button, input, select {
+    font: inherit;
+    color: var(--text);
+    background: var(--panel2);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    min-height: 30px;
+  }
+  button { padding: 5px 9px; cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button.active { background: var(--accent); color: #06271c; border-color: var(--accent); font-weight: 700; }
+  button.icon { width: 32px; padding: 4px; font-size: 17px; }
+  input, select { padding: 4px 7px; }
+  input[type=number] { width: 78px; }
+  #topbar, #modebar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 10px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--line);
+    flex-wrap: wrap;
+  }
+  #modebar { background: #151a1d; }
+  .group { display: flex; align-items: center; gap: 6px; }
+  .group + .group { border-left: 1px solid var(--line); padding-left: 9px; }
+  label { color: var(--muted); }
+  #palette {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-width: 0;
+    overflow-x: auto;
+    padding-bottom: 2px;
+  }
+  .palette-item {
+    display: grid;
+    grid-template-columns: 28px auto;
+    align-items: center;
+    gap: 5px;
+    flex: none;
+    padding: 3px 7px 3px 3px;
+  }
+  .thumb {
+    width: 28px;
+    height: 28px;
+    object-fit: contain;
+    image-rendering: pixelated;
+    background: #0c1113;
+    border: 1px solid var(--line);
+  }
+  #workspace { min-height: 0; display: grid; grid-template-columns: minmax(0, 1fr) 244px; }
+  #main { min-width: 0; min-height: 0; position: relative; }
+  #layoutPane, #previewPane { width: 100%; height: 100%; }
+  #layoutPane { overflow: auto; background: #08171d; }
+  #layoutCanvas { display: block; image-rendering: pixelated; }
+  #previewPane {
+    display: none;
+    overflow: auto;
+    place-items: center;
+    padding: 16px;
+    background: #08171d;
+  }
+  #previewCanvas {
+    display: block;
+    width: min(100%, 716px);
+    height: auto;
+    aspect-ratio: 716 / 700;
+    image-rendering: pixelated;
+    border: 1px solid var(--line);
+  }
+  #side {
+    background: var(--panel);
+    border-left: 1px solid var(--line);
+    padding: 10px;
+    overflow-y: auto;
+  }
+  #side h2 { font-size: 13px; margin: 0 0 8px; color: var(--accent); }
+  .field { display: grid; grid-template-columns: 76px 1fr; align-items: center; gap: 7px; margin-bottom: 7px; }
+  .field input, .field select { width: 100%; min-width: 0; }
+  #emptySelection { color: var(--muted); padding: 8px 0; }
+  #eventInspector { display: none; }
+  #warnings { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 8px; }
+  .warning {
+    padding: 5px 6px;
+    margin-bottom: 4px;
+    background: #2a2420;
+    border-left: 3px solid var(--warning);
+    cursor: pointer;
+  }
+  .warning.error { background: #2c1d1d; border-color: var(--danger); }
+  #status {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    padding: 6px 10px;
+    background: var(--panel);
+    border-top: 1px solid var(--line);
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+    overflow-x: auto;
+    white-space: nowrap;
+  }
+  #status b { color: var(--text); }
+  #cursorStatus { margin-left: auto; }
+  #toast {
+    position: absolute;
+    left: 50%;
+    bottom: 16px;
+    translate: -50% 0;
+    background: #070a0bea;
+    border: 1px solid var(--line);
+    padding: 7px 12px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .15s;
+    z-index: 5;
+  }
+  #toast.show { opacity: 1; }
+  .danger { color: #fff; background: #6b2424; border-color: #9c3939; width: 100%; margin-top: 5px; }
+  .grow { flex: 1; min-width: 12px; }
+  #previewControls { display: none; }
+  @media (max-width: 820px) {
+    #workspace { grid-template-columns: minmax(0, 1fr); }
+    #side { display: none; }
+    .group + .group { border-left: 0; padding-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div id="topbar">
+  <div class="group">
+    <strong>Ocean Invaders Editor</strong>
+    <label for="stage">Stage</label>
+    <select id="stage">
+      <option value="scene1">Scene 1</option>
+      <option value="scene2">Scene 2</option>
+    </select>
+  </div>
+  <div class="group">
+    <label for="columns">Columns</label>
+    <input id="columns" type="number" min="16" max="1000" value="735">
+    <button id="resizeLevel">Resize</button>
+  </div>
+  <div class="group">
+    <button id="loadFiles">Load CSVs</button>
+    <input id="fileInput" type="file" accept=".csv" multiple hidden>
+    <button id="saveFiles">Save CSVs</button>
+  </div>
+  <div class="group">
+    <button id="undo" class="icon" title="Undo (Ctrl/Cmd+Z)">↶</button>
+    <button id="redo" class="icon" title="Redo (Ctrl/Cmd+Shift+Z)">↷</button>
+  </div>
+  <div class="grow"></div>
+  <div class="group">
+    <button id="layoutView" class="active">World Layout</button>
+    <button id="previewView">Viewport Preview</button>
+  </div>
+</div>
+
+<div id="modebar">
+  <div class="group">
+    <button class="tab active" data-tab="terrain">Terrain</button>
+    <button class="tab" data-tab="enemy">Enemies</button>
+    <button class="tab" data-tab="obstacle">Obstacles</button>
+    <button class="tab" data-tab="powerup">Powerups</button>
+  </div>
+  <div class="group">
+    <button id="erase">Erase</button>
+    <button id="toggleGrid" class="active">Grid</button>
+    <button id="toggleHitboxes">Footprints</button>
+  </div>
+  <div class="group">
+    <label for="zoom">Zoom</label>
+    <select id="zoom">
+      <option value="0.2">20%</option>
+      <option value="0.3" selected>30%</option>
+      <option value="0.4">40%</option>
+      <option value="0.5">50%</option>
+      <option value="0.65">65%</option>
+    </select>
+  </div>
+  <div id="previewControls" class="group">
+    <label for="previewTick">Tick</label>
+    <input id="previewTick" type="number" min="0" max="18000" value="0">
+    <input id="previewRange" type="range" min="0" max="18000" value="0" style="width:170px">
+  </div>
+  <div id="palette" class="grow"></div>
+</div>
+
+<div id="workspace">
+  <main id="main">
+    <div id="layoutPane"><canvas id="layoutCanvas"></canvas></div>
+    <div id="previewPane"><canvas id="previewCanvas" width="716" height="700"></canvas></div>
+    <div id="toast"></div>
+  </main>
+  <aside id="side">
+    <h2>Selected Event</h2>
+    <div id="emptySelection">Select an event marker.</div>
+    <div id="eventInspector">
+      <div class="field"><label for="eventType">Type</label><select id="eventType"></select></div>
+      <div class="field"><label for="eventTick">Tick</label><input id="eventTick" type="number" min="0" max="18000"></div>
+      <div class="field"><label for="eventTime">Time</label><input id="eventTime" readonly></div>
+      <div class="field"><label for="eventX">Screen X</label><input id="eventX" type="number"></div>
+      <div class="field"><label for="eventY">Screen Y</label><input id="eventY" type="number"></div>
+      <button id="deleteEvent" class="danger">Delete Event</button>
+    </div>
+    <div id="warnings">
+      <h2>Validation</h2>
+      <div id="warningList"></div>
+    </div>
+  </aside>
+</div>
+
+<div id="status">
+  <span>Length <b id="lengthStatus"></b></span>
+  <span>Terrain <b id="terrainStatus"></b></span>
+  <span>Events <b id="eventStatus"></b></span>
+  <span id="cursorStatus"></span>
+</div>
+
+<script src="config.js"></script>
+<script>
+"use strict";
+
+const TILE = 50;
+const ROWS = 14;
+const SCREEN_W = 716;
+const SCREEN_H = 700;
+const FPS = 60;
+const SCROLL = 2;
+const STAGE_TICKS = 18000;
+const REQUIRED_COLUMNS = Math.ceil((STAGE_TICKS * SCROLL + SCREEN_W) / TILE);
+const CFG = window.EDITOR_CONFIG;
+const TILES = CFG.tiles;
+const TILE_IDS = Object.keys(TILES).map(Number).sort((a, b) => a - b);
+const EVENT_TYPES = CFG.eventTypes;
+const TYPE_BY_NAME = Object.fromEntries(EVENT_TYPES.map(type => [type.type, type]));
+
+const $ = id => document.getElementById(id);
+const layoutCanvas = $("layoutCanvas");
+const layout = layoutCanvas.getContext("2d");
+const previewCanvas = $("previewCanvas");
+const preview = previewCanvas.getContext("2d");
+
+let columns = CFG.defaultColumns;
+let terrain = new Int16Array(ROWS * columns);
+let events = [];
+let nextEventId = 1;
+let tab = "terrain";
+let selectedTile = TILE_IDS[0];
+let selectedEventType = "Jellyfish";
+let selectedEventId = null;
+let erasing = false;
+let showGrid = true;
+let showFootprints = false;
+let zoom = Number($("zoom").value);
+let cursor = null;
+let undoStack = [];
+let redoStack = [];
+let dragPainting = false;
+let previewDragEventId = null;
+
+const tileSheet = loadImage(CFG.tileSheet);
+const backgroundImages = {};
+for (const [stage, layers] of Object.entries(CFG.backgrounds)) {
+  backgroundImages[stage] = {};
+  for (const [name, value] of Object.entries(layers)) {
+    if (typeof value === "string") backgroundImages[stage][name] = loadImage(value);
+  }
+}
+const eventImages = {};
+for (const type of EVENT_TYPES) {
+  if (type.sprite && !eventImages[type.sprite]) eventImages[type.sprite] = loadImage(type.sprite);
+}
+
+function loadImage(path) {
+  const image = new Image();
+  image.onload = drawAll;
+  image.src = path;
+  return image;
+}
+
+function stageNumber() {
+  return $("stage").value === "scene2" ? 2 : 1;
+}
+
+function typesFor(category) {
+  const stage = stageNumber();
+  return EVENT_TYPES.filter(type => type.category === category && type.stages.includes(stage));
+}
+
+function indexOf(row, column) {
+  return row * columns + column;
+}
+
+function tileAt(row, column) {
+  return terrain[indexOf(row, column)];
+}
+
+function setTile(row, column, value) {
+  terrain[indexOf(row, column)] = value;
+}
+
+function worldXToTick(worldX) {
+  return Math.round((worldX - SCREEN_W) / SCROLL);
+}
+
+function tickToWorldX(tick) {
+  return tick * SCROLL + SCREEN_W;
+}
+
+function formatTime(tick) {
+  const seconds = Math.max(0, tick) / FPS;
+  const minutes = Math.floor(seconds / 60);
+  return `${minutes}:${String(Math.floor(seconds % 60)).padStart(2, "0")}.${String(Math.floor(seconds * 10) % 10)}`;
+}
+
+function snapshot() {
+  return {
+    columns,
+    terrain: terrain.slice(),
+    events: events.map(event => ({ ...event })),
+    nextEventId,
+  };
+}
+
+function restore(state) {
+  columns = state.columns;
+  terrain = state.terrain.slice();
+  events = state.events.map(event => ({ ...event }));
+  nextEventId = state.nextEventId;
+  $("columns").value = columns;
+  selectedEventId = null;
+  drawAll();
+}
+
+function edit(change) {
+  undoStack.push(snapshot());
+  if (undoStack.length > 100) undoStack.shift();
+  redoStack.length = 0;
+  change();
+  drawAll();
+}
+
+function undo() {
+  if (!undoStack.length) return;
+  redoStack.push(snapshot());
+  restore(undoStack.pop());
+}
+
+function redo() {
+  if (!redoStack.length) return;
+  undoStack.push(snapshot());
+  restore(redoStack.pop());
+}
+
+function anchorAt(row, column) {
+  if (row < 0 || row >= ROWS || column < 0 || column >= columns) return null;
+  const value = tileAt(row, column);
+  if (value > 0) return { row, column, id: value };
+  if (value === 0) return null;
+
+  for (let r = Math.max(0, row - 3); r <= row; r++) {
+    for (let c = Math.max(0, column - 3); c <= column; c++) {
+      const id = tileAt(r, c);
+      if (id <= 0) continue;
+      const [wide, high] = TILES[id].footprint;
+      if (row < r + high && column < c + wide) return { row: r, column: c, id };
+    }
+  }
+  return null;
+}
+
+function clearPlacement(anchor) {
+  const [wide, high] = TILES[anchor.id].footprint;
+  for (let row = anchor.row; row < anchor.row + high; row++) {
+    for (let column = anchor.column; column < anchor.column + wide; column++) {
+      setTile(row, column, 0);
+    }
+  }
+}
+
+function placeTile(row, column, id) {
+  const [wide, high] = TILES[id].footprint;
+  if (row < 0 || column < 0 || row + high > ROWS || column + wide > columns) {
+    toast("Tile footprint is outside the level");
+    return;
+  }
+
+  const overlaps = new Map();
+  for (let r = row; r < row + high; r++) {
+    for (let c = column; c < column + wide; c++) {
+      const anchor = anchorAt(r, c);
+      if (anchor) overlaps.set(`${anchor.row}:${anchor.column}`, anchor);
+    }
+  }
+  for (const anchor of overlaps.values()) clearPlacement(anchor);
+
+  setTile(row, column, id);
+  for (let r = row; r < row + high; r++) {
+    for (let c = column; c < column + wide; c++) {
+      if (r !== row || c !== column) setTile(r, c, -1);
+    }
+  }
+}
+
+function eraseTile(row, column) {
+  const anchor = anchorAt(row, column);
+  if (anchor) clearPlacement(anchor);
+}
+
+function resizeLevel() {
+  const next = Math.max(16, Math.min(1000, Number($("columns").value) || columns));
+  if (next === columns) return;
+  edit(() => {
+    const resized = new Int16Array(ROWS * next);
+    for (let row = 0; row < ROWS; row++) {
+      for (let column = 0; column < Math.min(columns, next); column++) {
+        const id = tileAt(row, column);
+        if (id <= 0) continue;
+        const [wide, high] = TILES[id].footprint;
+        if (column + wide > next) continue;
+        resized[row * next + column] = id;
+        for (let r = row; r < row + high; r++) {
+          for (let c = column; c < column + wide; c++) {
+            if (r !== row || c !== column) resized[r * next + c] = -1;
+          }
+        }
+      }
+    }
+    columns = next;
+    terrain = resized;
+    events = events.filter(event => event.tick <= STAGE_TICKS);
+  });
+}
+
+function placeEvent(worldX, worldY) {
+  const definition = TYPE_BY_NAME[selectedEventType];
+  const tick = worldXToTick(worldX);
+  if (tick < 0 || tick > STAGE_TICKS) {
+    toast("Events must be between tick 0 and 18000");
+    return;
+  }
+
+  const y = definition.snake
+    ? definition.defaultY
+    : Math.max(42, Math.min(SCREEN_H - definition.size[1], Math.round(worldY - definition.size[1] / 2)));
+  const event = {
+    id: nextEventId++,
+    tick,
+    type: definition.type,
+    x: definition.defaultX,
+    y,
+  };
+  edit(() => events.push(event));
+  selectedEventId = event.id;
+  updateInspector();
+}
+
+function selectedEvent() {
+  return events.find(event => event.id === selectedEventId) || null;
+}
+
+function eventAt(worldX, worldY) {
+  for (let index = events.length - 1; index >= 0; index--) {
+    const event = events[index];
+    const definition = TYPE_BY_NAME[event.type];
+    if (!definition) continue;
+    const markerX = tickToWorldX(event.tick);
+    const markerY = definition.snake
+      ? (event.type === "SnakeTop" ? 30 : SCREEN_H - 30)
+      : event.y + definition.size[1] / 2;
+    if (Math.abs(worldX - markerX) < 30 / zoom
+        && Math.abs(worldY - markerY) < 30 / zoom) return event;
+  }
+  return null;
+}
+
+function deleteSelectedEvent() {
+  if (selectedEventId === null) return;
+  edit(() => events = events.filter(event => event.id !== selectedEventId));
+  selectedEventId = null;
+  updateInspector();
+}
+
+function drawAll() {
+  drawLayout();
+  drawPreview();
+  buildPalette();
+  updateInspector();
+  updateStatus();
+  updateWarnings();
+}
+
+function drawLayout() {
+  const rulerHeight = 34;
+  const width = Math.ceil(columns * TILE * zoom);
+  const height = Math.ceil(ROWS * TILE * zoom + rulerHeight);
+  layoutCanvas.width = width;
+  layoutCanvas.height = height;
+  layout.imageSmoothingEnabled = false;
+  layout.clearRect(0, 0, width, height);
+  layout.fillStyle = "#082735";
+  layout.fillRect(0, rulerHeight, width, height - rulerHeight);
+
+  drawWorldBackground(rulerHeight);
+
+  for (let row = 0; row < ROWS; row++) {
+    for (let column = 0; column < columns; column++) {
+      const id = tileAt(row, column);
+      if (id <= 0) continue;
+      const definition = TILES[id];
+      const [sx, sy, sw, sh] = definition.source;
+      const [wide, high] = definition.footprint;
+      layout.drawImage(tileSheet, sx, sy, sw, sh,
+        column * TILE * zoom, rulerHeight + row * TILE * zoom,
+        wide * TILE * zoom, high * TILE * zoom);
+    }
+  }
+
+  for (const event of events) drawEventMarker(event, rulerHeight);
+
+  if (showGrid) {
+    layout.strokeStyle = "rgba(255,255,255,.12)";
+    layout.lineWidth = 1;
+    layout.beginPath();
+    for (let column = 0; column <= columns; column++) {
+      const x = Math.round(column * TILE * zoom) + .5;
+      layout.moveTo(x, rulerHeight);
+      layout.lineTo(x, height);
+    }
+    for (let row = 0; row <= ROWS; row++) {
+      const y = Math.round(rulerHeight + row * TILE * zoom) + .5;
+      layout.moveTo(0, y);
+      layout.lineTo(width, y);
+    }
+    layout.stroke();
+  }
+
+  drawRuler(rulerHeight, width);
+}
+
+function drawWorldBackground(rulerHeight) {
+  const stage = $("stage").value;
+  const image = stage === "scene1"
+    ? backgroundImages.scene1.far
+    : backgroundImages.scene2.near;
+  if (!image || !image.complete) return;
+  layout.save();
+  layout.globalAlpha = .28;
+  const drawHeight = ROWS * TILE * zoom;
+  const drawWidth = image.width / image.height * drawHeight;
+  for (let x = 0; x < layoutCanvas.width; x += drawWidth) {
+    layout.drawImage(image, x, rulerHeight, drawWidth, drawHeight);
+  }
+  layout.restore();
+}
+
+function drawEventMarker(event, rulerHeight) {
+  const definition = TYPE_BY_NAME[event.type];
+  if (!definition) return;
+  const worldX = tickToWorldX(event.tick);
+  const centerY = definition.snake
+    ? (event.type === "SnakeTop" ? 28 : SCREEN_H - 28)
+    : event.y + definition.size[1] / 2;
+  const x = worldX * zoom;
+  const y = rulerHeight + centerY * zoom;
+  const selected = event.id === selectedEventId;
+
+  layout.save();
+  layout.translate(x, y);
+  if (selected) {
+    layout.strokeStyle = "#55d6a5";
+    layout.lineWidth = 3;
+    layout.strokeRect(-19, -19, 38, 38);
+  }
+  drawRepresentative(layout, definition, -16, -16, 32, 32);
+  layout.fillStyle = "#071014d9";
+  layout.fillRect(-20, 18, 40, 14);
+  layout.fillStyle = "#fff";
+  layout.font = "10px sans-serif";
+  layout.textAlign = "center";
+  layout.fillText(definition.code, 0, 29);
+  layout.restore();
+}
+
+function drawRuler(height, width) {
+  layout.fillStyle = "#151a1d";
+  layout.fillRect(0, 0, width, height);
+  layout.strokeStyle = "#3a464a";
+  layout.beginPath();
+  for (let tick = 0; tick <= STAGE_TICKS; tick += 300) {
+    const x = tickToWorldX(tick) * zoom;
+    layout.moveTo(x, 18);
+    layout.lineTo(x, height);
+  }
+  layout.stroke();
+  layout.fillStyle = "#cdd9d4";
+  layout.font = "10px sans-serif";
+  layout.textAlign = "center";
+  for (let tick = 0; tick <= STAGE_TICKS; tick += 600) {
+    const x = tickToWorldX(tick) * zoom;
+    layout.fillText(formatTime(tick), x, 12);
+    layout.fillText(`t${tick}`, x, 27);
+  }
+  layout.fillStyle = "rgba(255,80,80,.16)";
+  layout.fillRect(0, 0, SCREEN_W * zoom, layoutCanvas.height);
+}
+
+function drawPreview() {
+  preview.imageSmoothingEnabled = false;
+  const tick = Math.max(0, Math.min(STAGE_TICKS, Number($("previewTick").value) || 0));
+  drawPreviewBackground(tick);
+  drawPreviewTerrain(tick);
+
+  const windowTicks = 2;
+  for (const event of events) {
+    if (Math.abs(event.tick - tick) > windowTicks) continue;
+    const definition = TYPE_BY_NAME[event.type];
+    if (!definition) continue;
+    const drawY = previewEventY(event, definition);
+    drawRepresentative(preview, definition,
+      event.x, drawY, definition.size[0], definition.size[1]);
+    if (showFootprints) {
+      preview.strokeStyle = "#ff4a4a";
+      preview.strokeRect(event.x, drawY, definition.size[0], definition.size[1]);
+    }
+  }
+}
+
+function previewEventY(event, definition) {
+  if (event.type === "SnakeTop") return 0;
+  if (event.type === "SnakeBottom") return SCREEN_H - definition.size[1];
+  return event.y;
+}
+
+function drawPreviewBackground(tick) {
+  preview.clearRect(0, 0, SCREEN_W, SCREEN_H);
+  const stage = $("stage").value;
+  if (stage === "scene1") {
+    const layers = backgroundImages.scene1;
+    const width = Math.round(576 * (SCREEN_H / 324));
+    drawRepeatingLayer(preview, layers.far, tick % width, width, SCREEN_H);
+    drawRepeatingLayer(preview, layers.middle, tick % width, width, SCREEN_H);
+    drawRepeatingLayer(preview, layers.near, tick * SCROLL % width, width, SCREEN_H);
+  } else {
+    const layers = backgroundImages.scene2;
+    const nearScale = SCREEN_H / 512;
+    const nearWidth = Math.round(960 * nearScale);
+    const farScale = nearScale * 2;
+    const farWidth = Math.round(288 * farScale);
+    drawRepeatingLayer(preview, layers.far, tick % farWidth, farWidth, SCREEN_H);
+    drawRepeatingLayer(preview, layers.near, tick * SCROLL % nearWidth, nearWidth, SCREEN_H);
+  }
+}
+
+function drawRepeatingLayer(context, image, offset, width, height) {
+  if (!image || !image.complete) {
+    context.fillStyle = "#07324a";
+    context.fillRect(0, 0, SCREEN_W, SCREEN_H);
+    return;
+  }
+  for (let x = -offset; x < SCREEN_W; x += width) {
+    context.drawImage(image, x, 0, width, height);
+  }
+}
+
+function drawPreviewTerrain(tick) {
+  const cameraX = tick * SCROLL;
+  const first = Math.max(0, Math.floor(cameraX / TILE) - 4);
+  const last = Math.min(columns - 1, Math.ceil((cameraX + SCREEN_W) / TILE));
+  for (let row = 0; row < ROWS; row++) {
+    for (let column = first; column <= last; column++) {
+      const id = tileAt(row, column);
+      if (id <= 0) continue;
+      const definition = TILES[id];
+      const [sx, sy, sw, sh] = definition.source;
+      const [wide, high] = definition.footprint;
+      preview.drawImage(tileSheet, sx, sy, sw, sh,
+        column * TILE - cameraX, row * TILE,
+        wide * TILE, high * TILE);
+      if (showFootprints) {
+        preview.strokeStyle = "#ff4a4a";
+        preview.strokeRect(column * TILE - cameraX, row * TILE,
+          wide * TILE, high * TILE);
+      }
+    }
+  }
+}
+
+function drawRepresentative(context, definition, x, y, width, height) {
+  if (!definition) return;
+  const image = eventImages[definition.sprite];
+  if (!image || !image.complete) {
+    context.fillStyle = definition.color;
+    context.fillRect(x, y, width, height);
+    context.fillStyle = "#fff";
+    context.font = "bold 11px sans-serif";
+    context.textAlign = "center";
+    context.fillText(definition.code, x + width / 2, y + height / 2 + 4);
+    return;
+  }
+
+  context.save();
+  context.translate(x + width / 2, y + height / 2);
+  context.rotate((definition.rotation || 0) * Math.PI / 180);
+  context.scale(definition.flipX ? -1 : 1, 1);
+  if (definition.source) {
+    const [sx, sy, sw, sh] = definition.source;
+    context.drawImage(image, sx, sy, sw, sh, -width / 2, -height / 2, width, height);
+  } else {
+    context.drawImage(image, -width / 2, -height / 2, width, height);
+  }
+  context.restore();
+}
+
+function buildPalette() {
+  const palette = $("palette");
+  palette.innerHTML = "";
+  if (tab === "terrain") {
+    for (const id of TILE_IDS) {
+      const definition = TILES[id];
+      const button = document.createElement("button");
+      button.className = "palette-item" + (selectedTile === id && !erasing ? " active" : "");
+      button.title = `${definition.label} (${definition.footprint.join("x")})`;
+      const canvas = document.createElement("canvas");
+      canvas.className = "thumb";
+      canvas.width = 28;
+      canvas.height = 28;
+      const context = canvas.getContext("2d");
+      context.imageSmoothingEnabled = false;
+      if (tileSheet.complete) {
+        const [sx, sy, sw, sh] = definition.source;
+        context.drawImage(tileSheet, sx, sy, sw, sh, 0, 0, 28, 28);
+      }
+      button.append(canvas, document.createTextNode(`${id} ${definition.label}`));
+      button.onclick = () => { selectedTile = id; erasing = false; drawAll(); };
+      palette.appendChild(button);
+    }
+  } else {
+    for (const definition of typesFor(tab)) {
+      const button = document.createElement("button");
+      button.className = "palette-item" + (selectedEventType === definition.type && !erasing ? " active" : "");
+      const canvas = document.createElement("canvas");
+      canvas.className = "thumb";
+      canvas.width = 28;
+      canvas.height = 28;
+      drawRepresentative(canvas.getContext("2d"), definition, 0, 0, 28, 28);
+      button.append(canvas, document.createTextNode(definition.type));
+      button.onclick = () => { selectedEventType = definition.type; erasing = false; drawAll(); };
+      palette.appendChild(button);
+    }
+  }
+  $("erase").classList.toggle("active", erasing);
+}
+
+function updateInspector() {
+  const event = selectedEvent();
+  $("emptySelection").style.display = event ? "none" : "block";
+  $("eventInspector").style.display = event ? "block" : "none";
+  if (!event) return;
+
+  $("eventType").innerHTML = EVENT_TYPES
+    .filter(type => type.stages.includes(stageNumber()))
+    .map(type => `<option value="${type.type}">${type.type}</option>`).join("");
+  $("eventType").value = event.type;
+  $("eventTick").value = event.tick;
+  $("eventTime").value = formatTime(event.tick);
+  $("eventX").value = event.x;
+  $("eventY").value = event.y;
+  const definition = TYPE_BY_NAME[event.type];
+  $("eventX").disabled = !definition || !definition.snake;
+  $("eventY").disabled = !definition || definition.snake;
+}
+
+function updateSelectedEvent() {
+  const event = selectedEvent();
+  if (!event) return;
+  const eventId = event.id;
+  edit(() => {
+    const current = events.find(item => item.id === eventId);
+    current.type = $("eventType").value;
+    const definition = TYPE_BY_NAME[current.type];
+    current.tick = Math.max(0, Math.min(STAGE_TICKS, Number($("eventTick").value) || 0));
+    current.x = definition.snake
+      ? Math.max(0, Math.min(SCREEN_W - definition.size[0], Number($("eventX").value) || 0))
+      : definition.defaultX;
+    current.y = definition.snake
+      ? definition.defaultY
+      : Math.max(0, Math.min(SCREEN_H - definition.size[1], Number($("eventY").value) || 0));
+  });
+  const updated = selectedEvent();
+  $("previewTick").value = updated.tick;
+  $("previewRange").value = updated.tick;
+}
+
+function updateStatus() {
+  const coverageTicks = Math.floor((columns * TILE - SCREEN_W) / SCROLL);
+  const anchors = [...terrain].filter(value => value > 0).length;
+  $("lengthStatus").textContent = `${columns} cols · ${formatTime(coverageTicks)} · ${coverageTicks} ticks`;
+  $("terrainStatus").textContent = `${anchors} pieces`;
+  $("eventStatus").textContent = `${events.length}`;
+}
+
+function updateWarnings() {
+  const warnings = [];
+  if (columns < REQUIRED_COLUMNS) {
+    warnings.push({ level: "error", text: `Terrain covers less than 5:00. Use at least ${REQUIRED_COLUMNS} columns.` });
+  }
+
+  for (let column = 0; column < columns; column++) {
+    let blocked = true;
+    for (let row = 0; row < ROWS; row++) {
+      if (tileAt(row, column) === 0) { blocked = false; break; }
+    }
+    if (blocked) warnings.push({ level: "error", text: `Column ${column} is completely solid.`, column });
+  }
+
+  for (const event of events) {
+    const definition = TYPE_BY_NAME[event.type];
+    if (!definition) {
+      warnings.push({ level: "error", text: `Unknown event type ${event.type}.` });
+      continue;
+    }
+    if (!definition.stages.includes(stageNumber())) {
+      warnings.push({ level: "error", text: `${event.type} is not allowed in this stage.`, tick: event.tick });
+    }
+    if (definition.snake) {
+      const worldColumn = Math.floor((event.tick * SCROLL + event.x) / TILE);
+      const wallRow = event.type === "SnakeTop" ? 0 : ROWS - 1;
+      if (worldColumn < 0 || worldColumn >= columns || tileAt(wallRow, worldColumn) === 0) {
+        warnings.push({ level: "warn", text: `${event.type} at ${formatTime(event.tick)} has no terrain at its entrance.`, tick: event.tick });
+      }
+    }
+  }
+
+  const list = $("warningList");
+  list.innerHTML = "";
+  if (!warnings.length) {
+    list.innerHTML = `<div style="color:var(--accent)">No problems found.</div>`;
+    return;
+  }
+  for (const warning of warnings.slice(0, 80)) {
+    const item = document.createElement("div");
+    item.className = `warning ${warning.level === "error" ? "error" : ""}`;
+    item.textContent = warning.text;
+    item.onclick = () => {
+      const worldX = warning.tick !== undefined
+        ? tickToWorldX(warning.tick)
+        : warning.column * TILE;
+      $("layoutPane").scrollLeft = Math.max(0, worldX * zoom - 250);
+    };
+    list.appendChild(item);
+  }
+}
+
+function terrainCsv() {
+  const lines = ["# Ocean Invaders terrain: positive tile ID = anchor, -1 = covered cell"];
+  for (let row = 0; row < ROWS; row++) {
+    const values = [];
+    for (let column = 0; column < columns; column++) values.push(tileAt(row, column));
+    lines.push(values.join(","));
+  }
+  return lines.join("\n") + "\n";
+}
+
+function eventsCsv() {
+  const lines = ["# tick,type,x,y"];
+  const sorted = [...events].sort((a, b) => a.tick - b.tick || a.id - b.id);
+  for (const event of sorted) lines.push(`${event.tick},${event.type},${event.x},${event.y}`);
+  return lines.join("\n") + "\n";
+}
+
+function download(name, contents) {
+  const url = URL.createObjectURL(new Blob([contents], { type: "text/csv" }));
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = name;
+  anchor.click();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+
+function saveFiles() {
+  const stage = $("stage").value;
+  download(`${stage}-terrain.csv`, terrainCsv());
+  setTimeout(() => download(`${stage}-events.csv`, eventsCsv()), 200);
+  toast(`Saved ${stage} terrain and events`);
+}
+
+function dataLines(text) {
+  return text.split(/\r?\n/).map(line => line.trim())
+    .filter(line => line && !line.startsWith("#"));
+}
+
+function parseTerrain(text) {
+  const rows = dataLines(text).map(line => line.split(",").map(value => Number(value)));
+  if (rows.length !== ROWS) throw new Error(`Terrain needs ${ROWS} rows`);
+  const width = rows[0].length;
+  if (!rows.every(row => row.length === width)) throw new Error("Terrain rows have different widths");
+  if (!rows.flat().every(Number.isInteger)) throw new Error("Terrain values must be integers");
+  const values = new Int16Array(ROWS * width);
+  for (let row = 0; row < ROWS; row++) values.set(rows[row], row * width);
+  validateTerrainFootprints(values, width);
+  return { width, values };
+}
+
+function validateTerrainFootprints(values, width) {
+  const covered = new Uint8Array(ROWS * width);
+  for (let row = 0; row < ROWS; row++) {
+    for (let column = 0; column < width; column++) {
+      const id = values[row * width + column];
+      if (id === 0 || id === -1) continue;
+      const definition = TILES[id];
+      if (!definition) throw new Error(`Unknown tile ID ${id} at row ${row}, column ${column}`);
+      const [wide, high] = definition.footprint;
+      if (row + high > ROWS || column + wide > width) {
+        throw new Error(`Tile ${id} exceeds the terrain at row ${row}, column ${column}`);
+      }
+      for (let r = row; r < row + high; r++) {
+        for (let c = column; c < column + wide; c++) {
+          const index = r * width + c;
+          if (r === row && c === column) {
+            if (covered[index]) throw new Error(`Tile ${id} overlaps another tile at row ${row}, column ${column}`);
+          } else if (values[index] !== -1) {
+            throw new Error(`Tile ${id} has an incomplete footprint at row ${row}, column ${column}`);
+          }
+          covered[index] = 1;
+        }
+      }
+    }
+  }
+  for (let index = 0; index < values.length; index++) {
+    if (values[index] === -1 && !covered[index]) {
+      const row = Math.floor(index / width);
+      const column = index % width;
+      throw new Error(`Covered cell at row ${row}, column ${column} has no tile anchor`);
+    }
+  }
+}
+
+function parseEvents(text) {
+  return dataLines(text).map((line, index) => {
+    const values = line.split(",");
+    if (values.length !== 4) throw new Error(`Invalid event row ${index + 1}`);
+    const [tickText, type, xText, yText] = values;
+    const tick = Number(tickText);
+    const x = Number(xText);
+    const y = Number(yText);
+    if (![tick, x, y].every(Number.isInteger)) {
+      throw new Error(`Event row ${index + 1} needs integer tick, x, and y values`);
+    }
+    if (!TYPE_BY_NAME[type]) throw new Error(`Unknown event type ${type}`);
+    if (tick < 0 || tick > STAGE_TICKS) throw new Error(`Event tick ${tick} is outside the stage`);
+    return { id: nextEventId++, tick, type, x, y };
+  });
+}
+
+async function loadFiles(files) {
+  let loadedTerrain = null;
+  let loadedEvents = null;
+  for (const file of files) {
+    const text = await file.text();
+    if (/terrain/i.test(file.name)) loadedTerrain = parseTerrain(text);
+    else if (/event|spawn/i.test(file.name)) loadedEvents = parseEvents(text);
+    const match = file.name.match(/^(scene[12])-/i);
+    if (match) $("stage").value = match[1].toLowerCase();
+  }
+  edit(() => {
+    if (loadedTerrain) {
+      columns = loadedTerrain.width;
+      terrain = loadedTerrain.values;
+      $("columns").value = columns;
+    }
+    if (loadedEvents) events = loadedEvents;
+  });
+  toast("Level files loaded");
+}
+
+function canvasPosition(event) {
+  const rect = layoutCanvas.getBoundingClientRect();
+  return {
+    worldX: (event.clientX - rect.left) / zoom,
+    worldY: (event.clientY - rect.top - 34) / zoom,
+  };
+}
+
+function handleLayoutPointer(event) {
+  if (event.button !== 0 && event.buttons !== 1) return;
+  const position = canvasPosition(event);
+  if (position.worldY < 0 || position.worldY >= SCREEN_H) return;
+  const row = Math.floor(position.worldY / TILE);
+  const column = Math.floor(position.worldX / TILE);
+
+  if (tab === "terrain") {
+    if (column < 0 || column >= columns) return;
+    if (!dragPainting && event.type === "pointermove") return;
+    if (erasing || event.button === 2) eraseTile(row, column);
+    else placeTile(row, column, selectedTile);
+    drawAll();
+    return;
+  }
+
+  const hit = eventAt(position.worldX, position.worldY);
+  if (hit) {
+    if (erasing && event.type === "pointerdown") {
+      edit(() => events = events.filter(item => item.id !== hit.id));
+      selectedEventId = null;
+      return;
+    }
+    selectedEventId = hit.id;
+    $("previewTick").value = hit.tick;
+    $("previewRange").value = hit.tick;
+    drawAll();
+  } else if (!erasing && event.type === "pointerdown") {
+    placeEvent(position.worldX, position.worldY);
+  }
+}
+
+layoutCanvas.addEventListener("pointerdown", event => {
+  if (tab === "terrain") {
+    undoStack.push(snapshot());
+    redoStack.length = 0;
+    dragPainting = true;
+  }
+  handleLayoutPointer(event);
+});
+layoutCanvas.addEventListener("pointermove", event => {
+  const position = canvasPosition(event);
+  cursor = {
+    column: Math.floor(position.worldX / TILE),
+    row: Math.floor(position.worldY / TILE),
+    tick: worldXToTick(position.worldX),
+  };
+  updateCursorStatus();
+  if (dragPainting) handleLayoutPointer(event);
+});
+window.addEventListener("pointerup", () => { dragPainting = false; });
+layoutCanvas.addEventListener("contextmenu", event => {
+  event.preventDefault();
+  const position = canvasPosition(event);
+  if (tab === "terrain") {
+    undoStack.push(snapshot());
+    eraseTile(Math.floor(position.worldY / TILE), Math.floor(position.worldX / TILE));
+    drawAll();
+  }
+});
+
+function updateCursorStatus() {
+  if (!cursor) return;
+  $("cursorStatus").textContent =
+    `Column ${cursor.column} · Row ${cursor.row} · Tick ${cursor.tick} · ${formatTime(cursor.tick)}`;
+}
+
+function setTab(next) {
+  tab = next;
+  erasing = false;
+  const available = typesFor(tab);
+  if (tab !== "terrain" && available.length
+      && !available.some(type => type.type === selectedEventType)) {
+    selectedEventType = available[0].type;
+  }
+  for (const button of document.querySelectorAll(".tab")) {
+    button.classList.toggle("active", button.dataset.tab === tab);
+  }
+  drawAll();
+}
+
+function showView(previewMode) {
+  $("layoutPane").style.display = previewMode ? "none" : "block";
+  $("previewPane").style.display = previewMode ? "grid" : "none";
+  $("previewControls").style.display = previewMode ? "flex" : "none";
+  $("layoutView").classList.toggle("active", !previewMode);
+  $("previewView").classList.toggle("active", previewMode);
+  drawAll();
+}
+
+function previewPosition(event) {
+  const rect = previewCanvas.getBoundingClientRect();
+  return {
+    x: (event.clientX - rect.left) * SCREEN_W / rect.width,
+    y: (event.clientY - rect.top) * SCREEN_H / rect.height,
+  };
+}
+
+function previewEventAt(x, y) {
+  const tick = Number($("previewTick").value) || 0;
+  for (let index = events.length - 1; index >= 0; index--) {
+    const event = events[index];
+    if (Math.abs(event.tick - tick) > 2) continue;
+    const definition = TYPE_BY_NAME[event.type];
+    if (!definition) continue;
+    const eventY = previewEventY(event, definition);
+    if (x >= event.x && x <= event.x + definition.size[0]
+        && y >= eventY && y <= eventY + definition.size[1]) return event;
+  }
+  return null;
+}
+
+previewCanvas.addEventListener("pointerdown", event => {
+  const position = previewPosition(event);
+  const hit = previewEventAt(position.x, position.y);
+  if (!hit) return;
+  selectedEventId = hit.id;
+  if (TYPE_BY_NAME[hit.type].snake) {
+    undoStack.push(snapshot());
+    redoStack.length = 0;
+    previewDragEventId = hit.id;
+    previewCanvas.setPointerCapture(event.pointerId);
+  }
+  drawAll();
+});
+
+previewCanvas.addEventListener("pointermove", event => {
+  if (previewDragEventId === null) return;
+  const position = previewPosition(event);
+  const dragged = events.find(item => item.id === previewDragEventId);
+  const definition = TYPE_BY_NAME[dragged.type];
+  dragged.x = Math.round(Math.max(0,
+    Math.min(SCREEN_W - definition.size[0], position.x - definition.size[0] / 2)));
+  drawAll();
+});
+
+previewCanvas.addEventListener("pointerup", () => { previewDragEventId = null; });
+previewCanvas.addEventListener("pointercancel", () => { previewDragEventId = null; });
+
+function toast(message) {
+  $("toast").textContent = message;
+  $("toast").classList.add("show");
+  setTimeout(() => $("toast").classList.remove("show"), 1500);
+}
+
+for (const button of document.querySelectorAll(".tab")) {
+  button.onclick = () => setTab(button.dataset.tab);
+}
+$("resizeLevel").onclick = resizeLevel;
+$("saveFiles").onclick = saveFiles;
+$("loadFiles").onclick = () => $("fileInput").click();
+$("fileInput").onchange = event => loadFiles([...event.target.files]).catch(error => alert(error.message));
+$("undo").onclick = undo;
+$("redo").onclick = redo;
+$("erase").onclick = () => { erasing = !erasing; drawAll(); };
+$("toggleGrid").onclick = () => { showGrid = !showGrid; $("toggleGrid").classList.toggle("active", showGrid); drawAll(); };
+$("toggleHitboxes").onclick = () => { showFootprints = !showFootprints; $("toggleHitboxes").classList.toggle("active", showFootprints); drawAll(); };
+$("zoom").onchange = () => { zoom = Number($("zoom").value); drawAll(); };
+$("stage").onchange = () => {
+  const available = typesFor(tab);
+  if (tab !== "terrain" && available.length) selectedEventType = available[0].type;
+  selectedEventId = null;
+  drawAll();
+};
+$("layoutView").onclick = () => showView(false);
+$("previewView").onclick = () => showView(true);
+$("previewRange").oninput = () => { $("previewTick").value = $("previewRange").value; drawPreview(); };
+$("previewTick").oninput = () => {
+  const tick = Math.max(0, Math.min(STAGE_TICKS, Number($("previewTick").value) || 0));
+  $("previewRange").value = tick;
+  drawPreview();
+};
+$("eventType").onchange = updateSelectedEvent;
+$("eventTick").onchange = updateSelectedEvent;
+$("eventX").onchange = updateSelectedEvent;
+$("eventY").onchange = updateSelectedEvent;
+$("deleteEvent").onclick = deleteSelectedEvent;
+
+window.addEventListener("keydown", event => {
+  const command = event.ctrlKey || event.metaKey;
+  if (command && event.key.toLowerCase() === "z") {
+    event.preventDefault();
+    event.shiftKey ? redo() : undo();
+  }
+  if (command && event.key.toLowerCase() === "s") {
+    event.preventDefault();
+    saveFiles();
+  }
+  if (event.key === "Delete" || event.key === "Backspace") deleteSelectedEvent();
+});
+
+$("stage").value = CFG.defaultStage;
+$("columns").value = columns;
+drawAll();
+</script>
+</body>
+</html>

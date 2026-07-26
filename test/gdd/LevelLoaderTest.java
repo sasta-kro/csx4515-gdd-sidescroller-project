@@ -12,6 +12,7 @@ public class LevelLoaderTest {
 
     public static void main(String[] args) throws Exception {
         loadsMultiCellTerrain();
+        rejectsCoveredCellWithoutAnchor();
         loadsMultipleEventsOnOneTick();
         collidesWithScrollingTerrain();
     }
@@ -26,6 +27,19 @@ public class LevelLoaderTest {
         assertEquals(20, terrain[0].length, "terrain columns");
         assertEquals(10, terrain[2][15], "large tile anchor");
         assertEquals(-1, terrain[3][16], "large tile covered cell");
+    }
+
+    private static void rejectsCoveredCellWithoutAnchor() throws Exception {
+        Path file = Files.createTempFile("ocean-invalid-terrain", ".csv");
+        Files.writeString(file, terrainCsv().replaceFirst("0,", "-1,"));
+
+        try {
+            LevelLoader.loadTerrain(file.toString());
+            throw new AssertionError("unclaimed covered cell was accepted");
+        } catch (IllegalArgumentException expected) {
+            assertTrue(expected.getMessage().contains("has no tile anchor"),
+                    "unclaimed covered cell error");
+        }
     }
 
     private static void loadsMultipleEventsOnOneTick() throws Exception {

@@ -87,6 +87,7 @@ public final class LevelLoader {
     private static void validateFootprints(int[][] terrain) {
         int rows = terrain.length;
         int columns = terrain[0].length;
+        boolean[][] claimedCells = new boolean[rows][columns];
 
         for (int row = 0; row < rows; row++) {
             for (int column = 0; column < columns; column++) {
@@ -108,7 +109,13 @@ public final class LevelLoader {
                     for (int coveredColumn = column;
                             coveredColumn < column + definition.cellsWide;
                             coveredColumn++) {
+                        if (claimedCells[coveredRow][coveredColumn]) {
+                            throw new IllegalArgumentException(
+                                    "Tile " + tile + " overlaps another tile at row "
+                                    + row + ", column " + column);
+                        }
                         if (coveredRow == row && coveredColumn == column) {
+                            claimedCells[coveredRow][coveredColumn] = true;
                             continue;
                         }
                         if (terrain[coveredRow][coveredColumn] != -1) {
@@ -116,7 +123,19 @@ public final class LevelLoader {
                                     "Tile " + tile + " has an incomplete footprint at row "
                                     + row + ", column " + column);
                         }
+                        claimedCells[coveredRow][coveredColumn] = true;
                     }
+                }
+            }
+        }
+
+        for (int row = 0; row < rows; row++) {
+            for (int column = 0; column < columns; column++) {
+                if (terrain[row][column] == -1
+                        && !claimedCells[row][column]) {
+                    throw new IllegalArgumentException(
+                            "Covered cell has no tile anchor at row "
+                            + row + ", column " + column);
                 }
             }
         }
