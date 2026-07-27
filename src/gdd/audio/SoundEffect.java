@@ -18,7 +18,8 @@ public enum SoundEffect {
             "src/audio/sfx/enemies/octopus-rock-throw.wav"),
     SNAKE_ATTACK("src/audio/sfx/enemies/snake-attack.wav", -10.0f),
     JELLYFISH_ATTACK("src/audio/sfx/enemies/snake-attack.wav", -18.0f),
-    BOSS_LASER_CHARGE("src/audio/sfx/boss/laser-charge.wav", -20.0f);
+    BOSS_LASER_CHARGE("src/audio/sfx/boss/laser-charge.wav", -20.0f),
+    BOSS_BITE("src/audio/sfx/boss/bite.wav", 10.0f);
 
     private final String path;
     private final float gainOffsetDb;

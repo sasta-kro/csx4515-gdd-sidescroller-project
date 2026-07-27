@@ -111,6 +111,7 @@ public class Anglerfish extends Enemy {
     private AttackState previousAttack;
     private int consecutiveAttackCount;
     private boolean laserChargeStarted;
+    private boolean biteStarted;
     private int stateTicks;
     private int attackCooldown = PHASE_ONE_IDLE_TICKS;
     private int laserInterval;
@@ -267,6 +268,7 @@ public class Anglerfish extends Enemy {
 
     private void startBite() {
         state = AttackState.BITE_OUT;
+        biteStarted = true;
         biteStartY = y;
 
         if (isPhaseTwo()) {
@@ -285,6 +287,12 @@ public class Anglerfish extends Enemy {
         }
 
         updateAnimationFrames();
+    }
+
+    public boolean consumeBiteStarted() {
+        boolean result = biteStarted;
+        biteStarted = false;
+        return result;
     }
 
     private void updateBiteOut() {

@@ -4,6 +4,8 @@ import gdd.ui.GameHud;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
+import java.util.Arrays;
 
 public class GameHudTest {
 
@@ -14,6 +16,7 @@ public class GameHudTest {
     public static void main(String[] args) {
         usesGreenBossHealthBeforePhaseTwo();
         usesDeepRedBossHealthDuringPhaseTwo();
+        hidesBossDebugTextNormally();
     }
 
     private static void usesGreenBossHealthBeforePhaseTwo() {
@@ -33,12 +36,29 @@ public class GameHudTest {
     }
 
     private static BufferedImage drawBossHealth(int health) {
+        return drawBossHealth(health, "IDLE");
+    }
+
+    private static BufferedImage drawBossHealth(
+            int health, String attackName) {
         BufferedImage image = new BufferedImage(
                 WIDTH, 180, BufferedImage.TYPE_INT_ARGB);
         Graphics graphics = image.getGraphics();
-        GameHud.drawBossHealth(graphics, WIDTH, health, 50, "IDLE");
+        GameHud.drawBossHealth(graphics, WIDTH, health, 50, attackName);
         graphics.dispose();
         return image;
+    }
+
+    private static void hidesBossDebugTextNormally() {
+        int[] idlePixels = ((DataBufferInt) drawBossHealth(
+                50, "IDLE").getRaster().getDataBuffer()).getData();
+        int[] bitePixels = ((DataBufferInt) drawBossHealth(
+                50, "BITE OUT").getRaster().getDataBuffer()).getData();
+
+        if (!Arrays.equals(idlePixels, bitePixels)) {
+            throw new AssertionError(
+                    "boss attack state should be hidden in normal mode");
+        }
     }
 
     private static void assertEquals(int expected, int actual,

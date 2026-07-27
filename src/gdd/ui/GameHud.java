@@ -97,15 +97,22 @@ public final class GameHud {
         g.fillRoundRect(barX - 9, labelY - 16,
                 barWidth + 18, 39, 8, 8);
 
-        g.setFont(new Font("SansSerif", Font.BOLD, 12));
+        g.setFont(new Font("SansSerif", Font.BOLD, 16));
         g.setColor(PRIMARY_TEXT);
-        g.drawString("ANGLERFISH", barX, labelY);
-
-        String status = attackName + "   " + health + "/" + maxHealth;
-        FontMetrics metrics = g.getFontMetrics();
-        g.setColor(SECONDARY_TEXT);
-        g.drawString(status, barX + barWidth - metrics.stringWidth(status),
+        String bossName = "ANGLERFISH";
+        FontMetrics bossNameMetrics = g.getFontMetrics();
+        g.drawString(bossName,
+                barX + (barWidth - bossNameMetrics.stringWidth(bossName)) / 2,
                 labelY);
+
+        if (DEV_SHOW_ENTITY_HITBOXES) {
+            g.setFont(new Font("SansSerif", Font.BOLD, 12));
+            String status = attackName + "   " + health + "/" + maxHealth;
+            FontMetrics metrics = g.getFontMetrics();
+            g.setColor(SECONDARY_TEXT);
+            g.drawString(status,
+                    barX + barWidth - metrics.stringWidth(status), labelY);
+        }
 
         g.setColor(new Color(47, 42, 59));
         g.fillRoundRect(barX, barY, barWidth, 10, 6, 6);
