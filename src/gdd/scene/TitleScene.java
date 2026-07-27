@@ -29,11 +29,20 @@ public class TitleScene extends JPanel implements GameScene {
             "src/images/background/scene2_bg/background.png";
     private static final String MIDGROUND_PATH =
             "src/images/background/scene2_bg/midground.png";
+    private static final String VMES_LOGO_PATH =
+            "src/images/ui/vmes-logo.png";
+    private static final int VMES_LOGO_HEIGHT = 64;
+    private static final int VMES_LOGO_PADDING = 12;
 
     private static final ImageIcon backgroundImage =
             new ImageIcon(BACKGROUND_PATH);
     private static final ImageIcon midgroundImage =
             new ImageIcon(MIDGROUND_PATH);
+    private static final ImageIcon vmesLogo =
+            new ImageIcon(VMES_LOGO_PATH);
+    private static final int VMES_LOGO_WIDTH = (int) Math.round(
+            vmesLogo.getIconWidth()
+                    * VMES_LOGO_HEIGHT / (double) vmesLogo.getIconHeight());
     private static final double MIDGROUND_SCALE =
             BOARD_HEIGHT / (double) midgroundImage.getIconHeight();
     private static final double BACKGROUND_SCALE = MIDGROUND_SCALE * 2;
@@ -132,6 +141,7 @@ public class TitleScene extends JPanel implements GameScene {
         drawBackground(graphics);
         drawSwimmers(graphics);
         drawTitleContent(graphics);
+        drawFacultyLogo(graphics);
         graphics.dispose();
     }
 
@@ -248,6 +258,18 @@ public class TitleScene extends JPanel implements GameScene {
         g.drawString(names, namesX + 3, y + 3);
         g.setColor(new Color(218, 236, 231));
         g.drawString(names, namesX, y);
+    }
+
+    private void drawFacultyLogo(Graphics2D g) {
+        Graphics2D logoGraphics = (Graphics2D) g.create();
+        logoGraphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        logoGraphics.setComposite(AlphaComposite.SrcOver.derive(0.92f));
+        logoGraphics.drawImage(vmesLogo.getImage(),
+                VMES_LOGO_PADDING,
+                getHeight() - VMES_LOGO_HEIGHT - VMES_LOGO_PADDING,
+                VMES_LOGO_WIDTH, VMES_LOGO_HEIGHT, null);
+        logoGraphics.dispose();
     }
 
     private void drawMenuOption(Graphics2D g, String shortcut, String label,
