@@ -59,8 +59,10 @@ top-left cell and `-1` in the other three cells:
 -1,-1
 ```
 
-All nonzero cells are solid for collision. Only positive anchors are rendered because
-their image covers the full footprint.
+Only positive anchors are rendered because their image covers the full footprint.
+The footprint cells reserve that placement area in the CSV, but runtime collision is
+split into 10 by 10 pixel blocks and derived from the opaque parts of the atlas image.
+Transparent corners and gaps inside sloped or irregular tiles are therefore not solid.
 
 ### Tile Registry
 

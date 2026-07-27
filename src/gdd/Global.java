@@ -36,6 +36,8 @@ public final class Global {
     public static final double HITBOX_SCALE = 1.0;
     public static final int WORLD_SCROLL_SPEED = 2;
     public static final int TILE_SIZE = 50;
+    public static final int TERRAIN_HITBOX_BLOCK_SIZE = 10;
+    public static final double TERRAIN_HITBOX_MIN_OPAQUE_COVERAGE = 0.20;
 
     // Player
     public static final int PLAYER_START_X = 90;

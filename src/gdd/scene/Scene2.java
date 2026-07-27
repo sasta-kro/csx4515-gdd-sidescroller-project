@@ -20,6 +20,7 @@ import gdd.sprite.Player;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
@@ -236,7 +237,7 @@ public class Scene2 extends JPanel implements GameScene {
         player.act();
 
         if (intersectsTerrain(player.getBounds())) {
-            player.restorePosition(oldX, oldY);
+            resolveTerrainOverlap();
             if (WALL_DAMAGE_ENABLED) {
                 player.damage(WALL_DAMAGE);
             }
@@ -413,9 +414,7 @@ public class Scene2 extends JPanel implements GameScene {
                 continue;
             }
 
-            if (projectile.isVisible()
-                    && (intersectsTerrain(projectile.getBounds())
-                    || intersectsWall(projectile.getBounds()))) {
+            if (projectile.isVisible() && (intersectsTerrain(projectile.getBounds()) || intersectsWall(projectile.getBounds()))) {
                 projectile.die();
             }
         }
@@ -467,6 +466,24 @@ public class Scene2 extends JPanel implements GameScene {
 
     private boolean intersectsTerrain(Rectangle bounds) {
         return tileMap != null && tileMap.intersects(bounds, stageTick);
+    }
+
+    private void resolveTerrainOverlap() {
+        Rectangle playerBounds = player.getBounds();
+        Point correction = tileMap.getCollisionCorrection(
+                playerBounds, getPlayerHitboxMovementArea(playerBounds),
+                stageTick);
+        player.setX(player.getX() + correction.x);
+        player.setY(player.getY() + correction.y);
+    }
+
+    private Rectangle getPlayerHitboxMovementArea(Rectangle playerBounds) {
+        int hitboxOffsetX = playerBounds.x - player.getX();
+        int hitboxOffsetY = playerBounds.y - player.getY();
+        return new Rectangle(
+                hitboxOffsetX, hitboxOffsetY,
+                BOARD_WIDTH - player.getRenderWidth() + playerBounds.width,
+                BOARD_HEIGHT - 32 - player.getRenderHeight() + playerBounds.height);
     }
 
     private void resolveWallOverlap() {
