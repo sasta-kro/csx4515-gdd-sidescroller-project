@@ -117,6 +117,38 @@ public class TileMap {
         return columns;
     }
 
+    public Rectangle getVerticalOpenBounds(int leftX, int rightX) {
+        int firstBlockColumn = leftX / TERRAIN_HITBOX_BLOCK_SIZE;
+        int lastBlockColumn = (rightX - 1)
+                / TERRAIN_HITBOX_BLOCK_SIZE;
+        int middleRow = collisionBlocks.length / 2;
+        int ceilingBottom = 0;
+        int floorTop = collisionBlocks.length
+                * TERRAIN_HITBOX_BLOCK_SIZE;
+
+        for (int column = firstBlockColumn;
+                column <= lastBlockColumn; column++) {
+            for (int row = 0; row < middleRow; row++) {
+                if (collisionBlocks[row][column]) {
+                    ceilingBottom = Math.max(ceilingBottom,
+                            (row + 1) * TERRAIN_HITBOX_BLOCK_SIZE);
+                }
+            }
+
+            for (int row = middleRow;
+                    row < collisionBlocks.length; row++) {
+                if (collisionBlocks[row][column]) {
+                    floorTop = Math.min(floorTop,
+                            row * TERRAIN_HITBOX_BLOCK_SIZE);
+                    break;
+                }
+            }
+        }
+
+        return new Rectangle(leftX, ceilingBottom,
+                rightX - leftX, floorTop - ceilingBottom);
+    }
+
     private void drawHitboxes(Graphics g, int cameraX, int firstColumn, int lastColumn) {
         if (!DEV_SHOW_ENTITY_HITBOXES) {
             return;

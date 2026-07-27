@@ -18,8 +18,6 @@ public class Anglerfish extends Enemy {
 
     private static final int HITBOX_X_OFFSET = 6 * BOSS_SCALE;
     private static final int HITBOX_Y_OFFSET = BOSS_SCALE;
-    private static final int HITBOX_TOP_BOUND = 45;
-    private static final int HITBOX_BOTTOM_BOUND = 20;
 
     private static final int PHASE_ONE_IDLE_TICKS = secondsToTicks(2);
     private static final int PHASE_TWO_IDLE_TICKS = secondsToTicks(0.5);
@@ -122,6 +120,8 @@ public class Anglerfish extends Enemy {
     private boolean hurt;
     private boolean deathFinished;
     private double idleWave;
+    private int hitboxTopBound;
+    private int hitboxBottomBound = BOARD_HEIGHT;
 
     public Anglerfish(Player player) {
         super(player, BOARD_WIDTH - 45*BOSS_SCALE, 115, 48*BOSS_SCALE, 48*BOSS_SCALE,
@@ -131,6 +131,12 @@ public class Anglerfish extends Enemy {
         setHitboxScale(0.6, 0.45);
         setFlippedHorizontally(true);
         updateAnimationFrames();
+    }
+
+    public void setVerticalHitboxBounds(int top, int bottom) {
+        hitboxTopBound = top;
+        hitboxBottomBound = bottom;
+        keepHitboxInsideVerticalBounds();
     }
 
     @Override
@@ -315,13 +321,12 @@ public class Anglerfish extends Enemy {
 
     private void keepHitboxInsideVerticalBounds() {
         Rectangle hitbox = getBounds();
-        if (hitbox.y < HITBOX_TOP_BOUND) {
-            y += HITBOX_TOP_BOUND - hitbox.y;
+        if (hitbox.y < hitboxTopBound) {
+            y += hitboxTopBound - hitbox.y;
         }
 
-        int bottomEdge = BOARD_HEIGHT - HITBOX_BOTTOM_BOUND;
-        if (hitbox.y + hitbox.height > bottomEdge) {
-            y -= hitbox.y + hitbox.height - bottomEdge;
+        if (hitbox.y + hitbox.height > hitboxBottomBound) {
+            y -= hitbox.y + hitbox.height - hitboxBottomBound;
         }
     }
 
