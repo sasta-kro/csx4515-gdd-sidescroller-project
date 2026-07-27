@@ -298,6 +298,10 @@ let dragPainting = false;
 let previewDragEventId = null;
 
 const tileSheet = loadImage(CFG.tileSheet);
+const tileImages = {};
+for (const definition of Object.values(TILES)) {
+  if (definition.sprite) tileImages[definition.sprite] = loadImage(definition.sprite);
+}
 const backgroundImages = {};
 for (const [stage, layers] of Object.entries(CFG.backgrounds)) {
   backgroundImages[stage] = {};
@@ -315,6 +319,18 @@ function loadImage(path) {
   image.onload = drawAll;
   image.src = path;
   return image;
+}
+
+function drawTerrainImage(context, definition, x, y, width, height) {
+  if (definition.sprite) {
+    const image = tileImages[definition.sprite];
+    if (image.complete) context.drawImage(image, x, y, width, height);
+    return;
+  }
+
+  if (!tileSheet.complete) return;
+  const [sx, sy, sw, sh] = definition.source;
+  context.drawImage(tileSheet, sx, sy, sw, sh, x, y, width, height);
 }
 
 function stageNumber() {
@@ -571,9 +587,8 @@ function drawLayout() {
       const id = tileAt(row, column);
       if (id <= 0) continue;
       const definition = TILES[id];
-      const [sx, sy, sw, sh] = definition.source;
       const [wide, high] = definition.footprint;
-      layout.drawImage(tileSheet, sx, sy, sw, sh,
+      drawTerrainImage(layout, definition,
         column * TILE * zoom, rulerHeight + row * TILE * zoom,
         wide * TILE * zoom, high * TILE * zoom);
     }
@@ -735,9 +750,8 @@ function drawPreviewTerrain(tick) {
       const id = tileAt(row, column);
       if (id <= 0) continue;
       const definition = TILES[id];
-      const [sx, sy, sw, sh] = definition.source;
       const [wide, high] = definition.footprint;
-      preview.drawImage(tileSheet, sx, sy, sw, sh,
+      drawTerrainImage(preview, definition,
         column * TILE - cameraX, row * TILE,
         wide * TILE, high * TILE);
       if (showFootprints) {
@@ -790,10 +804,7 @@ function buildPalette() {
       canvas.height = 28;
       const context = canvas.getContext("2d");
       context.imageSmoothingEnabled = false;
-      if (tileSheet.complete) {
-        const [sx, sy, sw, sh] = definition.source;
-        context.drawImage(tileSheet, sx, sy, sw, sh, 0, 0, 28, 28);
-      }
+      drawTerrainImage(context, definition, 0, 0, 28, 28);
       button.append(canvas, document.createTextNode(`${id} ${definition.label}`));
       button.onclick = () => { selectedTile = id; erasing = false; drawAll(); };
       palette.appendChild(button);

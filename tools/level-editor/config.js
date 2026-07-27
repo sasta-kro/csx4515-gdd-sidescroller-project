@@ -39,6 +39,8 @@ window.EDITOR_CONFIG = {
     20: { label: "Hanging Island", source: [13, 452, 181, 188], footprint: [4, 4] },
     21: { label: "Small Rock BL", source: [332, 464, 52, 56], footprint: [1, 1] },
     22: { label: "Small Rock BR", source: [400, 464, 52, 56], footprint: [1, 1] },
+    23: { label: "Dark Fill", sprite: "../../src/images/obstacles/dark-fill.png",
+      footprint: [1, 1] },
   },
 
   eventTypes: [

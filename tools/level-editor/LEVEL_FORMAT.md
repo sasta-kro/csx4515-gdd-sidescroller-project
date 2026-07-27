@@ -48,7 +48,7 @@ Cell meanings:
 | Value | Meaning |
 |---:|---|
 | `0` | Empty water |
-| `1` through `22` | Tile anchor and atlas tile ID |
+| `1` through `23` | Tile anchor and terrain tile ID |
 | `-1` | Cell covered by a multi-cell tile anchored above or to the left |
 
 A 1x1 tile is stored as its positive ID only. A 2x2 tile stores its positive ID in the
@@ -61,7 +61,7 @@ top-left cell and `-1` in the other three cells:
 
 Only positive anchors are rendered because their image covers the full footprint.
 The footprint cells reserve that placement area in the CSV, but runtime collision is
-split into 10 by 10 pixel blocks and derived from the opaque parts of the atlas image.
+split into 10 by 10 pixel blocks and derived from the opaque parts of the tile image.
 Transparent corners and gaps inside sloped or irregular tiles are therefore not solid.
 
 ### Tile Registry
@@ -90,9 +90,11 @@ Transparent corners and gaps inside sloped or irregular tiles are therefore not 
 | 20 | Hanging Island | 4x4 |
 | 21 | Small Rock BL | 1x1 |
 | 22 | Small Rock BR | 1x1 |
+| 23 | Dark Fill | 1x1 |
 
-The atlas source rectangles are defined once in Java `TileRegistry` and once in editor
-`config.js`. Their IDs and footprints must stay identical.
+Atlas source rectangles and standalone sprite paths are defined once in Java
+`TileRegistry` and once in editor `config.js`. Their IDs, image sources, and footprints
+must stay identical.
 
 ## Events CSV
 

@@ -24,6 +24,7 @@ public class LevelLoaderTest {
         collidesWithScrollingTerrain();
         ignoresTransparentPartsOfTerrainTiles();
         ignoresTransparentGapsInHangingIsland();
+        usesSolidDarkFillTile();
         resolvesScrollingTerrainOverlap();
         keepsTerrainCorrectionInsidePlayerMovementArea();
         drawsTerrainHitboxOutline();
@@ -121,6 +122,27 @@ public class LevelLoaderTest {
                 "hanging-island transparent gap has no collision");
         assertTrue(map.intersects(visibleChain, 0),
                 "hanging-island chain section has collision");
+    }
+
+    private static void usesSolidDarkFillTile() {
+        int[][] terrain = new int[14][20];
+        terrain[2][1] = 23;
+        TileMap map = new TileMap(terrain);
+
+        assertTrue(map.intersects(new Rectangle(
+                TILE_SIZE, 2 * TILE_SIZE, TILE_SIZE, TILE_SIZE), 0),
+                "dark fill tile is solid");
+
+        BufferedImage image = new BufferedImage(
+                BOARD_WIDTH, BOARD_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        Graphics graphics = image.getGraphics();
+        map.draw(graphics, 0);
+        graphics.dispose();
+
+        assertEquals(new Color(13, 26, 32).getRGB(),
+                image.getRGB(TILE_SIZE + TILE_SIZE / 2,
+                        2 * TILE_SIZE + TILE_SIZE / 2),
+                "dark fill tile color");
     }
 
     private static void resolvesScrollingTerrainOverlap() {
