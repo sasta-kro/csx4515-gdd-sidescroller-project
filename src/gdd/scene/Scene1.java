@@ -565,11 +565,12 @@ public class Scene1 extends JPanel implements GameScene {
         super.paintComponent(g);
 
         drawBackground(g);
+        drawEnemies(g);
         if (tileMap != null) {
             tileMap.draw(g, stageTick);
         }
         drawTransition(g);
-        drawEntities(g);
+        drawForegroundEntities(g);
         drawHud(g);
 
         if (paused) {
@@ -602,17 +603,19 @@ public class Scene1 extends JPanel implements GameScene {
         }
     }
 
-    private void drawEntities(Graphics g) {
+    private void drawEnemies(Graphics g) {
+        for (Enemy enemy : enemies) {
+            enemy.draw(g);
+        }
+    }
+
+    private void drawForegroundEntities(Graphics g) {
         for (Mine mine : mines) {
             mine.draw(g);
         }
 
         for (PowerUp powerUp : powerUps) {
             powerUp.draw(g);
-        }
-
-        for (Enemy enemy : enemies) {
-            enemy.draw(g);
         }
 
         for (Bubble bubble : playerBubbles) {
