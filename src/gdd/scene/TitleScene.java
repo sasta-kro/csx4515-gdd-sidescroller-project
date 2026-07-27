@@ -220,14 +220,34 @@ public class TitleScene extends JPanel implements GameScene {
         drawCenteredShadowed(g, "SECTION 542  |  SEMESTER 1/2026",
                 631, new Color(153, 207, 207), new Color(3, 22, 36));
         g.setFont(new Font("Monospaced", Font.BOLD,
-                scaledFontSize(9)));
-        drawCenteredShadowed(g, "M",
-                655, new Color(153, 207, 207), new Color(3, 22, 36));
-        g.setFont(new Font("Monospaced", Font.BOLD,
-                scaledFontSize(11)));
-        drawCenteredShadowed(g,
+                scaledFontSize(15)));
+        drawCreditLine(g, "MADE BY",
                 "SAI AIKE SHWE TUN AUNG  &  EKATERINA KAZAKOVA",
-                678, new Color(218, 236, 231), new Color(3, 22, 36));
+                663);
+    }
+
+    private void drawCreditLine(Graphics2D g, String prefix,
+            String names, int y) {
+        Font namesFont = g.getFont();
+        int namesWidth = g.getFontMetrics(namesFont).stringWidth(names);
+        Font prefixFont = namesFont.deriveFont(
+                Math.max(8f, namesFont.getSize2D() * 0.78f));
+        int prefixWidth = g.getFontMetrics(prefixFont).stringWidth(prefix);
+        int gap = scaledFontSize(8);
+        int groupX = (getWidth() - prefixWidth - gap - namesWidth) / 2;
+        int namesX = groupX + prefixWidth + gap;
+
+        g.setFont(prefixFont);
+        g.setColor(new Color(3, 22, 36));
+        g.drawString(prefix, groupX + 2, y + 2);
+        g.setColor(new Color(157, 171, 173));
+        g.drawString(prefix, groupX, y);
+
+        g.setFont(namesFont);
+        g.setColor(new Color(3, 22, 36));
+        g.drawString(names, namesX + 3, y + 3);
+        g.setColor(new Color(218, 236, 231));
+        g.drawString(names, namesX, y);
     }
 
     private void drawMenuOption(Graphics2D g, String shortcut, String label,

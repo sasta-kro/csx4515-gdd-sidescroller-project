@@ -11,8 +11,8 @@ import gdd.sprite.enemy.EnemyProjectile;
 import gdd.sprite.obstacle.Explosion;
 import gdd.sprite.Player;
 import gdd.ui.GameHud;
+import gdd.ui.PauseMenu;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
@@ -357,21 +357,7 @@ public class BossScene extends JPanel implements GameScene {
     }
 
     private void drawPauseOverlay(Graphics g) {
-        g.setColor(new Color(0, 0, 0, 190));
-        g.fillRect(0, 0, getWidth(), getHeight());
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("SansSerif", Font.BOLD, scaledFontSize(38)));
-        drawCentered(g, "PAUSED", 250);
-        g.setFont(new Font("SansSerif", Font.PLAIN, scaledFontSize(20)));
-        drawCentered(g, "[ESC] Resume", 330);
-        drawCentered(g, "[R] Restart Game", 366);
-        drawCentered(g, "[M] Main Menu", 402);
-        drawCentered(g, "[Q] Quit", 438);
-    }
-
-    private void drawCentered(Graphics g, String text, int y) {
-        int x = (getWidth() - g.getFontMetrics().stringWidth(text)) / 2;
-        g.drawString(text, x, y);
+        PauseMenu.draw(g, getWidth(), getHeight());
     }
 
     private class SceneInput extends KeyAdapter {
