@@ -1,5 +1,16 @@
 # Ocean Invaders
 
+<p align="center">
+  <img src="resources/readme/ocean-invaders-title-demo-hq.gif"
+       alt="Ocean Invaders animated title screen" width="560">
+</p>
+
+<p align="center">
+  <a href="resources/readme/ocean-invaders-title-demo-hq.gif">
+    View the full-quality 714 x 700 demo GIF
+  </a>
+</p>
+
 **Ocean Invaders** is an underwater side-scrolling shooter built in Java for
 the CSX4515 Game Design and Development pre-midterm project. It takes the
 movement, enemy waves, upgrades, and escalating combat of a retro space
