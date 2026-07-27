@@ -216,6 +216,9 @@ public class BossScene extends JPanel implements GameScene {
         if (boss.consumeLaserChargeStarted()) {
             playSound(SoundEffect.BOSS_LASER_CHARGE);
         }
+        if (boss.consumeLaserShotStarted()) {
+            playSound(SoundEffect.BOSS_LASER_SHOT);
+        }
     }
 
     private void updateProjectiles() {

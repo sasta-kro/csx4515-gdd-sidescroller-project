@@ -111,6 +111,7 @@ public class Anglerfish extends Enemy {
     private AttackState previousAttack;
     private int consecutiveAttackCount;
     private boolean laserChargeStarted;
+    private boolean laserShotStarted;
     private int stateTicks;
     private int attackCooldown = PHASE_ONE_IDLE_TICKS;
     private int laserInterval;
@@ -243,6 +244,12 @@ public class Anglerfish extends Enemy {
         return result;
     }
 
+    public boolean consumeLaserShotStarted() {
+        boolean result = laserShotStarted;
+        laserShotStarted = false;
+        return result;
+    }
+
     private void updateLaser() {
         double playerCenter = player.getY() + player.getRenderHeight() / 2.0;
         Rectangle bossHitbox = getBounds();
@@ -257,6 +264,7 @@ public class Anglerfish extends Enemy {
 
         if (laserInterval-- <= 0) {
             pendingProjectiles.add(createBubbleAtHitboxEdge());
+            laserShotStarted = true;
             laserInterval = Math.max(1, BOSS_LASER_INTERVAL_TICKS);
         }
 
