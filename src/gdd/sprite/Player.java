@@ -78,6 +78,17 @@ public class Player extends Sprite {
             new Rectangle(64*15, 64*17, 64, 64)
     );
 
+    private static final List<Rectangle> splitShotDeathAnimationClips =
+            deathAnimationClips(0, 14);
+    private static final List<Rectangle> multiShotDeathAnimationClips =
+            deathAnimationClips(4, 14);
+    private static final List<Rectangle> originalDeathAnimationClips =
+            deathAnimationClips(8, 14);
+    private static final List<Rectangle> megaShotDeathAnimationClips =
+            deathAnimationClips(12, 14);
+    private static final List<Rectangle> speedDeathAnimationClips =
+            deathAnimationClips(4, 22);
+
     private boolean movingUp;
     private boolean movingDown;
     private boolean movingLeft;
@@ -139,6 +150,49 @@ public class Player extends Sprite {
                 }
             }
         }
+    }
+
+    private static List<Rectangle> deathAnimationClips(
+            int firstColumn, int row) {
+        return List.of(
+                new Rectangle(64 * firstColumn, 64 * row, 64, 64),
+                new Rectangle(64 * (firstColumn + 1), 64 * row, 64, 64),
+                new Rectangle(64 * (firstColumn + 2), 64 * row, 64, 64),
+                new Rectangle(64 * (firstColumn + 3), 64 * row, 64, 64)
+        );
+    }
+
+    public void startDeathAnimation() {
+        if (isDying()) {
+            return;
+        }
+
+        setDying(true);
+        movingUp = false;
+        movingDown = false;
+        movingLeft = false;
+        movingRight = false;
+        firing = false;
+        burstRemaining = 0;
+
+        setAnimationFrames(activeDeathAnimationClips());
+        setAnimationInterval(PLAYER_DEATH_ANIMATION_FRAME_TICKS);
+        setAnimationLooping(false);
+    }
+
+    private List<Rectangle> activeDeathAnimationClips() {
+        return switch (weaponType) {
+            case MULTI_SHOT -> multiShotDeathAnimationClips;
+            case MEGA_SHOT -> megaShotDeathAnimationClips;
+            case SPLIT_SHOT -> splitShotDeathAnimationClips;
+            default -> speedLevel > 0
+                    ? speedDeathAnimationClips
+                    : originalDeathAnimationClips;
+        };
+    }
+
+    public boolean isDeathAnimationFinished() {
+        return isDying() && isAnimationFinished();
     }
 
     @Override
@@ -351,12 +405,7 @@ public class Player extends Sprite {
     @Override
     public void draw(Graphics g) {
         if (isDying()) {
-            Color original = getPlaceholderColor();
-            setPlaceholderColor((invincibilityTicks / 3) % 2 == 0
-                    ? new Color(245, 70, 70)
-                    : Color.WHITE);
             super.draw(g);
-            setPlaceholderColor(original);
             return;
         }
 

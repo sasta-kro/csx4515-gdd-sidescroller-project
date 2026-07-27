@@ -71,7 +71,6 @@ public class BossScene extends JPanel implements GameScene {
     private Timer timer;
     private boolean paused;
     private boolean finished;
-    private int playerDeathTicks;
     private int pickupSpawnTicks;
 
     public BossScene(Game game, RunState runState) {
@@ -101,7 +100,6 @@ public class BossScene extends JPanel implements GameScene {
         clearStageEntities();
         paused = false;
         finished = false;
-        playerDeathTicks = 0;
         pickupSpawnTicks = PICKUP_INITIAL_DELAY_TICKS;
 
         player = new Player(runState);
@@ -121,7 +119,7 @@ public class BossScene extends JPanel implements GameScene {
 
     // This is the boss scene's version of the professor's update() method.
     void updateGame() {
-        if (playerDeathTicks > 0) {
+        if (player.isDying()) {
             updatePlayerDeath();
             return;
         }
@@ -141,18 +139,21 @@ public class BossScene extends JPanel implements GameScene {
         removeDeadEntities();
 
         if (player.isDead()) {
-            player.setDying(true);
-            playerDeathTicks = PLAYER_DEATH_TICKS;
+            player.startDeathAnimation();
         }
     }
 
     private void updatePlayerDeath() {
-        // Existing explosions continue during the death delay.
-        updateExplosions();
-        explosions.removeIf(explosion -> !explosion.isVisible());
-        playerDeathTicks--;
+        player.advanceAnimation();
 
-        if (playerDeathTicks <= 0) {
+        // The fight stays frozen, but existing explosions finish animating.
+        for (Explosion explosion : explosions) {
+            explosion.act();
+            explosion.advanceAnimation();
+        }
+        explosions.removeIf(explosion -> !explosion.isVisible());
+
+        if (player.isDeathAnimationFinished()) {
             finishAsGameOver();
         }
     }

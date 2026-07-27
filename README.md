@@ -204,8 +204,8 @@ overview for players and contributors.
 
 ## Team
 
-- [sasta-kro](https://github.com/sasta-kro)
-- [kari-nami](https://github.com/kari-nami)
+- [sasta-kro](https://github.com/sasta-kro) (Sai Aike Shwe Tun Aung)
+- [kari-nami](https://github.com/kari-nami) (Ekaterina Kazakova)
 
 ## Asset Attribution
 

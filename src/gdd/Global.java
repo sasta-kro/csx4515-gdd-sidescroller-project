@@ -32,7 +32,7 @@ public final class Global {
     public static final int INITIAL_SPAWN_DELAY_SECONDS = 2;
     public static final TransitionMode SCENE_TRANSITION_MODE = TransitionMode.SUDDEN;
     public static final int SEAMLESS_TRANSITION_TICKS = secondsToTicks(1.5);
-    public static final int PLAYER_DEATH_TICKS = secondsToTicks(1);
+    public static final int PLAYER_DEATH_ANIMATION_FRAME_TICKS = 8;
 
     // Shared rendering and collision tuning
     public static final double RENDER_SCALE = 1.0 ;

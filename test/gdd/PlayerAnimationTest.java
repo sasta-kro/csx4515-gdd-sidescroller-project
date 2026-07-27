@@ -4,10 +4,17 @@ import static gdd.Global.*;
 import gdd.sprite.Player;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
+import java.util.HashSet;
+import java.util.Set;
 
 public class PlayerAnimationTest {
 
     public static void main(String[] args) {
+        animatesSwimming();
+        animatesDeathInActiveColor();
+    }
+
+    private static void animatesSwimming() {
         Player player = new Player(new RunState());
         player.setX(0);
         player.setY(0);
@@ -27,6 +34,44 @@ public class PlayerAnimationTest {
             throw new AssertionError(
                     "player animation did not advance to a different clip");
         }
+    }
+
+    private static void animatesDeathInActiveColor() {
+        Player base = new Player(new RunState());
+        Player speed = new Player(new RunState());
+        speed.applySpeedUp();
+        Player multi = new Player(new RunState());
+        multi.applyMultiShot();
+        Player mega = new Player(new RunState());
+        mega.applyMegaShot();
+        Player split = new Player(new RunState());
+        split.applySplitShot();
+
+        Set<Integer> firstFrameHashes = new HashSet<>();
+        for (Player player : new Player[]{base, speed, multi, mega, split}) {
+            player.setX(0);
+            player.setY(0);
+            player.startDeathAnimation();
+            firstFrameHashes.add(renderHash(player));
+
+            int firstFrameHash = renderHash(player);
+            for (int tick = 0; tick < TARGET_FPS
+                    && !player.isDeathAnimationFinished(); tick++) {
+                player.advanceAnimation();
+            }
+
+            if (!player.isDeathAnimationFinished()) {
+                throw new AssertionError(
+                        "player death animation did not finish");
+            }
+            if (firstFrameHash == renderHash(player)) {
+                throw new AssertionError(
+                        "player death animation did not change frames");
+            }
+        }
+
+        assertEquals(5, firstFrameHashes.size(),
+                "death animation active colors");
     }
 
     private static int renderHash(Player player) {

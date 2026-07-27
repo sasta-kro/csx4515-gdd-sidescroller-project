@@ -72,7 +72,6 @@ public class Scene1 extends JPanel implements GameScene {
     private boolean finished;
     private boolean transitioning;
     private int transitionTicks;
-    private int playerDeathTicks; // for death animation
 
     public Scene1(Game game, RunState runState) {
         this.game = game;
@@ -103,7 +102,6 @@ public class Scene1 extends JPanel implements GameScene {
         paused = false;
         finished = false;
         transitioning = false;
-        playerDeathTicks = 0;
         player = new Player(runState);
         Map<Integer, List<SpawnDetails>> scriptedSpawns = Map.of();
         if (DEFAULT_SPAWN_MODE == SpawnMode.SCRIPTED) {
@@ -144,7 +142,7 @@ public class Scene1 extends JPanel implements GameScene {
     // equals to update() used by the prof
     void updateGame() {
         // only active when player is dying
-        if (playerDeathTicks > 0) {
+        if (player.isDying()) {
             updatePlayerDeath();
             return;
         }
@@ -173,8 +171,7 @@ public class Scene1 extends JPanel implements GameScene {
         removeDeadEntities();
 
         if (player.isDead()) {
-            player.setDying(true);
-            playerDeathTicks = PLAYER_DEATH_TICKS;
+            player.startDeathAnimation();
 //            enemyProjectiles.clear();  // why remove this? cuz like keeping it makes it look more realistic?
             return;
         }
@@ -198,21 +195,16 @@ public class Scene1 extends JPanel implements GameScene {
     }
 
     private void updatePlayerDeath() {
-        // Normal gameplay is staying paused while the death delay is running.
-        // The background is continuing to scroll during this delay.
-        updateBackgroundScroll();
+        player.advanceAnimation();
 
-        // Existing explosions are continuing their animations, and finished explosions are being removed.
+        // The world stays frozen, but existing explosions finish animating.
         for (Explosion explosion : explosions) {
             explosion.act();
+            explosion.advanceAnimation();
         }
         explosions.removeIf(explosion -> !explosion.isVisible());
 
-        // death counter countdown
-        playerDeathTicks--;
-
-        // The game-over screen opens when the timer is reaches zero.
-        if (playerDeathTicks <= 0) {
+        if (player.isDeathAnimationFinished()) {
             finishAsGameOver();
         }
     }
