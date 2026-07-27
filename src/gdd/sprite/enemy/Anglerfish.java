@@ -3,8 +3,12 @@ package gdd.sprite.enemy;
 import gdd.sprite.Player;
 
 import static gdd.Global.*;
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Rectangle;
+import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -15,6 +19,8 @@ public class Anglerfish extends Enemy {
     private static final int HITBOX_X_OFFSET = 6 * BOSS_SCALE;
     private static final int HITBOX_Y_OFFSET = BOSS_SCALE;
     private static final int SUMMON_VERTICAL_SPACING = 55;
+    private static final Color PHASE_TWO_TINT = new Color(235, 75, 115);
+    private static final float PHASE_TWO_TINT_STRENGTH = 0.28f;
 
     private enum AttackState {
         IDLE,
@@ -30,12 +36,25 @@ public class Anglerfish extends Enemy {
     private static final String IDLE_SHEET_PATH = "src/images/boss/anglerfish-boss/Idle.png";
     private static final String HURT_SHEET_PATH = "src/images/boss/anglerfish-boss/Hurt.png";
     private static final String ATTACK_SHEET_PATH = "src/images/boss/anglerfish-boss/Attack.png";
+    private static final String WALK_SHEET_PATH = "src/images/boss/anglerfish-boss/Walk.png";
     private static final String DEATH_SHEET_PATH = "src/images/boss/anglerfish-boss/Death.png";
 
     private static final ImageIcon idleSheet = new ImageIcon(IDLE_SHEET_PATH);
     private static final ImageIcon hurtSheet = new ImageIcon(HURT_SHEET_PATH);
     private static final ImageIcon attackSheet = new ImageIcon(ATTACK_SHEET_PATH);
+    private static final ImageIcon walkSheet = new ImageIcon(WALK_SHEET_PATH);
     private static final ImageIcon deathSheet = new ImageIcon(DEATH_SHEET_PATH);
+
+    private static final Image phaseTwoIdleSheet =
+            createPhaseTwoTint(idleSheet.getImage());
+    private static final Image phaseTwoHurtSheet =
+            createPhaseTwoTint(hurtSheet.getImage());
+    private static final Image phaseTwoAttackSheet =
+            createPhaseTwoTint(attackSheet.getImage());
+    private static final Image phaseTwoWalkSheet =
+            createPhaseTwoTint(walkSheet.getImage());
+    private static final Image phaseTwoDeathSheet =
+            createPhaseTwoTint(deathSheet.getImage());
 
     private static final List<Rectangle> idleAnimationClips = List.of(
             new Rectangle(0, 0, 48, 48),
@@ -56,9 +75,11 @@ public class Anglerfish extends Enemy {
             new Rectangle(48*2, 0, 48, 48),
             new Rectangle(48*3, 0, 48, 48)
     );
-    private static final List<Rectangle> attackClosingAnimationClips = List.of(
-            new Rectangle(48*4, 0, 48, 48),
-            new Rectangle(48*5, 0, 48, 48)
+    private static final List<Rectangle> walkAnimationClips = List.of(
+            new Rectangle(0, 0, 48, 48),
+            new Rectangle(48, 0, 48, 48),
+            new Rectangle(48*2, 0, 48, 48),
+            new Rectangle(48*3, 0, 48, 48)
     );
     private static final List<Rectangle> deathAnimationClips = List.of(
             new Rectangle(0, 0, 48, 48),
@@ -74,6 +95,8 @@ public class Anglerfish extends Enemy {
     private final List<BomberFish> pendingSummons = new ArrayList<>();
     private final int homeX;
     private AttackState state = AttackState.IDLE;
+    private AttackState previousAttack;
+    private int consecutiveAttackCount;
     private int stateTicks;
     private int attackCooldown = BOSS_PHASE_ONE_COOLDOWN_TICKS;
     private int laserInterval;
@@ -165,17 +188,32 @@ public class Anglerfish extends Enemy {
     }
 
     private void chooseAttack() {
-        switch (random.nextInt(3)) {
-            case 0:
-                state = AttackState.LASER_CHARGE;
+        AttackState selectedAttack;
+        do {
+            selectedAttack = switch (random.nextInt(3)) {
+                case 0 -> AttackState.LASER_CHARGE;
+                case 1 -> AttackState.BITE_WARNING;
+                default -> AttackState.SUMMON;
+            };
+        } while (consecutiveAttackCount >= 3
+                && selectedAttack == previousAttack);
+
+        if (selectedAttack == previousAttack) {
+            consecutiveAttackCount++;
+        } else {
+            previousAttack = selectedAttack;
+            consecutiveAttackCount = 1;
+        }
+
+        state = selectedAttack;
+        switch (state) {
+            case LASER_CHARGE:
                 stateTicks = BOSS_LASER_CHARGE_TICKS;
                 break;
-            case 1:
-                state = AttackState.BITE_WARNING;
+            case BITE_WARNING:
                 stateTicks = BOSS_BITE_WARNING_TICKS;
                 break;
             default:
-                state = AttackState.SUMMON;
                 break;
         }
         updateAnimationFrames();
@@ -190,15 +228,20 @@ public class Anglerfish extends Enemy {
         y = Math.max(45, Math.min(BOARD_HEIGHT - getRenderHeight() - 20, y));
 
         if (laserInterval-- <= 0) {
-            pendingProjectiles.add(new BossBubble(
-                    spawnXAtLeftEdge(BossBubble.WIDTH),
-                    spawnYAtCenter(BossBubble.HEIGHT), 1));
+            pendingProjectiles.add(createBubbleAtHitboxEdge());
             laserInterval = Math.max(1, BOSS_LASER_INTERVAL_TICKS);
         }
 
         if (--stateTicks <= 0) {
             returnToIdle();
         }
+    }
+
+    private BossBubble createBubbleAtHitboxEdge() {
+        Rectangle hitbox = getBounds();
+        int spawnX = hitbox.x - BossBubble.WIDTH / 2;
+        int spawnY = hitbox.y + (hitbox.height - BossBubble.HEIGHT) / 2;
+        return new BossBubble(spawnX, spawnY, 1);
     }
 
     private void createSummons() {
@@ -231,14 +274,14 @@ public class Anglerfish extends Enemy {
 
     private void updateAnimationFrames() {
         if (state == AttackState.DYING) {
-            setImage(deathSheet.getImage());
+            setImage(phaseImage(deathSheet, phaseTwoDeathSheet));
             setAnimationFrames(deathAnimationClips);
             setAnimationLooping(false);
             return;
         }
 
         if (hurt) {
-            setImage(hurtSheet.getImage());
+            setImage(phaseImage(hurtSheet, phaseTwoHurtSheet));
             setAnimationFrames(hurtAnimationClips);
             setAnimationLooping(false);
             return;
@@ -246,7 +289,7 @@ public class Anglerfish extends Enemy {
 
         if (state == AttackState.LASER_CHARGE
                 || state == AttackState.BITE_WARNING) {
-            setImage(attackSheet.getImage());
+            setImage(phaseImage(attackSheet, phaseTwoAttackSheet));
             setAnimationFrames(attackOpeningAnimationClips);
             setAnimationLooping(false);
             return;
@@ -254,20 +297,40 @@ public class Anglerfish extends Enemy {
 
         if (state == AttackState.LASER
                 || state == AttackState.BITE_OUT) {
-            setImage(attackSheet.getImage());
+            setImage(phaseImage(attackSheet, phaseTwoAttackSheet));
             setAnimationFrames(attackLoopAnimationClips);
             return;
         }
 
         if (state == AttackState.BITE_RETURN) {
-            setImage(attackSheet.getImage());
-            setAnimationFrames(attackClosingAnimationClips);
-            setAnimationLooping(false);
+            setImage(phaseImage(walkSheet, phaseTwoWalkSheet));
+            setAnimationFrames(walkAnimationClips);
             return;
         }
 
-        setImage(idleSheet.getImage());
+        setImage(phaseImage(idleSheet, phaseTwoIdleSheet));
         setAnimationFrames(idleAnimationClips);
+    }
+
+    private Image phaseImage(ImageIcon normalSheet, Image phaseTwoSheet) {
+        return health <= BOSS_PHASE_TWO_HEALTH
+                ? phaseTwoSheet
+                : normalSheet.getImage();
+    }
+
+    private static BufferedImage createPhaseTwoTint(Image source) {
+        BufferedImage tintedImage = new BufferedImage(
+                source.getWidth(null), source.getHeight(null),
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = tintedImage.createGraphics();
+        graphics.drawImage(source, 0, 0, null);
+        graphics.setComposite(AlphaComposite.SrcAtop.derive(
+                PHASE_TWO_TINT_STRENGTH));
+        graphics.setColor(PHASE_TWO_TINT);
+        graphics.fillRect(0, 0,
+                tintedImage.getWidth(), tintedImage.getHeight());
+        graphics.dispose();
+        return tintedImage;
     }
 
     private void updatePhaseColor() {
