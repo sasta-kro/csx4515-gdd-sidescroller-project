@@ -161,6 +161,7 @@ public class Scene2 extends JPanel implements GameScene {
         spawnScriptedWorldEvents(spawnManager.update(
                 stageTick, enemies, powerUps));
 
+        spawnPlaceholderObstacles();
         updateEnemies();
         updateProjectiles();
         updatePowerUps();
@@ -310,6 +311,12 @@ public class Scene2 extends JPanel implements GameScene {
 
         for (Explosion explosion : explosions) {
             explosion.advanceAnimation();
+        }
+    }
+
+    private void spawnPlaceholderObstacles() {
+        if (DEFAULT_SPAWN_MODE == SpawnMode.SCRIPTED) {
+            return;
         }
 
         if (stageTick > 0 && stageTick % secondsToTicks(11) == 0) {
