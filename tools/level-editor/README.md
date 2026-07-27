@@ -1,18 +1,18 @@
 # Ocean Invaders Level Editor
 
-Static visual editor for the scripted Ocean Invaders stages. It edits terrain and timed
-spawn events without running or simulating the game.
+Static visual editor for the scripted Ocean Invaders stages and the fixed boss room.
+It edits terrain and timed spawn events without running or simulating the game.
 
 Open `index.html` in a browser. There is no build step and no server.
 
 ## Workflow
 
-1. Select Scene 1 or Scene 2.
+1. Select Scene 1, Scene 2, or Boss Room.
 2. Use Terrain to paint tiles from the real `tiles.png` atlas.
 3. Use Enemies, Obstacles, and Powerups to place spawn events.
 4. Select an event marker to edit its tick and vertical position.
 5. Use Viewport Preview to inspect the exact 716 by 700 game viewport at a tick.
-6. Set the file prefix, save both CSV files, and place them in `src/levels/`.
+6. Set the file prefix, save the CSV files, and place them in `src/levels/`.
 
 The editor downloads:
 
@@ -23,8 +23,19 @@ scene1-events.csv
 
 The same names are used for Scene 2.
 
-The Duration field controls the editor timeline and required terrain width. Loading a
-terrain file infers its duration. A 60-second level uses 159 columns.
+Boss Room downloads only:
+
+```text
+boss-terrain.csv
+```
+
+The boss room is a static 15-column viewport. It has no duration, horizontal scroll,
+or scripted event file. The game creates the boss and random boss-fight powerups in
+`BossScene`, so the editor exposes only terrain tools in this mode.
+
+For Scene 1 and Scene 2, the Duration field controls the editor timeline and required
+terrain width. Loading a terrain file infers its duration. A 60-second level uses 159
+columns.
 
 The file prefix is preserved when files are loaded. Loading
 `scene1-test-terrain.csv` and `scene1-test-events.csv` therefore saves back to the same
@@ -32,12 +43,13 @@ test filenames instead of replacing the normal Scene 1 files.
 
 ## Views
 
-World Layout shows the whole level as a horizontal timeline. The x axis is world
-distance and time. The y axis is the game screen height. Event markers sit at the time
-when they spawn.
+World Layout shows the whole scrolling level as a horizontal timeline. The x axis is
+world distance and time. The y axis is the game screen height. Event markers sit at
+the time when they spawn. In Boss Room mode it instead shows the fixed viewport grid.
 
-Viewport Preview shows the game background and terrain at one selected tick. This is a
-static preview. It does not estimate movement paths or run enemy behavior.
+Viewport Preview shows the game background and terrain at one selected tick. Boss Room
+always previews tick zero because its camera does not move. This is a static preview.
+It does not estimate movement paths or run enemy behavior.
 
 ## Terrain
 
@@ -46,6 +58,7 @@ one cell. Click or drag to paint. Erasing any part of a multi-cell tile removes 
 whole tile.
 
 The default 735 columns cover five minutes, including the initial 716 px viewport.
+Boss Room is locked to 15 columns, which covers its single 716 px viewport.
 
 ## Events
 
@@ -75,7 +88,7 @@ Multiple events may use the same tick.
 | `Delete` or `Backspace` | Delete the selected event |
 | `Ctrl/Cmd+Z` | Undo |
 | `Ctrl/Cmd+Shift+Z` | Redo |
-| `Ctrl/Cmd+S` | Download both CSV files |
+| `Ctrl/Cmd+S` | Download the current stage files |
 
 ## Files
 

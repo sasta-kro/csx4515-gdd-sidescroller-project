@@ -14,6 +14,12 @@ window.EDITOR_CONFIG = {
       farSourceSize: [288, 256],
       nearSourceSize: [960, 512],
     },
+    boss: {
+      far: "../../src/images/background/scene2_bg/background.png",
+      near: "../../src/images/background/scene2_bg/midground.png",
+      farSourceSize: [288, 256],
+      nearSourceSize: [960, 512],
+    },
   },
 
   tiles: {

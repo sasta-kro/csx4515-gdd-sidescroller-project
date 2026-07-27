@@ -9,6 +9,12 @@ scene2-terrain.csv
 scene2-events.csv
 ```
 
+The static boss room has one terrain file:
+
+```text
+boss-terrain.csv
+```
+
 Blank lines and lines beginning with `#` are ignored.
 
 ## Timing And Coordinates
@@ -31,10 +37,14 @@ columns = ceil((stageTicks * scrollSpeed + viewportWidth) / tileSize)
 
 At tick `T`, the left side of the viewport is at world X `T * 2`.
 
+The boss room does not use stage timing or scrolling. Its camera remains at world X
+zero and its terrain is exactly 15 columns wide.
+
 ## Terrain CSV
 
 The terrain file is a rectangular 14-row integer grid. Every row must have the same
-number of columns.
+number of columns. Scene terrain width depends on duration; boss terrain is always 15
+columns.
 
 ```text
 # positive tile ID = anchor, -1 = covered cell
@@ -100,6 +110,9 @@ must stay identical.
 
 ## Events CSV
 
+Scene 1 and Scene 2 use event CSV files. Boss Room does not. `BossScene` creates its
+boss and random powerups directly at runtime.
+
 Each line is one event:
 
 ```text
@@ -158,8 +171,9 @@ Snake constructor determines Y from `SnakeTop` or `SnakeBottom`.
 
 ## Runtime Ownership
 
-`LevelLoader` parses and validates both files. `TileMap` renders and collides with the
+`LevelLoader` parses and validates the files. `TileMap` renders and collides with the
 terrain. `SpawnManager` creates all timed events when scripted mode is active.
+`BossScene` loads `boss-terrain.csv` at camera X zero.
 
 Random mode remains available for development and does not use terrain or events for
 gameplay.

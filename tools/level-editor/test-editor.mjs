@@ -5,19 +5,23 @@ import vm from "node:vm";
 const html = readFileSync(new URL("index.html", import.meta.url), "utf8");
 const configSource = readFileSync(new URL("config.js", import.meta.url), "utf8");
 const scene1Terrain = readFileSync(
-  new URL("../../src/levels/scene1-terrain.csv", import.meta.url),
+  new URL("../../src/levels/final-scene1-terrain.csv", import.meta.url),
   "utf8",
 );
 const scene1Events = readFileSync(
-  new URL("../../src/levels/scene1-events.csv", import.meta.url),
+  new URL("../../src/levels/final-scene2-events.csv", import.meta.url),
   "utf8",
 );
 const scene1TestTerrain = readFileSync(
-  new URL("../../src/levels/scene1-test-terrain.csv", import.meta.url),
+  new URL("../../src/levels/final-scene2-terrain.csv", import.meta.url),
   "utf8",
 );
 const scene1TestEvents = readFileSync(
-  new URL("../../src/levels/scene1-test-events.csv", import.meta.url),
+  new URL("../../src/levels/final-scene2-events.csv", import.meta.url),
+  "utf8",
+);
+const bossTerrain = readFileSync(
+  new URL("../../src/levels/boss-terrain.csv", import.meta.url),
   "utf8",
 );
 const tileRegistry = readFileSync(
@@ -186,7 +190,7 @@ assert.equal(previewEventY(
 const fixtureTerrain = parseTerrain(scene1Terrain);
 const fixtureEvents = parseEvents(scene1Events);
 assert.equal(fixtureTerrain.width, 735);
-assert.equal(fixtureEvents.length, 6);
+assert.equal(fixtureEvents.length, 180);
 
 for (const match of tileRegistry.matchAll(
   /add\\((\\d+), "[^"]+", (\\d+), (\\d+), (\\d+), (\\d+), (\\d+), (\\d+)\\);/g,
@@ -245,13 +249,34 @@ assert.equal(
 
 const testTerrain = parseTerrain(scene1TestTerrain);
 const testEvents = parseEvents(scene1TestEvents);
-assert.equal(testTerrain.width, 159);
-assert.equal(testEvents.length, 35);
+assert.equal(testTerrain.width, 735);
+assert.equal(testEvents.length, 180);
 
 document.getElementById("durationSeconds").value = "60";
 resizeDuration();
 assert.equal(stageTicks, 3600);
 assert.equal(requiredColumns(), 159);
+
+document.getElementById("stage").value = "boss";
+columns = BOSS_COLUMNS;
+terrain = parseTerrain(bossTerrain).values;
+events = [{ id: 99, tick: 10, type: "Jellyfish", x: 756, y: 200 }];
+stageTicks = 0;
+applyStageMode();
+assert.equal(stageNumber(), 3);
+assert.ok(isBossRoom());
+assert.equal(BOSS_COLUMNS, 15);
+assert.equal(requiredColumns(), 15);
+assert.equal(parseTerrain(bossTerrain).width, 15);
+assert.equal(document.getElementById("columns").disabled, true);
+assert.equal(document.getElementById("durationControls").style.display, "none");
+assert.equal(document.getElementById("eventEditor").style.display, "none");
+
+const downloadedFiles = [];
+download = name => downloadedFiles.push(name);
+document.getElementById("levelName").value = "boss";
+saveFiles();
+assert.deepEqual(downloadedFiles, ["boss-terrain.csv"]);
 `;
 
 context.assert = assert;
@@ -259,6 +284,7 @@ context.scene1Terrain = scene1Terrain;
 context.scene1Events = scene1Events;
 context.scene1TestTerrain = scene1TestTerrain;
 context.scene1TestEvents = scene1TestEvents;
+context.bossTerrain = bossTerrain;
 context.tileRegistry = tileRegistry;
 vm.runInContext(
   `${configSource}\n${scriptMatch[1]}\n${tests}`,

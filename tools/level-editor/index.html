@@ -174,16 +174,17 @@
     <select id="stage">
       <option value="scene1">Scene 1</option>
       <option value="scene2">Scene 2</option>
+      <option value="boss">Boss Room</option>
     </select>
     <label for="levelName">File prefix</label>
     <input id="levelName" value="scene1" style="width:120px">
   </div>
-  <div class="group">
+  <div id="columnControls" class="group">
     <label for="columns">Columns</label>
-    <input id="columns" type="number" min="16" max="1000" value="735">
+    <input id="columns" type="number" min="15" max="1000" value="735">
     <button id="resizeLevel">Resize</button>
   </div>
-  <div class="group">
+  <div id="durationControls" class="group">
     <label for="durationSeconds">Duration</label>
     <input id="durationSeconds" type="number" min="10" max="600" value="300">
     <span>sec</span>
@@ -208,9 +209,9 @@
 <div id="modebar">
   <div class="group">
     <button class="tab active" data-tab="terrain">Terrain</button>
-    <button class="tab" data-tab="enemy">Enemies</button>
-    <button class="tab" data-tab="obstacle">Obstacles</button>
-    <button class="tab" data-tab="powerup">Powerups</button>
+    <button class="tab event-tab" data-tab="enemy">Enemies</button>
+    <button class="tab event-tab" data-tab="obstacle">Obstacles</button>
+    <button class="tab event-tab" data-tab="powerup">Powerups</button>
   </div>
   <div class="group">
     <button id="erase">Erase</button>
@@ -242,15 +243,17 @@
     <div id="toast"></div>
   </main>
   <aside id="side">
-    <h2>Selected Event</h2>
-    <div id="emptySelection">Select an event marker.</div>
-    <div id="eventInspector">
-      <div class="field"><label for="eventType">Type</label><select id="eventType"></select></div>
-      <div class="field"><label for="eventTick">Tick</label><input id="eventTick" type="number" min="0" max="18000"></div>
-      <div class="field"><label for="eventTime">Time</label><input id="eventTime" readonly></div>
-      <div class="field"><label for="eventX">Screen X</label><input id="eventX" type="number"></div>
-      <div class="field"><label for="eventY">Screen Y</label><input id="eventY" type="number"></div>
-      <button id="deleteEvent" class="danger">Delete Event</button>
+    <div id="eventEditor">
+      <h2>Selected Event</h2>
+      <div id="emptySelection">Select an event marker.</div>
+      <div id="eventInspector">
+        <div class="field"><label for="eventType">Type</label><select id="eventType"></select></div>
+        <div class="field"><label for="eventTick">Tick</label><input id="eventTick" type="number" min="0" max="18000"></div>
+        <div class="field"><label for="eventTime">Time</label><input id="eventTime" readonly></div>
+        <div class="field"><label for="eventX">Screen X</label><input id="eventX" type="number"></div>
+        <div class="field"><label for="eventY">Screen Y</label><input id="eventY" type="number"></div>
+        <button id="deleteEvent" class="danger">Delete Event</button>
+      </div>
     </div>
     <div id="warnings">
       <h2>Validation</h2>
@@ -262,7 +265,7 @@
 <div id="status">
   <span>Length <b id="lengthStatus"></b></span>
   <span>Terrain <b id="terrainStatus"></b></span>
-  <span>Events <b id="eventStatus"></b></span>
+  <span id="eventStatusGroup">Events <b id="eventStatus"></b></span>
   <span id="cursorStatus"></span>
 </div>
 
@@ -276,6 +279,7 @@ const SCREEN_W = 716;
 const SCREEN_H = 700;
 const FPS = 60;
 const SCROLL = 2;
+const BOSS_COLUMNS = Math.ceil(SCREEN_W / TILE);
 const CFG = window.EDITOR_CONFIG;
 const TILES = CFG.tiles;
 const TILE_IDS = Object.keys(TILES).map(Number).sort((a, b) => a - b);
@@ -359,7 +363,12 @@ function drawTerrainImage(context, definition, x, y, width, height) {
 }
 
 function stageNumber() {
+  if ($("stage").value === "boss") return 3;
   return $("stage").value === "scene2" ? 2 : 1;
+}
+
+function isBossRoom() {
+  return $("stage").value === "boss";
 }
 
 function typesFor(category) {
@@ -407,14 +416,28 @@ function formatTime(tick) {
 }
 
 function requiredColumns() {
+  if (isBossRoom()) return BOSS_COLUMNS;
   return Math.ceil((stageTicks * SCROLL + SCREEN_W) / TILE);
 }
 
 function setDurationControls() {
-  $("durationSeconds").value = stageTicks / FPS;
+  $("durationSeconds").value = isBossRoom() ? 0 : stageTicks / FPS;
   $("previewTick").max = stageTicks;
   $("previewRange").max = stageTicks;
   $("eventTick").max = stageTicks;
+}
+
+function applyStageMode() {
+  const bossRoom = isBossRoom();
+  $("columns").disabled = bossRoom;
+  $("resizeLevel").style.display = bossRoom ? "none" : "";
+  $("durationControls").style.display = bossRoom ? "none" : "flex";
+  $("eventEditor").style.display = bossRoom ? "none" : "block";
+  $("eventStatusGroup").style.display = bossRoom ? "none" : "";
+  if (bossRoom) $("previewControls").style.display = "none";
+  for (const button of document.querySelectorAll(".event-tab")) {
+    button.style.display = bossRoom ? "none" : "";
+  }
 }
 
 function snapshot() {
@@ -515,6 +538,7 @@ function eraseTile(row, column) {
 }
 
 function resizeLevel() {
+  if (isBossRoom()) return;
   const next = Math.max(16, Math.min(1000, Number($("columns").value) || columns));
   if (next === columns) return;
   edit(() => {
@@ -540,6 +564,7 @@ function resizeLevel() {
 }
 
 function resizeDuration() {
+  if (isBossRoom()) return;
   const seconds = Math.max(10,
     Math.min(600, Number($("durationSeconds").value) || stageTicks / FPS));
   edit(() => {
@@ -550,6 +575,7 @@ function resizeDuration() {
 }
 
 function placeEvent(worldX, worldY) {
+  if (isBossRoom()) return;
   const definition = TYPE_BY_NAME[selectedEventType];
   const event = {
     id: nextEventId++,
@@ -632,7 +658,9 @@ function drawLayout() {
     }
   }
 
-  for (const event of events) drawEventMarker(event, rulerHeight);
+  if (!isBossRoom()) {
+    for (const event of events) drawEventMarker(event, rulerHeight);
+  }
 
   if (showGrid) {
     layout.strokeStyle = "rgba(255,255,255,.12)";
@@ -656,9 +684,7 @@ function drawLayout() {
 
 function drawWorldBackground(rulerHeight) {
   const stage = $("stage").value;
-  const image = stage === "scene1"
-    ? backgroundImages.scene1.far
-    : backgroundImages.scene2.near;
+  const image = backgroundImages[stage].near || backgroundImages[stage].far;
   if (!image || !image.complete) return;
   layout.save();
   layout.globalAlpha = .28;
@@ -701,6 +727,13 @@ function drawEventMarker(event, rulerHeight) {
 function drawRuler(height, width) {
   layout.fillStyle = "#151a1d";
   layout.fillRect(0, 0, width, height);
+  if (isBossRoom()) {
+    layout.fillStyle = "#cdd9d4";
+    layout.font = "bold 11px sans-serif";
+    layout.textAlign = "center";
+    layout.fillText("STATIC BOSS ROOM", width / 2, 22);
+    return;
+  }
   layout.strokeStyle = "#3a464a";
   layout.beginPath();
   for (let tick = 0; tick <= stageTicks; tick += 300) {
@@ -723,12 +756,14 @@ function drawRuler(height, width) {
 
 function drawPreview() {
   preview.imageSmoothingEnabled = false;
-  const tick = Math.max(0, Math.min(stageTicks, Number($("previewTick").value) || 0));
+  const tick = isBossRoom()
+    ? 0
+    : Math.max(0, Math.min(stageTicks, Number($("previewTick").value) || 0));
   drawPreviewBackground(tick);
   drawPreviewTerrain(tick);
 
   const windowTicks = 2;
-  for (const event of events) {
+  for (const event of isBossRoom() ? [] : events) {
     if (Math.abs(event.tick - tick) > windowTicks) continue;
     const definition = TYPE_BY_NAME[event.type];
     if (!definition) continue;
@@ -758,7 +793,7 @@ function drawPreviewBackground(tick) {
     drawRepeatingLayer(preview, layers.middle, tick % width, width, SCREEN_H);
     drawRepeatingLayer(preview, layers.near, tick * SCROLL % width, width, SCREEN_H);
   } else {
-    const layers = backgroundImages.scene2;
+    const layers = backgroundImages[stage];
     const nearScale = SCREEN_H / 512;
     const nearWidth = Math.round(960 * nearScale);
     const farScale = nearScale * 2;
@@ -780,7 +815,7 @@ function drawRepeatingLayer(context, image, offset, width, height) {
 }
 
 function drawPreviewTerrain(tick) {
-  const cameraX = tick * SCROLL;
+  const cameraX = isBossRoom() ? 0 : tick * SCROLL;
   const first = Math.max(0, Math.floor(cameraX / TILE) - 4);
   const last = Math.min(columns - 1, Math.ceil((cameraX + SCREEN_W) / TILE));
   for (let row = 0; row < ROWS; row++) {
@@ -912,9 +947,13 @@ function updateSelectedEvent() {
 }
 
 function updateStatus() {
-  const coverageTicks = Math.floor((columns * TILE - SCREEN_W) / SCROLL);
   const anchors = [...terrain].filter(value => value > 0).length;
-  $("lengthStatus").textContent = `${columns} cols · ${formatTime(coverageTicks)} · ${coverageTicks} ticks`;
+  if (isBossRoom()) {
+    $("lengthStatus").textContent = `${columns} cols · static viewport`;
+  } else {
+    const coverageTicks = Math.floor((columns * TILE - SCREEN_W) / SCROLL);
+    $("lengthStatus").textContent = `${columns} cols · ${formatTime(coverageTicks)} · ${coverageTicks} ticks`;
+  }
   $("terrainStatus").textContent = `${anchors} pieces`;
   $("eventStatus").textContent = `${events.length}`;
 }
@@ -922,7 +961,7 @@ function updateStatus() {
 function updateWarnings() {
   const warnings = [];
   const minimumColumns = requiredColumns();
-  if (columns < minimumColumns) {
+  if (!isBossRoom() && columns < minimumColumns) {
     warnings.push({
       level: "error",
       text: `Terrain covers less than ${formatTime(stageTicks)}. Use at least ${minimumColumns} columns.`,
@@ -937,7 +976,7 @@ function updateWarnings() {
     if (blocked) warnings.push({ level: "error", text: `Column ${column} is completely solid.`, column });
   }
 
-  for (const event of events) {
+  for (const event of isBossRoom() ? [] : events) {
     const definition = TYPE_BY_NAME[event.type];
     if (!definition) {
       warnings.push({ level: "error", text: `Unknown event type ${event.type}.` });
@@ -1019,6 +1058,10 @@ function saveFiles() {
     return;
   }
   download(`${prefix}-terrain.csv`, terrainCsv());
+  if (isBossRoom()) {
+    toast(`Saved ${prefix}-terrain.csv`);
+    return;
+  }
   setTimeout(() => download(`${prefix}-events.csv`, eventsCsv()), 200);
   toast(`Saved ${prefix} terrain and events`);
 }
@@ -1098,23 +1141,32 @@ async function loadFiles(files) {
     const text = await file.text();
     if (/terrain/i.test(file.name)) loadedTerrain = parseTerrain(text);
     else if (/event|spawn/i.test(file.name)) loadedEvents = parseEvents(text);
-    const match = file.name.match(/^(scene[12])-/i);
+    const match = file.name.match(/^(scene[12]|boss)-/i);
     if (match) $("stage").value = match[1].toLowerCase();
     const prefix = file.name.match(/^(.+)-(terrain|events|spawns)\.csv$/i);
     if (prefix) $("levelName").value = prefix[1];
+  }
+  if (isBossRoom() && loadedTerrain && loadedTerrain.width !== BOSS_COLUMNS) {
+    throw new Error(`Boss terrain needs exactly ${BOSS_COLUMNS} columns`);
   }
   edit(() => {
     if (loadedTerrain) {
       columns = loadedTerrain.width;
       terrain = loadedTerrain.values;
       $("columns").value = columns;
-      const coverageTicks = Math.floor((columns * TILE - SCREEN_W) / SCROLL);
-      stageTicks = Math.max(FPS * 10,
-        Math.floor(coverageTicks / FPS) * FPS);
+      if (isBossRoom()) {
+        stageTicks = 0;
+      } else {
+        const coverageTicks = Math.floor((columns * TILE - SCREEN_W) / SCROLL);
+        stageTicks = Math.max(FPS * 10,
+          Math.floor(coverageTicks / FPS) * FPS);
+      }
       setDurationControls();
     }
-    if (loadedEvents) events = loadedEvents;
+    if (isBossRoom()) events = [];
+    else if (loadedEvents) events = loadedEvents;
   });
+  applyStageMode();
   toast("Level files loaded");
 }
 
@@ -1196,11 +1248,13 @@ layoutCanvas.addEventListener("contextmenu", event => {
 
 function updateCursorStatus() {
   if (!cursor) return;
-  $("cursorStatus").textContent =
-    `Column ${cursor.column} · Row ${cursor.row} · Tick ${cursor.tick} · ${formatTime(cursor.tick)}`;
+  $("cursorStatus").textContent = isBossRoom()
+    ? `Column ${cursor.column} · Row ${cursor.row}`
+    : `Column ${cursor.column} · Row ${cursor.row} · Tick ${cursor.tick} · ${formatTime(cursor.tick)}`;
 }
 
 function setTab(next) {
+  if (isBossRoom() && next !== "terrain") return;
   tab = next;
   erasing = false;
   const available = typesFor(tab);
@@ -1217,7 +1271,7 @@ function setTab(next) {
 function showView(previewMode) {
   $("layoutPane").style.display = previewMode ? "none" : "block";
   $("previewPane").style.display = previewMode ? "grid" : "none";
-  $("previewControls").style.display = previewMode ? "flex" : "none";
+  $("previewControls").style.display = previewMode && !isBossRoom() ? "flex" : "none";
   $("layoutView").classList.toggle("active", !previewMode);
   $("previewView").classList.toggle("active", previewMode);
   drawAll();
@@ -1293,10 +1347,25 @@ $("toggleGrid").onclick = () => { showGrid = !showGrid; $("toggleGrid").classLis
 $("toggleHitboxes").onclick = () => { showFootprints = !showFootprints; $("toggleHitboxes").classList.toggle("active", showFootprints); drawAll(); };
 $("zoom").onchange = () => { zoom = Number($("zoom").value); drawAll(); };
 $("stage").onchange = () => {
+  if (isBossRoom()) {
+    columns = BOSS_COLUMNS;
+    terrain = new Int16Array(ROWS * columns);
+    events = [];
+    stageTicks = 0;
+    tab = "terrain";
+  } else if (stageTicks === 0) {
+    columns = CFG.defaultColumns;
+    terrain = new Int16Array(ROWS * columns);
+    events = [];
+    stageTicks = CFG.defaultDurationSeconds * FPS;
+  }
   const available = typesFor(tab);
   if (tab !== "terrain" && available.length) selectedEventType = available[0].type;
   selectedEventId = null;
   $("levelName").value = $("stage").value;
+  $("columns").value = columns;
+  setDurationControls();
+  applyStageMode();
   drawAll();
 };
 $("layoutView").onclick = () => showView(false);
@@ -1330,6 +1399,7 @@ $("stage").value = CFG.defaultStage;
 $("levelName").value = CFG.defaultStage;
 $("columns").value = columns;
 setDurationControls();
+applyStageMode();
 drawAll();
 </script>
 </body>
