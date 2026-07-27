@@ -55,24 +55,34 @@
   .group + .group { border-left: 1px solid var(--line); padding-left: 9px; }
   label { color: var(--muted); }
   #palette {
-    display: flex;
-    align-items: center;
-    gap: 5px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    flex: 1 0 100%;
+    width: 100%;
+    gap: 4px;
     min-width: 0;
-    overflow-x: auto;
-    padding-bottom: 2px;
+    padding-top: 1px;
   }
   .palette-item {
     display: grid;
-    grid-template-columns: 28px auto;
+    grid-template-columns: 24px minmax(0, 1fr);
     align-items: center;
-    gap: 5px;
-    flex: none;
-    padding: 3px 7px 3px 3px;
+    gap: 4px;
+    width: 100%;
+    min-width: 0;
+    padding: 2px 5px 2px 2px;
+    overflow: hidden;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .palette-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .thumb {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     object-fit: contain;
     image-rendering: pixelated;
     background: #0c1113;
@@ -805,7 +815,10 @@ function buildPalette() {
       const context = canvas.getContext("2d");
       context.imageSmoothingEnabled = false;
       drawTerrainImage(context, definition, 0, 0, 28, 28);
-      button.append(canvas, document.createTextNode(`${id} ${definition.label}`));
+      const label = document.createElement("span");
+      label.className = "palette-label";
+      label.textContent = `${id} ${definition.label}`;
+      button.append(canvas, label);
       button.onclick = () => { selectedTile = id; erasing = false; drawAll(); };
       palette.appendChild(button);
     }
@@ -813,12 +826,16 @@ function buildPalette() {
     for (const definition of typesFor(tab)) {
       const button = document.createElement("button");
       button.className = "palette-item" + (selectedEventType === definition.type && !erasing ? " active" : "");
+      button.title = definition.type;
       const canvas = document.createElement("canvas");
       canvas.className = "thumb";
       canvas.width = 28;
       canvas.height = 28;
       drawRepresentative(canvas.getContext("2d"), definition, 0, 0, 28, 28);
-      button.append(canvas, document.createTextNode(definition.type));
+      const label = document.createElement("span");
+      label.className = "palette-label";
+      label.textContent = definition.type;
+      button.append(canvas, label);
       button.onclick = () => { selectedEventType = definition.type; erasing = false; drawAll(); };
       palette.appendChild(button);
     }
