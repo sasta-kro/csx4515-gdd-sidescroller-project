@@ -17,6 +17,7 @@ import gdd.sprite.enemy.EnemyProjectile;
 import gdd.sprite.obstacle.Explosion;
 import gdd.sprite.obstacle.Mine;
 import gdd.sprite.enemy.Octopus;
+import gdd.sprite.enemy.Snake;
 import gdd.sprite.Player;
 import gdd.ui.GameHud;
 import gdd.ui.PauseMenu;
@@ -226,7 +227,7 @@ public class Scene1 extends JPanel implements GameScene {
         if (intersectsTerrain(player.getBounds())) {
             resolveTerrainOverlap();
             if (WALL_DAMAGE_ENABLED) {
-                player.damage(WALL_DAMAGE);
+                damagePlayer(WALL_DAMAGE);
             }
         }
 
@@ -253,8 +254,13 @@ public class Scene1 extends JPanel implements GameScene {
 
                 if (rock != null) {
                     enemyProjectiles.add(rock);
-                    playSound(SoundEffect.CORAL_BREAK_ROCK_THROW);
+                    playSound(SoundEffect.OCTOPUS_ROCK_THROW);
                 }
+            }
+
+            if (enemy instanceof Snake snake
+                    && snake.consumeAttackStarted()) {
+                playSound(SoundEffect.SNAKE_ATTACK);
             }
         }
     }
@@ -391,7 +397,7 @@ public class Scene1 extends JPanel implements GameScene {
             }
 
             if (projectile.collidesWith(player)) {
-                player.damage(projectile.getDamage());
+                damagePlayer(projectile.getDamage());
                 projectile.die();
                 continue;
             }
@@ -437,7 +443,7 @@ public class Scene1 extends JPanel implements GameScene {
     private void handleEnemyContact() {
         for (Enemy enemy : enemies) {
             if (enemy.collidesWith(player)) {
-                player.damage(enemy.getContactDamage());
+                damagePlayer(enemy.getContactDamage());
             }
 
             for (Mine mine : mines) {
@@ -487,7 +493,7 @@ public class Scene1 extends JPanel implements GameScene {
             explosions.add(explosion);
 
             if (explosion.reaches(player)) {
-                player.damage(MINE_DAMAGE);
+                damagePlayer(MINE_DAMAGE);
             }
 
             for (Enemy enemy : enemies) {
@@ -652,6 +658,12 @@ public class Scene1 extends JPanel implements GameScene {
     private void playSound(SoundEffect soundEffect) {
         if (game != null) {
             game.playSound(soundEffect);
+        }
+    }
+
+    private void damagePlayer(int amount) {
+        if (player.damage(amount)) {
+            playSound(SoundEffect.PLAYER_HURT);
         }
     }
 

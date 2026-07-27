@@ -267,7 +267,7 @@ public class BossScene extends JPanel implements GameScene {
                     explosions.add(explosion);
                     playSound(SoundEffect.EXPLOSION);
                     if (explosion.reaches(player)) {
-                        player.damage(BOMBER_EXPLOSION_DAMAGE);
+                        damagePlayer(BOMBER_EXPLOSION_DAMAGE);
                     }
                     bomber.die();
                 }
@@ -331,7 +331,7 @@ public class BossScene extends JPanel implements GameScene {
     private void handleEnemyProjectileCollisions() {
         for (EnemyProjectile projectile : enemyProjectiles) {
             if (projectile.isVisible() && projectile.collidesWith(player)) {
-                player.damage(projectile.getDamage());
+                damagePlayer(projectile.getDamage());
                 projectile.die();
                 continue;
             }
@@ -346,7 +346,7 @@ public class BossScene extends JPanel implements GameScene {
     private void handleEnemyContact() {
         for (Enemy enemy : enemies) {
             if (enemy.isVisible() && enemy.collidesWith(player)) {
-                player.damage(enemy.getContactDamage());
+                damagePlayer(enemy.getContactDamage());
             }
         }
     }
@@ -489,6 +489,12 @@ public class BossScene extends JPanel implements GameScene {
     private void playSound(SoundEffect soundEffect) {
         if (game != null) {
             game.playSound(soundEffect);
+        }
+    }
+
+    private void damagePlayer(int amount) {
+        if (player.damage(amount)) {
+            playSound(SoundEffect.PLAYER_HURT);
         }
     }
 

@@ -17,6 +17,7 @@ import gdd.sprite.enemy.Enemy;
 import gdd.sprite.enemy.EnemyProjectile;
 import gdd.sprite.obstacle.Explosion;
 import gdd.sprite.enemy.Octopus;
+import gdd.sprite.enemy.Snake;
 import gdd.sprite.Player;
 import gdd.ui.GameHud;
 import gdd.ui.PauseMenu;
@@ -225,7 +226,7 @@ public class Scene2 extends JPanel implements GameScene {
             resolveTerrainOverlap();
 
             if (WALL_DAMAGE_ENABLED) {
-                player.damage(WALL_DAMAGE);
+                damagePlayer(WALL_DAMAGE);
             }
         }
 
@@ -252,8 +253,13 @@ public class Scene2 extends JPanel implements GameScene {
 
                 if (rock != null) {
                     enemyProjectiles.add(rock);
-                    playSound(SoundEffect.CORAL_BREAK_ROCK_THROW);
+                    playSound(SoundEffect.OCTOPUS_ROCK_THROW);
                 }
+            }
+
+            if (enemy instanceof Snake snake
+                    && snake.consumeAttackStarted()) {
+                playSound(SoundEffect.SNAKE_ATTACK);
             }
         }
     }
@@ -368,7 +374,7 @@ public class Scene2 extends JPanel implements GameScene {
             for (Coral coral : corals) {
                 if (bubble.collidesWith(coral)) {
                     coral.damage();
-                    playSound(SoundEffect.CORAL_BREAK_ROCK_THROW);
+                    playSound(SoundEffect.CORAL_BREAK);
                     bubble.die();
                     break;
                 }
@@ -388,7 +394,7 @@ public class Scene2 extends JPanel implements GameScene {
             }
 
             if (projectile.collidesWith(player)) {
-                player.damage(projectile.getDamage());
+                damagePlayer(projectile.getDamage());
                 projectile.die();
                 continue;
             }
@@ -402,7 +408,7 @@ public class Scene2 extends JPanel implements GameScene {
     private void handleEnemyContact() {
         for (Enemy enemy : enemies) {
             if (enemy.collidesWith(player)) {
-                player.damage(enemy.getContactDamage());
+                damagePlayer(enemy.getContactDamage());
             }
         }
     }
@@ -419,9 +425,9 @@ public class Scene2 extends JPanel implements GameScene {
     private void handleObstacleContact() {
         for (Coral coral : corals) {
             if (coral.collidesWith(player)) {
-                player.damage(coral.contactDamage);
+                damagePlayer(coral.contactDamage);
                 coral.damage();
-                playSound(SoundEffect.CORAL_BREAK_ROCK_THROW);
+                playSound(SoundEffect.CORAL_BREAK);
             }
         }
     }
@@ -605,6 +611,12 @@ public class Scene2 extends JPanel implements GameScene {
     private void playSound(SoundEffect soundEffect) {
         if (game != null) {
             game.playSound(soundEffect);
+        }
+    }
+
+    private void damagePlayer(int amount) {
+        if (player.damage(amount)) {
+            playSound(SoundEffect.PLAYER_HURT);
         }
     }
 

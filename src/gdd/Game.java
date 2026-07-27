@@ -67,7 +67,7 @@ public class Game extends JFrame {
     }
 
     public void showVictory() {
-        showScene(new EndScene(this, true), null);
+        showScene(new EndScene(this, true), MusicTrack.VICTORY);
     }
 
     public void playSound(SoundEffect soundEffect) {
