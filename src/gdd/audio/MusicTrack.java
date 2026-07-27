@@ -2,11 +2,12 @@ package gdd.audio;
 
 public enum MusicTrack {
 
-    MENU("src/audio/music/menu.wav", true),
+    MENU("src/audio/music/menu-scene2.wav", true),
     SCENE_1("src/audio/music/scene1.wav", true),
-    SCENE_2("src/audio/music/scene2.wav", true),
+    SCENE_2("src/audio/music/menu-scene2.wav", true),
     BOSS("src/audio/music/boss.wav", true),
-    DEATH("src/audio/music/death.wav", false);
+    DEATH("src/audio/music/death.wav", false),
+    VICTORY("src/audio/music/victory.wav", false);
 
     private final String path;
     private final boolean looping;

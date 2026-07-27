@@ -9,5 +9,7 @@
 out/
 
 # Demo recordings
+resources/untracked/
 *.mov
 *.mp4
+*.zip

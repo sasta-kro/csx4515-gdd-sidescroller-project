@@ -46,6 +46,12 @@ public class AudioAssetTest {
                 == SoundEffect.MEGA_SHOT;
         assert SoundEffect.forWeapon(WeaponType.SPLIT_SHOT)
                 == SoundEffect.SPLIT_SHOT;
+        assert MusicTrack.MENU.getPath().equals(
+                MusicTrack.SCENE_2.getPath())
+                : "Menu and Scene 2 must share their music";
+        assert !MusicTrack.SCENE_1.getPath().equals(
+                MusicTrack.SCENE_2.getPath())
+                : "Scene 1 must use the former Scene 2 music";
 
         System.out.println("AudioAssetTest passed");
     }

@@ -60,6 +60,7 @@ public class Snake extends Enemy {
     private final int verticalDirection;
     private State state = State.IDLE;
     private int attackCooldownTicks = ATTACK_COOLDOWN_TICKS;
+    private boolean attackStarted;
 
     public Snake(Player player, int x, boolean fromTop) {
         super(player, x, fromTop ? -70 : BOARD_HEIGHT, 48*2, 48*2, 2, ENEMY_CONTACT_DAMAGE, 150, new Color(100, 205, 125));
@@ -86,6 +87,7 @@ public class Snake extends Enemy {
             updateAnimationFrames();
         } else if (state == State.IDLE && --attackCooldownTicks <= 0) {
             state = State.ATTACKING;
+            attackStarted = true;
             updateAnimationFrames();
         }
 
@@ -98,6 +100,12 @@ public class Snake extends Enemy {
 
     private void faceVerticalDirection() {
         setRotationDegrees(verticalDirection > 0 ? 90 : -90);
+    }
+
+    public boolean consumeAttackStarted() {
+        boolean result = attackStarted;
+        attackStarted = false;
+        return result;
     }
 
     private void updateAnimationFrames() {

@@ -219,9 +219,12 @@ overview for players and contributors.
 | Stage 1 environment | [Underwater Mines Pixel Background on OpenGameArt](https://opengameart.org/content/underwater-mines-pixel-background) |
 | Stage 2 environment | [Underwater Diving Pack on OpenGameArt](https://opengameart.org/content/underwater-diving-pack) |
 | Player bubble sound effects | [Bubbles](https://opengameart.org/content/bubbles) and [Skippy Fish Water Sound Collection](https://opengameart.org/content/skippy-fish-water-sound-collection) |
-| Scene 2 music | [Frenzied Swimming](https://opengameart.org/content/frenzied-swimming) |
-| Menu music | [Aquaria](https://opengameart.org/content/aquaria) |
+| Scene 1 music | [Frenzied Swimming](https://opengameart.org/content/frenzied-swimming) |
+| Menu and Scene 2 music | [Aquaria](https://opengameart.org/content/aquaria) |
 | Death music | [Underwater-like Fanfare](https://opengameart.org/content/underwater-like-fanfare) |
+| Player hurt and Octopus rock effects | *The Legend of Zelda*, Koji Kondo, Nintendo (1987) |
+| Snake attack effect | *Castlevania*, Konami (1987) |
+| Victory music | *Final Fantasy III*, Square (1990) |
 | Temporary boss music and assorted effects | [Gradius II NES soundtrack and sounds](https://www.zophar.net/music/nintendo-nes-nsf/gradius-ii?ct=1785154631481) |
 
 Third-party artwork and audio remain subject to their original authors'
