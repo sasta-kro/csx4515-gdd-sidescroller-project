@@ -1,6 +1,12 @@
 package gdd;
 
 import static gdd.Global.*;
+import gdd.powerup.Heal;
+import gdd.powerup.MegaShot;
+import gdd.powerup.MultiShot;
+import gdd.powerup.PowerUp;
+import gdd.powerup.SpeedUp;
+import gdd.powerup.SplitShot;
 import gdd.sprite.obstacle.Coral;
 import gdd.sprite.enemy.EnemyProjectile;
 
@@ -9,6 +15,7 @@ public class SpriteAssetTest {
     public static void main(String[] args) {
         loadsOctopusRockTexture();
         playsCoralDeathAnimation();
+        loadsPowerUpTextures();
     }
 
     private static void loadsOctopusRockTexture() {
@@ -49,6 +56,23 @@ public class SpriteAssetTest {
 
         assertTrue(!coral.isVisible(),
                 "coral disappears after death animation");
+    }
+
+    private static void loadsPowerUpTextures() {
+        PowerUp[] powerUps = {
+            new Heal(0, 0),
+            new SpeedUp(0, 0),
+            new MultiShot(0, 0),
+            new MegaShot(0, 0),
+            new SplitShot(0, 0)
+        };
+
+        for (PowerUp powerUp : powerUps) {
+            assertEquals(48, powerUp.getImage().getWidth(null),
+                    powerUp.getDisplayName() + " texture width");
+            assertEquals(48, powerUp.getImage().getHeight(null),
+                    powerUp.getDisplayName() + " texture height");
+        }
     }
 
     private static void assertEquals(int expected, int actual,

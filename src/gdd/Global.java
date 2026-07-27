@@ -13,6 +13,9 @@ public final class Global {
     public static final int DEV_STAGE_DURATION_SECONDS = 15;
     public static final boolean DEV_SHOW_ENTITY_HITBOXES = true;
 
+    public static final SpawnMode DEFAULT_SPAWN_MODE = SpawnMode.RANDOM;
+
+
     // Level files
     public static final String SCENE1_TERRAIN_PATH = "src/levels/scene1-test-terrain.csv";
     public static final String SCENE1_EVENTS_PATH = "src/levels/scene1-test-events.csv";
@@ -26,7 +29,6 @@ public final class Global {
     public static final int TIMER_DELAY_MS = 1000 / TARGET_FPS;
     public static final int STAGE_DURATION_SECONDS = 5 * 60;
     public static final int INITIAL_SPAWN_DELAY_SECONDS = 2;
-    public static final SpawnMode DEFAULT_SPAWN_MODE = SpawnMode.SCRIPTED;
     public static final TransitionMode SCENE_TRANSITION_MODE = TransitionMode.SEAMLESS;
     public static final int SEAMLESS_TRANSITION_TICKS = secondsToTicks(1.5);
     public static final int PLAYER_DEATH_TICKS = secondsToTicks(1);
