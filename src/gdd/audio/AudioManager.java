@@ -84,7 +84,8 @@ public final class AudioManager implements AutoCloseable {
             return;
         }
 
-        Clip clip = openClip(soundEffects.get(soundEffect), SFX_GAIN_DB);
+        float gain = SFX_GAIN_DB + soundEffect.getGainOffsetDb();
+        Clip clip = openClip(soundEffects.get(soundEffect), gain);
         activeSoundEffects.add(clip);
         clip.addLineListener(event -> {
             if (event.getType() == LineEvent.Type.STOP

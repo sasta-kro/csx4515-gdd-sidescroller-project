@@ -4,10 +4,10 @@ import gdd.powerup.WeaponType;
 
 public enum SoundEffect {
 
-    BASE_SHOT("src/audio/sfx/player/base-shot.wav"),
-    MULTI_SHOT("src/audio/sfx/player/multi-shot.wav"),
-    MEGA_SHOT("src/audio/sfx/player/mega-shot.wav"),
-    SPLIT_SHOT("src/audio/sfx/player/split-shot.wav"),
+    BASE_SHOT("src/audio/sfx/player/base-shot.wav", 10.0f),
+    MULTI_SHOT("src/audio/sfx/player/split-shot.wav", 3.0f),
+    MEGA_SHOT("src/audio/sfx/player/mega-shot.wav", -10.0f),
+    SPLIT_SHOT("src/audio/sfx/player/split-shot.wav", 3.0f),
     PLAYER_HURT("src/audio/sfx/player/hurt.wav"),
     POWERUP_COLLECT("src/audio/sfx/powerups/weapon-upgrade.wav"),
     POWERUP_TIMEOUT("src/audio/sfx/powerups/upgrade-timeout.wav"),
@@ -16,17 +16,27 @@ public enum SoundEffect {
             "src/audio/sfx/world/coral-break-rock-throw.wav"),
     OCTOPUS_ROCK_THROW(
             "src/audio/sfx/enemies/octopus-rock-throw.wav"),
-    SNAKE_ATTACK("src/audio/sfx/enemies/snake-attack.wav"),
+    SNAKE_ATTACK("src/audio/sfx/enemies/snake-attack.wav", -10.f),
     BOSS_LASER_CHARGE("src/audio/sfx/boss/laser-charge.wav");
 
     private final String path;
+    private final float gainOffsetDb;
 
     SoundEffect(String path) {
+        this(path, 0.0f);
+    }
+
+    SoundEffect(String path, float gainOffsetDb) {
         this.path = path;
+        this.gainOffsetDb = gainOffsetDb;
     }
 
     public String getPath() {
         return path;
+    }
+
+    public float getGainOffsetDb() {
+        return gainOffsetDb;
     }
 
     public static SoundEffect forWeapon(WeaponType weaponType) {
