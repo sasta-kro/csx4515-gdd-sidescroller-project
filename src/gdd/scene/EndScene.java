@@ -19,8 +19,12 @@ public class EndScene extends JPanel implements GameScene {
 
     private static final String GAME_OVER_ART_PATH =
             "src/images/background/game-over.png";
+    private static final String VICTORY_ART_PATH =
+            "src/images/background/victory-v4.png";
     private static final ImageIcon gameOverArt =
             new ImageIcon(GAME_OVER_ART_PATH);
+    private static final ImageIcon victoryArt =
+            new ImageIcon(VICTORY_ART_PATH);
     private static final int PROMPT_FLASH_TICKS = 28;
 
     private final Game game;
@@ -101,16 +105,38 @@ public class EndScene extends JPanel implements GameScene {
         g.dispose();
     }
 
-    private void drawVictory(Graphics g) {
-        g.setColor(new Color(80, 220, 150));
-        g.setFont(new Font("SansSerif", Font.BOLD, scaledFontSize(44)));
-        drawCentered(g, "OCEAN SAVED", 300);
+    private void drawVictory(Graphics graphics) {
+        Graphics2D g = (Graphics2D) graphics.create();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING,
+                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
-        if (ticks >= VICTORY_INPUT_DELAY_TICKS) {
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("SansSerif", Font.PLAIN, scaledFontSize(20)));
-            drawCentered(g, "Press ENTER to return to the main menu", 380);
+        g.drawImage(victoryArt.getImage(), 0, 0,
+                getWidth(), getHeight(), null);
+        g.setColor(new Color(0, 10, 20, 28));
+        g.fillRect(0, 0, getWidth(), getHeight());
+
+        g.setFont(new Font("Monospaced", Font.BOLD,
+                scaledFontSize(52)));
+        drawCenteredShadowed(g, "OCEAN SAVED", 250,
+                new Color(255, 236, 137));
+
+        g.setFont(new Font("Monospaced", Font.BOLD,
+                scaledFontSize(14)));
+        drawCenteredShadowed(g, "LIFE RETURNS TO THE DEPTHS", 288,
+                new Color(171, 241, 210));
+
+        boolean inputReady = ticks >= VICTORY_INPUT_DELAY_TICKS;
+        if (inputReady
+                && (ticks / PROMPT_FLASH_TICKS) % 2 == 0) {
+            g.setFont(new Font("Monospaced", Font.BOLD,
+                    scaledFontSize(16)));
+            drawCenteredShadowed(g, "PRESS ENTER TO RETURN TO MAIN MENU",
+                    330, new Color(244, 250, 232));
         }
+
+        g.dispose();
     }
 
     private void drawCenteredShadowed(Graphics2D g, String text, int y,
@@ -121,12 +147,6 @@ public class EndScene extends JPanel implements GameScene {
         g.setColor(color);
         g.drawString(text, x, y);
     }
-
-    private void drawCentered(Graphics g, String text, int y) {
-        int x = (getWidth() - g.getFontMetrics().stringWidth(text)) / 2;
-        g.drawString(text, x, y);
-    }
-
     private class GameCycle implements ActionListener {
 
         @Override

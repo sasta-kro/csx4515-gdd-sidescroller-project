@@ -1,4 +1,6 @@
 # Ocean Invaders Project Specification
+(the project outgrew this initial draft)
+
 
 ## 1. Document Purpose
 

@@ -1,3 +1,4 @@
+q&a to get detailed specification on top of the idea dump.
 
 Reply using the IDs below. Short answers are fine. Use `TBD` where the team has not decided, and I will preserve it as an open decision.
 

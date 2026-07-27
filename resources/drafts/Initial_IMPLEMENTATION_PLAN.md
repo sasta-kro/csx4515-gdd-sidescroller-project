@@ -1,4 +1,5 @@
 # Ocean Invaders Implementation Plan
+(the project outgrew this already)
 
 ## 1. Purpose
 

@@ -1,8 +1,3 @@
-
-**Topic** [[CSX4515 Game Design And Development]]
-**Tags** #project #java 
-**Date** 23-07-2026
-___
 ## Theme
 
 Underwater scenes. Main character is a fish, and it's fighting different enemies by shooting out bubbles at them.
