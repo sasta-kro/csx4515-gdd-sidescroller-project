@@ -14,6 +14,7 @@ public class Anglerfish extends Enemy {
 
     private static final int HITBOX_X_OFFSET = 6 * BOSS_SCALE;
     private static final int HITBOX_Y_OFFSET = BOSS_SCALE;
+    private static final int SUMMON_VERTICAL_SPACING = 55;
 
     private enum AttackState {
         IDLE,
@@ -199,10 +200,15 @@ public class Anglerfish extends Enemy {
     }
 
     private void createSummons() {
+        int spawnX = getX() - BomberFish.SIZE / 2;
+        int centerY = getY() + getRenderHeight() / 2
+                - BomberFish.SIZE / 2;
+
         for (int index = 0; index < 3; index++) {
-            int yOffset = 80 + index * 115;
-            pendingSummons.add(new BomberFish(player, getX() - 20,
-                    getY() + yOffset, random));
+            int spawnY = centerY
+                    + (index - 1) * SUMMON_VERTICAL_SPACING;
+            pendingSummons.add(new BomberFish(
+                    player, spawnX, spawnY, random));
         }
     }
 

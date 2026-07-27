@@ -11,6 +11,9 @@ import javax.swing.ImageIcon;
 
 public class BomberFish extends Enemy {
 
+    static final int SIZE = 48 * 2;
+    private static final double CHASE_SPEED = 4.0;
+
     private enum State {
         SWIMMING,
         HURT,
@@ -51,7 +54,7 @@ public class BomberFish extends Enemy {
     private State state = State.SWIMMING;
 
     public BomberFish(Player player, int x, int y, Random random) {
-        super(player, x, y, 48 * 2, 48 * 2, 1,
+        super(player, x, y, SIZE, SIZE, 1,
                 ENEMY_CONTACT_DAMAGE, 0, new Color(235, 105, 75));
         explosionTicks = secondsToTicks(2 + random.nextDouble() * 2);
         setHitboxScale(0.35, 0.25);
@@ -70,12 +73,14 @@ public class BomberFish extends Enemy {
             updateAnimationFrames();
         }
 
-        double targetX = player.getX() - x;
-        double targetY = player.getY() - y;
+        double targetX = player.getX() + player.getRenderWidth() / 2.0
+                - (x + getRenderWidth() / 2.0);
+        double targetY = player.getY() + player.getRenderHeight() / 2.0
+                - (y + getRenderHeight() / 2.0);
         double length = Math.max(1.0, Math.hypot(targetX, targetY));
-        double speed = 2.6;
-        x += targetX / length * speed;
-        y += targetY / length * speed;
+        setFlippedHorizontally(targetX < 0);
+        x += targetX / length * CHASE_SPEED;
+        y += targetY / length * CHASE_SPEED;
 
         if (--explosionTicks <= 0 || collidesWith(player)) {
             state = State.DETONATING;
