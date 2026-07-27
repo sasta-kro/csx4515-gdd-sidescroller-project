@@ -325,11 +325,6 @@ public class Player extends Sprite {
         state.setWeaponPowerup(weaponType, multiShotLevel, weaponPowerupTicks);
     }
 
-    public void restorePosition(int oldX, int oldY) {
-        x = oldX;
-        y = oldY;
-    }
-
     public void keyPressed(KeyEvent event) {
         switch (event.getKeyCode()) {
             case KeyEvent.VK_W, KeyEvent.VK_UP -> movingUp = true;

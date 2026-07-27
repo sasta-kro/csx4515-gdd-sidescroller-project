@@ -417,9 +417,8 @@ public class Scene1 extends JPanel implements GameScene {
 
     private void resolveTerrainOverlap() {
         Rectangle playerBounds = player.getBounds();
-        Point correction = tileMap.getCollisionCorrection(
-                playerBounds, getPlayerHitboxMovementArea(playerBounds),
-                stageTick);
+        Point correction = tileMap.getCollisionCorrection(playerBounds, getPlayerHitboxMovementArea(playerBounds), stageTick);
+
         player.setX(player.getX() + correction.x);
         player.setY(player.getY() + correction.y);
     }
@@ -427,12 +426,12 @@ public class Scene1 extends JPanel implements GameScene {
     private Rectangle getPlayerHitboxMovementArea(Rectangle playerBounds) {
         int hitboxOffsetX = playerBounds.x - player.getX();
         int hitboxOffsetY = playerBounds.y - player.getY();
+
         return new Rectangle(
                 hitboxOffsetX,
                 hitboxOffsetY,
                 BOARD_WIDTH - player.getRenderWidth() + playerBounds.width,
-                BOARD_HEIGHT - 32 - player.getRenderHeight()
-                        + playerBounds.height);
+                BOARD_HEIGHT - 32 - player.getRenderHeight() + playerBounds.height);
     }
 
     private void handleEnemyContact() {
@@ -477,8 +476,7 @@ public class Scene1 extends JPanel implements GameScene {
 
             int centerX = mine.getCenterX();
             int centerY = mine.getCenterY();
-            Explosion explosion = new Explosion(
-                    centerX, centerY, MINE_EXPLOSION_RADIUS);
+            Explosion explosion = new Explosion(centerX, centerY, MINE_EXPLOSION_RADIUS);
             explosions.add(explosion);
 
             if (explosion.reaches(player)) {
