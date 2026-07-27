@@ -1,16 +1,5 @@
 # Ocean Invaders
 
-## Project Information
-
-- **Course:** CSX4515 Game Design and Development (Section 542, 1/2026)
-- **Group:** Ocean Invaders
-- **Team members:** Sai Aike Shwe Tun Aung and Ekaterina Kazakova
-
-<p align="center">
-  <img src="resources/readme/stage2-layered-preview.png"
-       alt="Ocean Invaders Stage 2 layered cave environment" width="900">
-</p>
-
 **Ocean Invaders** is an underwater side-scrolling shooter built in Java for
 the CSX4515 Game Design and Development pre-midterm project. It takes the
 movement, enemy waves, upgrades, and escalating combat of a retro space
@@ -20,6 +9,13 @@ are bubbles, and the final threat is a giant Anglerfish.
 The world scrolls continuously while the player moves freely around the
 viewport, avoids terrain and hazards, defeats sea-creature enemies, and
 collects temporary power-ups across two stages and a boss encounter.
+
+## Project Information
+
+- **Course:** CSX4515 Game Design and Development (Section 542, 1/2026)
+- **Group:** Ocean Invaders
+- **Team members:** Sai Aike Shwe Tun Aung and Ekaterina Kazakova
+
 
 ## Highlights
 

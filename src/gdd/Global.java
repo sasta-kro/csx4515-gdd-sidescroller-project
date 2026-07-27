@@ -95,7 +95,7 @@ public final class Global {
     public static final int WALL_DAMAGE = 1;
 
     // Boss
-    public static final int BOSS_MAX_HEALTH = 20;
+    public static final int BOSS_MAX_HEALTH = 180;
     public static final int BOSS_SCALE = 8;
     public static final int BOSS_PHASE_TWO_HEALTH = BOSS_MAX_HEALTH / 2;
     public static final int BOSS_CONTACT_DAMAGE = 1;
