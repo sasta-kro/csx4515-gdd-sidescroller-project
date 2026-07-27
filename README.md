@@ -2,9 +2,7 @@
 
 ## Project Information
 
-- **Course:** CSX4515 Game Design and Development
-- **Academic semester:** 1/2026
-- **Section:** 542
+- **Course:** CSX4515 Game Design and Development (Section 542, 1/2026)
 - **Group:** Ocean Invaders
 - **Team members:** Sai Aike Shwe Tun Aung and Ekaterina Kazakova
 

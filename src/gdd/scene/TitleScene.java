@@ -207,8 +207,13 @@ public class TitleScene extends JPanel implements GameScene {
 
         g.setFont(new Font("Monospaced", Font.BOLD,
                 scaledFontSize(11)));
-        drawCenteredShadowed(g, "CSX4515  |  GAME DEVELOPMENT",
-                665, new Color(153, 207, 207), new Color(3, 22, 36));
+        drawCenteredShadowed(g, "CSX4515 GAME DESIGN AND DEVELOPMENT",
+                620, new Color(153, 207, 207), new Color(3, 22, 36));
+        drawCenteredShadowed(g, "SECTION 542  |  SEMESTER 1/2026",
+                641, new Color(153, 207, 207), new Color(3, 22, 36));
+        drawCenteredShadowed(g,
+                "SAI AIKE SHWE TUN AUNG  &  EKATERINA KAZAKOVA",
+                668, new Color(218, 236, 231), new Color(3, 22, 36));
     }
 
     private void drawCenteredShadowed(Graphics2D g, String text, int y,
