@@ -112,6 +112,7 @@ public class Anglerfish extends Enemy {
     private int consecutiveAttackCount;
     private boolean laserChargeStarted;
     private boolean laserShotStarted;
+    private boolean biteStarted;
     private int stateTicks;
     private int attackCooldown = PHASE_ONE_IDLE_TICKS;
     private int laserInterval;
