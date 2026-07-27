@@ -332,15 +332,30 @@ function loadImage(path) {
 }
 
 function drawTerrainImage(context, definition, x, y, width, height) {
+  const rotation = definition.rotation || 0;
+  const swapsDimensions = Math.abs(rotation) % 180 === 90;
+  const drawWidth = swapsDimensions ? height : width;
+  const drawHeight = swapsDimensions ? width : height;
+  context.save();
+  context.translate(x + width / 2, y + height / 2);
+  context.rotate(rotation * Math.PI / 180);
+
   if (definition.sprite) {
     const image = tileImages[definition.sprite];
-    if (image.complete) context.drawImage(image, x, y, width, height);
+    if (image.complete) {
+      context.drawImage(image, -drawWidth / 2, -drawHeight / 2,
+        drawWidth, drawHeight);
+    }
+    context.restore();
     return;
   }
 
-  if (!tileSheet.complete) return;
-  const [sx, sy, sw, sh] = definition.source;
-  context.drawImage(tileSheet, sx, sy, sw, sh, x, y, width, height);
+  if (tileSheet.complete) {
+    const [sx, sy, sw, sh] = definition.source;
+    context.drawImage(tileSheet, sx, sy, sw, sh,
+      -drawWidth / 2, -drawHeight / 2, drawWidth, drawHeight);
+  }
+  context.restore();
 }
 
 function stageNumber() {

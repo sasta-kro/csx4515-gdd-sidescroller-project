@@ -48,7 +48,7 @@ Cell meanings:
 | Value | Meaning |
 |---:|---|
 | `0` | Empty water |
-| `1` through `23` | Tile anchor and terrain tile ID |
+| `1` through `25` | Tile anchor and terrain tile ID |
 | `-1` | Cell covered by a multi-cell tile anchored above or to the left |
 
 A 1x1 tile is stored as its positive ID only. A 2x2 tile stores its positive ID in the
@@ -91,6 +91,8 @@ Transparent corners and gaps inside sloped or irregular tiles are therefore not 
 | 21 | Small Rock BL | 1x1 |
 | 22 | Small Rock BR | 1x1 |
 | 23 | Dark Fill | 1x1 |
+| 24 | Wall B Up | 2x1 |
+| 25 | Wall B Down | 2x1 |
 
 Atlas source rectangles and standalone sprite paths are defined once in Java
 `TileRegistry` and once in editor `config.js`. Their IDs, image sources, and footprints

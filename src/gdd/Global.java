@@ -99,6 +99,7 @@ public final class Global {
     public static final int BOSS_LASER_CHARGE_TICKS = secondsToTicks(1);
     public static final int BOSS_LASER_DURATION_TICKS = secondsToTicks(2);
     public static final int BOSS_LASER_INTERVAL_TICKS = secondsToTicks(0.10);
+    public static final double BOSS_LASER_TRACK_SPEED = 4.0;
     public static final int BOSS_BITE_WARNING_TICKS = secondsToTicks(0.75);
     public static final int BOMBER_EXPLOSION_RADIUS = 50;
     public static final int BOMBER_EXPLOSION_DAMAGE = 1;

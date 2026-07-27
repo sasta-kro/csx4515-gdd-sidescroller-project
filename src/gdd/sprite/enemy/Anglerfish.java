@@ -30,13 +30,11 @@ public class Anglerfish extends Enemy {
     private static final String IDLE_SHEET_PATH = "src/images/boss/anglerfish-boss/Idle.png";
     private static final String HURT_SHEET_PATH = "src/images/boss/anglerfish-boss/Hurt.png";
     private static final String ATTACK_SHEET_PATH = "src/images/boss/anglerfish-boss/Attack.png";
-    private static final String WALK_SHEET_PATH = "src/images/boss/anglerfish-boss/Walk.png";
     private static final String DEATH_SHEET_PATH = "src/images/boss/anglerfish-boss/Death.png";
 
     private static final ImageIcon idleSheet = new ImageIcon(IDLE_SHEET_PATH);
     private static final ImageIcon hurtSheet = new ImageIcon(HURT_SHEET_PATH);
     private static final ImageIcon attackSheet = new ImageIcon(ATTACK_SHEET_PATH);
-    private static final ImageIcon walkSheet = new ImageIcon(WALK_SHEET_PATH);
     private static final ImageIcon deathSheet = new ImageIcon(DEATH_SHEET_PATH);
 
     private static final List<Rectangle> idleAnimationClips = List.of(
@@ -49,19 +47,18 @@ public class Anglerfish extends Enemy {
             new Rectangle(0, 0, 48, 48),
             new Rectangle(48, 0, 48, 48)
     );
-    private static final List<Rectangle> attackAnimationClips = List.of(
+    private static final List<Rectangle> attackOpeningAnimationClips = List.of(
             new Rectangle(0, 0, 48, 48),
             new Rectangle(48, 0, 48, 48),
-            new Rectangle(48*2, 0, 48, 48),
-            new Rectangle(48*3, 0, 48, 48),
-            new Rectangle(48*4, 0, 48, 48),
-            new Rectangle(48*5, 0, 48, 48)
+            new Rectangle(48*2, 0, 48, 48)
     );
-    private static final List<Rectangle> walkAnimationClips = List.of(
-            new Rectangle(0, 0, 48, 48),
-            new Rectangle(48, 0, 48, 48),
+    private static final List<Rectangle> attackLoopAnimationClips = List.of(
             new Rectangle(48*2, 0, 48, 48),
             new Rectangle(48*3, 0, 48, 48)
+    );
+    private static final List<Rectangle> attackClosingAnimationClips = List.of(
+            new Rectangle(48*4, 0, 48, 48),
+            new Rectangle(48*5, 0, 48, 48)
     );
     private static final List<Rectangle> deathAnimationClips = List.of(
             new Rectangle(0, 0, 48, 48),
@@ -124,6 +121,7 @@ public class Anglerfish extends Enemy {
                     state = AttackState.LASER;
                     stateTicks = BOSS_LASER_DURATION_TICKS;
                     laserInterval = 0;
+                    updateAnimationFrames();
                 }
                 break;
             case LASER:
@@ -139,6 +137,7 @@ public class Anglerfish extends Enemy {
                 x -= 11;
                 if (getBounds().x <= 0) {
                     state = AttackState.BITE_RETURN;
+                    updateAnimationFrames();
                 }
                 break;
             case BITE_RETURN:
@@ -185,12 +184,15 @@ public class Anglerfish extends Enemy {
     private void updateLaser() {
         double playerCenter = player.getY() + player.getRenderHeight() / 2.0;
         double bossCenter = y + getRenderHeight() / 2.0;
-        y += Math.signum(playerCenter - bossCenter) * 2.0;
+        double distanceToPlayer = playerCenter - bossCenter;
+        y += Math.max(-BOSS_LASER_TRACK_SPEED,
+                Math.min(BOSS_LASER_TRACK_SPEED, distanceToPlayer));
         y = Math.max(45, Math.min(BOARD_HEIGHT - getRenderHeight() - 20, y));
 
         if (laserInterval-- <= 0) {
-            pendingProjectiles.add(new BossBubble(getX() - 18,
-                    getY() + getRenderHeight() / 2, 1));
+            pendingProjectiles.add(new BossBubble(
+                    spawnXAtLeftEdge(BossBubble.WIDTH),
+                    spawnYAtCenter(BossBubble.HEIGHT), 1));
             laserInterval = Math.max(1, BOSS_LASER_INTERVAL_TICKS);
         }
 
@@ -200,9 +202,8 @@ public class Anglerfish extends Enemy {
     }
 
     private void createSummons() {
-        int spawnX = getX() - BomberFish.SIZE / 2;
-        int centerY = getY() + getRenderHeight() / 2
-                - BomberFish.SIZE / 2;
+        int spawnX = spawnXAtLeftEdge(BomberFish.SIZE);
+        int centerY = spawnYAtCenter(BomberFish.SIZE);
 
         for (int index = 0; index < 3; index++) {
             int spawnY = centerY
@@ -210,6 +211,14 @@ public class Anglerfish extends Enemy {
             pendingSummons.add(new BomberFish(
                     player, spawnX, spawnY, random));
         }
+    }
+
+    private int spawnXAtLeftEdge(int entityWidth) {
+        return getX() - entityWidth / 2;
+    }
+
+    private int spawnYAtCenter(int entityHeight) {
+        return getY() + (getRenderHeight() - entityHeight) / 2;
     }
 
     private void returnToIdle() {
@@ -235,16 +244,25 @@ public class Anglerfish extends Enemy {
             return;
         }
 
-        if (state == AttackState.LASER_CHARGE || state == AttackState.LASER || state == AttackState.BITE_WARNING) {
+        if (state == AttackState.LASER_CHARGE
+                || state == AttackState.BITE_WARNING) {
             setImage(attackSheet.getImage());
-            setAnimationFrames(attackAnimationClips);
+            setAnimationFrames(attackOpeningAnimationClips);
             setAnimationLooping(false);
             return;
         }
 
-        if (state == AttackState.BITE_OUT || state == AttackState.BITE_RETURN) {
-            setImage(walkSheet.getImage());
-            setAnimationFrames(walkAnimationClips);
+        if (state == AttackState.LASER
+                || state == AttackState.BITE_OUT) {
+            setImage(attackSheet.getImage());
+            setAnimationFrames(attackLoopAnimationClips);
+            return;
+        }
+
+        if (state == AttackState.BITE_RETURN) {
+            setImage(attackSheet.getImage());
+            setAnimationFrames(attackClosingAnimationClips);
+            setAnimationLooping(false);
             return;
         }
 

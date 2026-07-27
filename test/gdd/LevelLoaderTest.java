@@ -2,7 +2,9 @@ package gdd;
 
 import static gdd.Global.*;
 import gdd.level.LevelLoader;
+import gdd.level.TileDefinition;
 import gdd.level.TileMap;
+import gdd.level.TileRegistry;
 import gdd.spawn.SpawnDetails;
 import java.awt.Color;
 import java.awt.Graphics;
@@ -25,6 +27,7 @@ public class LevelLoaderTest {
         ignoresTransparentPartsOfTerrainTiles();
         ignoresTransparentGapsInHangingIsland();
         usesSolidDarkFillTile();
+        usesRotatedWallBTiles();
         resolvesScrollingTerrainOverlap();
         keepsTerrainCorrectionInsidePlayerMovementArea();
         drawsTerrainHitboxOutline();
@@ -143,6 +146,45 @@ public class LevelLoaderTest {
                 image.getRGB(TILE_SIZE + TILE_SIZE / 2,
                         2 * TILE_SIZE + TILE_SIZE / 2),
                 "dark fill tile color");
+    }
+
+    private static void usesRotatedWallBTiles() {
+        TileDefinition wallUp = TileRegistry.get(24);
+        TileDefinition wallDown = TileRegistry.get(25);
+
+        assertEquals(1, wallUp.rotationQuarterTurns,
+                "Wall B Up rotation");
+        assertEquals(1, wallDown.rotationQuarterTurns,
+                "Wall B Down rotation");
+        assertEquals(2, wallUp.cellsWide, "Wall B Up width");
+        assertEquals(1, wallUp.cellsHigh, "Wall B Up height");
+        assertEquals(2, wallDown.cellsWide, "Wall B Down width");
+        assertEquals(1, wallDown.cellsHigh, "Wall B Down height");
+
+        int[][] terrain = new int[14][20];
+        terrain[2][1] = 24;
+        terrain[3][1] = 25;
+        TileMap map = new TileMap(terrain);
+
+        assertTrue(map.intersects(new Rectangle(
+                TILE_SIZE, 2 * TILE_SIZE, 2 * TILE_SIZE, TILE_SIZE), 0),
+                "Wall B Up collision");
+        assertTrue(map.intersects(new Rectangle(
+                TILE_SIZE, 3 * TILE_SIZE, 2 * TILE_SIZE, TILE_SIZE), 0),
+                "Wall B Down collision");
+
+        BufferedImage image = new BufferedImage(
+                BOARD_WIDTH, BOARD_HEIGHT, BufferedImage.TYPE_INT_ARGB);
+        Graphics graphics = image.getGraphics();
+        map.draw(graphics, 0);
+        graphics.dispose();
+
+        assertTrue((image.getRGB(TILE_SIZE + TILE_SIZE,
+                2 * TILE_SIZE + TILE_SIZE / 2) >>> 24) != 0,
+                "Wall B Up renders");
+        assertTrue((image.getRGB(TILE_SIZE + TILE_SIZE,
+                3 * TILE_SIZE + TILE_SIZE / 2) >>> 24) != 0,
+                "Wall B Down renders");
     }
 
     private static void resolvesScrollingTerrainOverlap() {

@@ -8,6 +8,7 @@ import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.HashMap;
 import java.util.Map;
@@ -258,14 +259,55 @@ public class TileMap {
 
     private static BufferedImage tileImage(TileDefinition definition) {
         return TILE_IMAGES.computeIfAbsent(definition.id, ignored -> {
+            BufferedImage image;
             if (definition.imagePath != null) {
-                return toBufferedImage(
+                image = toBufferedImage(
                         new ImageIcon(definition.imagePath).getImage());
+            } else {
+                Rectangle source = definition.source;
+                image = TILE_SHEET.getSubimage(
+                        source.x, source.y, source.width, source.height);
             }
 
-            Rectangle source = definition.source;
-            return TILE_SHEET.getSubimage(source.x, source.y, source.width, source.height);
+            return rotateImage(image, definition.rotationQuarterTurns);
         });
+    }
+
+    private static BufferedImage rotateImage(
+            BufferedImage source, int quarterTurns) {
+        int turns = Math.floorMod(quarterTurns, 4);
+        if (turns == 0) {
+            return source;
+        }
+
+        int width = turns % 2 == 0
+                ? source.getWidth() : source.getHeight();
+        int height = turns % 2 == 0
+                ? source.getHeight() : source.getWidth();
+        BufferedImage rotated = new BufferedImage(
+                width, height, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = rotated.createGraphics();
+        graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+                RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+
+        AffineTransform transform = new AffineTransform();
+        switch (turns) {
+            case 1 -> {
+                transform.translate(source.getHeight(), 0);
+                transform.rotate(Math.PI / 2);
+            }
+            case 2 -> {
+                transform.translate(source.getWidth(), source.getHeight());
+                transform.rotate(Math.PI);
+            }
+            case 3 -> {
+                transform.translate(0, source.getWidth());
+                transform.rotate(-Math.PI / 2);
+            }
+        }
+        graphics.drawImage(source, transform, null);
+        graphics.dispose();
+        return rotated;
     }
 
     private static BufferedImage toBufferedImage(Image image) {

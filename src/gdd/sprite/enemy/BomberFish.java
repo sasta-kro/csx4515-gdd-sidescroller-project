@@ -12,7 +12,7 @@ import javax.swing.ImageIcon;
 public class BomberFish extends Enemy {
 
     static final int SIZE = 48 * 2;
-    private static final double CHASE_SPEED = 4.0;
+    private static final double CHASE_SPEED = 3.0;
 
     private enum State {
         SWIMMING,

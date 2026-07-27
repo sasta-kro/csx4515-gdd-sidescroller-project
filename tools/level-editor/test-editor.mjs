@@ -189,7 +189,7 @@ for (const match of tileRegistry.matchAll(
   assert.deepEqual(editorTile.source, [sx, sy, sw, sh]);
   assert.deepEqual(editorTile.footprint, [wide, high]);
 }
-assert.equal(Object.keys(TILES).length, 23);
+assert.equal(Object.keys(TILES).length, 25);
 assert.equal(
   TILES[23].sprite,
   "../../src/images/obstacles/dark-fill.png",
@@ -198,6 +198,20 @@ assert.deepEqual(TILES[23].footprint, [1, 1]);
 assert.match(
   tileRegistry,
   /addImage\\(23, "Dark Fill",\\s*"src\\/images\\/obstacles\\/dark-fill\\.png", 1, 1\\);/,
+);
+assert.deepEqual(TILES[24].source, [323, 16, 61, 80]);
+assert.deepEqual(TILES[24].footprint, [2, 1]);
+assert.equal(TILES[24].rotation, 90);
+assert.deepEqual(TILES[25].source, [400, 16, 61, 80]);
+assert.deepEqual(TILES[25].footprint, [2, 1]);
+assert.equal(TILES[25].rotation, 90);
+assert.match(
+  tileRegistry,
+  /addRotated\\(24, "Wall B Up",\\s*323, 16, 61, 80, 2, 1, 1\\);/,
+);
+assert.match(
+  tileRegistry,
+  /addRotated\\(25, "Wall B Down",\\s*400, 16, 61, 80, 2, 1, 1\\);/,
 );
 
 assert.equal(

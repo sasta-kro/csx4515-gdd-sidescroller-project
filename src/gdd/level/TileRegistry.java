@@ -33,6 +33,10 @@ public final class TileRegistry {
         add(22, "Small Rock Bottom Right", 400, 464, 52, 56, 1, 1);
         addImage(23, "Dark Fill",
                 "src/images/obstacles/dark-fill.png", 1, 1);
+        addRotated(24, "Wall B Up",
+                323, 16, 61, 80, 2, 1, 1);
+        addRotated(25, "Wall B Down",
+                400, 16, 61, 80, 2, 1, 1);
     }
 
     private TileRegistry() {
@@ -49,6 +53,14 @@ public final class TileRegistry {
             int cellsWide, int cellsHigh) {
         TILES.put(id, new TileDefinition(id, name, imagePath,
                 cellsWide, cellsHigh));
+    }
+
+    private static void addRotated(int id, String name, int sourceX,
+            int sourceY, int sourceWidth, int sourceHeight,
+            int cellsWide, int cellsHigh, int rotationQuarterTurns) {
+        TILES.put(id, new TileDefinition(id, name,
+                new Rectangle(sourceX, sourceY, sourceWidth, sourceHeight),
+                cellsWide, cellsHigh, rotationQuarterTurns));
     }
 
     public static TileDefinition get(int id) {

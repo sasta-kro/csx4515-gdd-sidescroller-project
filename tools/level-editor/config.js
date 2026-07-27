@@ -41,6 +41,10 @@ window.EDITOR_CONFIG = {
     22: { label: "Small Rock BR", source: [400, 464, 52, 56], footprint: [1, 1] },
     23: { label: "Dark Fill", sprite: "../../src/images/obstacles/dark-fill.png",
       footprint: [1, 1] },
+    24: { label: "Wall B Up", source: [323, 16, 61, 80],
+      footprint: [2, 1], rotation: 90 },
+    25: { label: "Wall B Down", source: [400, 16, 61, 80],
+      footprint: [2, 1], rotation: 90 },
   },
 
   eventTypes: [
