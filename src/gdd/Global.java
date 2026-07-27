@@ -9,13 +9,13 @@ public final class Global {
     }
 
     // Development settings
-    public static final boolean DEV_USE_SHORT_STAGE_TIMERS = true;
+    public static final boolean DEV_USE_SHORT_STAGE_TIMERS = false;
     public static final int DEV_STAGE_DURATION_SECONDS = 15;
     public static final boolean DEV_SHOW_ENTITY_HITBOXES = true;
 
     // Level files
-    public static final String SCENE1_TERRAIN_PATH = "src/levels/scene1-test-terrain.csv";
-    public static final String SCENE1_EVENTS_PATH = "src/levels/scene1-test-events.csv";
+    public static final String SCENE1_TERRAIN_PATH = "src/levels/test-scene1-terrain.csv";
+    public static final String SCENE1_EVENTS_PATH = "src/levels/test-scene1-events.csv";
     public static final String SCENE2_TERRAIN_PATH = "src/levels/scene2-terrain.csv";
     public static final String SCENE2_EVENTS_PATH = "src/levels/scene2-events.csv";
 
