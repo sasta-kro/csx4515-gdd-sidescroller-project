@@ -236,6 +236,7 @@ public class Player extends Sprite {
         }
         if (healFlashTicks > 0 && --healFlashTicks == 0) {
             updateAnimationFrames();
+            powerupExpired = true;
         }
         if (shotCooldownTicks > 0) {
             shotCooldownTicks--;
