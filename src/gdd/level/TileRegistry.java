@@ -31,6 +31,8 @@ public final class TileRegistry {
         add(20, "Hanging Island", 13, 452, 181, 188, 4, 4);
         add(21, "Small Rock Bottom Left", 332, 464, 52, 56, 1, 1);
         add(22, "Small Rock Bottom Right", 400, 464, 52, 56, 1, 1);
+        addImage(23, "Dark Fill",
+                "src/images/obstacles/dark-fill.png", 1, 1);
     }
 
     private TileRegistry() {
@@ -40,6 +42,12 @@ public final class TileRegistry {
             int sourceWidth, int sourceHeight, int cellsWide, int cellsHigh) {
         TILES.put(id, new TileDefinition(id, name,
                 new Rectangle(sourceX, sourceY, sourceWidth, sourceHeight),
+                cellsWide, cellsHigh));
+    }
+
+    private static void addImage(int id, String name, String imagePath,
+            int cellsWide, int cellsHigh) {
+        TILES.put(id, new TileDefinition(id, name, imagePath,
                 cellsWide, cellsHigh));
     }
 
