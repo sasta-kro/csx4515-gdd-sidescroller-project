@@ -46,18 +46,27 @@ collects temporary power-ups across two stages and a boss encounter.
 | Pause or resume | `Escape` |
 
 ### Menus
-
-| Screen | Key | Action |
-|---|---|---|
-| Title | `1` | Start from Stage 1 |
-| Title | `2` | Start from Stage 2 for development |
-| Title | `Q` | Quit |
-| Pause | `R` | Restart from Stage 1 |
-| Pause | `M` | Return to the main menu |
-| Pause | `Q` | Quit |
-| Game over / Victory | `Enter` | Return to the main menu |
-
 Menus use direct keyboard commands rather than cursor-based navigation.
+
+
+#### Title Screen:
+| Key | Action |
+|---|---|
+| `1` | Start from Stage 1 |
+| `2` | Start from Stage 2 for development |
+| `Q` | Quit |
+
+#### Pause Screen:
+| Key | Action |
+|---|---|
+| `R` | Restart from Stage 1 |
+| `M` | Return to the main menu |
+| `Q` | Quit |
+
+#### Game over and Victory Screens:
+| Key | Action |
+|---|---|
+| `Enter` | Return to the main menu |
 
 ## Player
 
@@ -88,27 +97,27 @@ The animated previews use the same frame order, orientation, and relative
 timing as the game. The adjacent static image is the original source sheet
 used for that animation.
 
-| Animated preview | Source sprite sheet | Enemy | Behavior |
-|---|---|---|---|
-| <img src="resources/readme/animations/jellyfish-idle.gif" alt="Animated Jellyfish" width="96"> | <img src="src/images/enemies/jellyfish/Idle.png" alt="Jellyfish idle sprite sheet" height="48"> | **Jellyfish** | Drifts left while floating up and down. |
-| <img src="resources/readme/animations/turtle-swim.gif" alt="Animated Turtle" width="96"> | <img src="src/images/enemies/turtle/Walk.png" alt="Turtle swim sprite sheet" height="48"> | **Turtle** | A durable enemy that continuously swims toward the player. |
-| <img src="resources/readme/animations/octopus-idle.gif" alt="Animated Octopus" width="96"> | <img src="src/images/enemies/octopus/Idle.png" alt="Octopus idle sprite sheet" height="48"> | **Octopus** | Swims with the current and throws rocks during its attack animation. |
-| <img src="resources/readme/animations/swordfish-charge.gif" alt="Animated Swordfish" width="96"> | <img src="src/images/enemies/swordfish/Walk.png" alt="Swordfish charge sprite sheet" height="48"> | **Swordfish** | Telegraphs its attack, then rushes toward the player's recorded position. |
-| <img src="resources/readme/animations/snake-swim.gif" alt="Animated Snake" width="96"> | <img src="src/images/enemies/snake/Walk.png" alt="Snake swim sprite sheet" height="48"> | **Snake** | Emerges from cave terrain and attacks vertically from the top or bottom. |
-| <img src="resources/readme/animations/bomber-fish-swim.gif" alt="Animated Bomber Fish" width="96"> | <img src="src/images/boss/bomber-fish/Walk.png" alt="Bomber Fish swim sprite sheet" height="48"> | **Bomber Fish** | Tracks the player after being summoned and explodes when its timer expires. |
-| <img src="resources/readme/animations/anglerfish-idle.gif" alt="Animated Anglerfish boss" width="128"> | <img src="src/images/boss/anglerfish-boss/Idle.png" alt="Anglerfish idle sprite sheet" height="48"> | **Anglerfish** | Uses a tracking bubble stream, a dash-bite, and summoned Bomber Fish. |
+| Animated preview | Source sprite sheet | Enemy                 | Behavior                                                                                               |
+|---|---|-----------------------|--------------------------------------------------------------------------------------------------------|
+| <img src="resources/readme/animations/jellyfish-idle.gif" alt="Animated Jellyfish" width="96"> | <img src="src/images/enemies/jellyfish/Idle.png" alt="Jellyfish idle sprite sheet" height="48"> | **Jellyfish**         | Drifts left while floating up and down, and periodically fills the area around itself with electricity . |
+| <img src="resources/readme/animations/turtle-swim.gif" alt="Animated Turtle" width="96"> | <img src="src/images/enemies/turtle/Walk.png" alt="Turtle swim sprite sheet" height="48"> | **Turtle**            | A durable enemy that continuously swims toward the player.                                             |
+| <img src="resources/readme/animations/octopus-idle.gif" alt="Animated Octopus" width="96"> | <img src="src/images/enemies/octopus/Idle.png" alt="Octopus idle sprite sheet" height="48"> | **Octopus**           | Swims with the current and throws rocks during its attack animation.                                   |
+| <img src="resources/readme/animations/swordfish-charge.gif" alt="Animated Swordfish" width="96"> | <img src="src/images/enemies/swordfish/Walk.png" alt="Swordfish charge sprite sheet" height="48"> | **Swordfish**         | Charges its attack for a bit, then rushes toward the player's recorded position.                       |
+| <img src="resources/readme/animations/snake-swim.gif" alt="Animated Snake" width="96"> | <img src="src/images/enemies/snake/Walk.png" alt="Snake swim sprite sheet" height="48"> | **Snake**             | Emerges from cave terrain and attacks vertically from the top or bottom.                               |
+| <img src="resources/readme/animations/bomber-fish-swim.gif" alt="Animated Bomber Fish" width="96"> | <img src="src/images/boss/bomber-fish/Walk.png" alt="Bomber Fish swim sprite sheet" height="48"> | **Bomber Fish**       | Tracks the player after being summoned and explodes when its timer expires.                            |
+| <img src="resources/readme/animations/anglerfish-idle.gif" alt="Animated Anglerfish boss" width="128"> | <img src="src/images/boss/anglerfish-boss/Idle.png" alt="Anglerfish idle sprite sheet" height="48"> | **Anglerfish (Boss)** | Uses a tracking bubble stream, a dash-bite, and summoned Bomber Fish.                                  |
 
 ## Stages
 
 ### Stage 1: Minefield
 
-The opening stage introduces the scrolling ocean, Jellyfish, Turtles, and
+The opening stage introduces the scrolling ocean, solid terrain, Jellyfish, Turtles, and
 explosive mines. Mine blasts can damage nearby entities and trigger other
 mines, creating chain reactions.
 
 ### Stage 2: Deep Caves
 
-The cave stage adds solid terrain, breakable coral, Octopuses, Swordfish, and
+The cave stage adds breakable coral, Octopuses, Swordfish, and
 Snakes. The player must fight while navigating a tighter path between the
 cave floor and ceiling.
 
@@ -176,21 +185,56 @@ workflow.
 
 ```text
 src/
-├── audio/                 WAV music and role-based sound effects
+├── audio/
+│   ├── music/                         Scene music
+│   └── sfx/
+│       ├── boss/                      Boss sound effects
+│       ├── enemies/                   Enemy sound effects
+│       ├── player/                    Player and weapon sound effects
+│       ├── powerups/                  Power-up sound effects
+│       └── world/                     Environment sound effects
 ├── gdd/
-│   ├── level/             CSV loading, tile definitions, and terrain collision
-│   ├── powerup/           Power-up behavior and weapon modes
-│   ├── scene/             Title, gameplay, boss, and end scenes
-│   ├── spawn/             Scripted and random spawning
-│   └── sprite/            Player, projectiles, enemies, and obstacles
-├── images/                Backgrounds, sprite sheets, tiles, and effects
-└── levels/                Terrain and timed event CSV files
+│   ├── audio/                         Audio playback and asset definitions
+│   ├── level/                         Level loading, tiles, and terrain collision
+│   ├── powerup/                       Power-up behavior and weapon modes
+│   ├── scene/                         Title, gameplay, boss, and end scenes
+│   ├── spawn/                         Scripted and random spawning
+│   ├── sprite/
+│   │   ├── enemy/                     Enemies, boss, and enemy projectiles
+│   │   └── obstacle/                  Mines, coral, and explosions
+│   └── ui/                            HUD and pause menu
+├── images/
+│   ├── background/
+│   │   ├── scene1_bg/
+│   │   └── scene2_bg/
+│   ├── boss/
+│   │   ├── anglerfish-boss/
+│   │   └── bomber-fish/
+│   ├── enemies/
+│   │   ├── jellyfish/
+│   │   ├── octopus/
+│   │   ├── snake/
+│   │   ├── swordfish/
+│   │   └── turtle/
+│   ├── mines/
+│   ├── obstacles/
+│   ├── player/
+│   ├── powerups/
+│   ├── projectiles/
+│   └── ui/
+└── levels/                            Terrain and timed event CSV files
 
-resources/                 Specification, implementation plan, and course material
-test/                      Java model and rendering tests
+resources/
+├── drafts/                            Project specifications and planning material
+└── readme/
+    └── animations/                    README previews and supporting media
+test/
+└── gdd/
+    ├── audio/                         Audio asset and signal tests
+    └── scene/                         Scene and rendering tests
 tools/
-├── level-editor/          Visual stage authoring tool
-└── sprite-clipper/        Sprite-sheet frame clipping tool
+├── level-editor/                      Visual stage authoring tool
+└── sprite-clipper/                    Sprite-sheet frame clipping tool
 ```
 
 ## Project Documentation
@@ -210,22 +254,24 @@ overview for players and contributors.
 
 ## Asset Attribution
 
-| Use | Source |
-|---|---|
-| Player fish sprites | [Cute Fish Sprites on OpenGameArt](https://opengameart.org/content/cute-fish-sprites) |
-| Main enemies and Anglerfish | [Octopus, Jellyfish, Shark and Turtle pack by CraftPix](https://craftpix.net/freebies/octopus-jellyfish-shark-and-turtle-free-sprite-pixel-art/) |
-| Bomber fish | [Underwater Enemies pack by CraftPix](https://craftpix.net/freebies/free-underwater-enemies-pixel-art-character-pack/) |
-| Explosion effects | [Ring Explosion on OpenGameArt](https://opengameart.org/content/ring-explosion) |
-| Stage 1 environment | [Underwater Mines Pixel Background on OpenGameArt](https://opengameart.org/content/underwater-mines-pixel-background) |
-| Stage 2 environment | [Underwater Diving Pack on OpenGameArt](https://opengameart.org/content/underwater-diving-pack) |
-| Player bubble sound effects | [Bubbles](https://opengameart.org/content/bubbles) and [Skippy Fish Water Sound Collection](https://opengameart.org/content/skippy-fish-water-sound-collection) |
-| Scene 1 music | [Frenzied Swimming](https://opengameart.org/content/frenzied-swimming) |
-| Menu and Scene 2 music | [Aquaria](https://opengameart.org/content/aquaria) |
-| Death music | [Underwater-like Fanfare](https://opengameart.org/content/underwater-like-fanfare) |
+| Use                                  | Source |
+|--------------------------------------|---|
+| Player fish sprites                  | [Cute Fish Sprites on OpenGameArt](https://opengameart.org/content/cute-fish-sprites) |
+| Main enemies and Anglerfish          | [Octopus, Jellyfish, Shark and Turtle pack by CraftPix](https://craftpix.net/freebies/octopus-jellyfish-shark-and-turtle-free-sprite-pixel-art/) |
+| Bomber fish                          | [Underwater Enemies pack by CraftPix](https://craftpix.net/freebies/free-underwater-enemies-pixel-art-character-pack/) |
+| Explosion effects                    | [Ring Explosion on OpenGameArt](https://opengameart.org/content/ring-explosion) |
+| Stage 1 environment                  | [Underwater Mines Pixel Background on OpenGameArt](https://opengameart.org/content/underwater-mines-pixel-background) |
+| Stage 2 environment                  | [Underwater Diving Pack on OpenGameArt](https://opengameart.org/content/underwater-diving-pack) |
+| Player bubble sound effects          | [Bubbles](https://opengameart.org/content/bubbles) and [Skippy Fish Water Sound Collection](https://opengameart.org/content/skippy-fish-water-sound-collection) |
+| Scene 1 music                        | [Frenzied Swimming](https://opengameart.org/content/frenzied-swimming) |
+| Menu and Scene 2 music               | [Aquaria](https://opengameart.org/content/aquaria) |
+| Death music                          | [Underwater-like Fanfare](https://opengameart.org/content/underwater-like-fanfare) |
 | Player hurt and Octopus rock effects | *The Legend of Zelda*, Koji Kondo, Nintendo (1987) |
-| Snake attack effect | *Castlevania*, Konami (1987) |
-| Victory music | *Final Fantasy III*, Square (1990) |
-| Temporary boss music and assorted effects | [Gradius II NES soundtrack and sounds](https://www.zophar.net/music/nintendo-nes-nsf/gradius-ii?ct=1785154631481) |
+| Snake attack effect                  | *Castlevania*, Konami (1987) |
+| Victory music                        | *Final Fantasy III*, Square (1990) |
+| Boss bite sound effect               | [Bite Sounds on Quick Sounds](https://quicksounds.com/library/sounds/bite) |
+| Boss music                           | [*Dead in the Water* PlayStation soundtrack on Zophar's Domain](https://www.zophar.net/music/playstation-psf/dead-in-the-water) |
+| Assorted effects                     | [Gradius II NES soundtrack and sounds](https://www.zophar.net/music/nintendo-nes-nsf/gradius-ii?ct=1785154631481) |
 
 Third-party artwork and audio remain subject to their original authors'
 licenses and terms.
