@@ -258,6 +258,11 @@ public class TileMap {
 
     private static BufferedImage tileImage(TileDefinition definition) {
         return TILE_IMAGES.computeIfAbsent(definition.id, ignored -> {
+            if (definition.imagePath != null) {
+                return toBufferedImage(
+                        new ImageIcon(definition.imagePath).getImage());
+            }
+
             Rectangle source = definition.source;
             return TILE_SHEET.getSubimage(source.x, source.y, source.width, source.height);
         });
