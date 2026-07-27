@@ -10,7 +10,7 @@ public final class Global {
 
     // Development settings
     public static final boolean DEV_USE_SHORT_STAGE_TIMERS = true;
-    public static final int DEV_STAGE_DURATION_SECONDS = 50;
+    public static final int DEV_STAGE_DURATION_SECONDS = 100;
     public static final boolean DEV_SHOW_ENTITY_HITBOXES = false;
 
     public static final SpawnMode DEFAULT_SPAWN_MODE = SpawnMode.SCRIPTED;
@@ -19,8 +19,8 @@ public final class Global {
     // Level files
     public static final String SCENE1_TERRAIN_PATH = "src/levels/test-scene1-terrain.csv";
     public static final String SCENE1_EVENTS_PATH = "src/levels/test-scene1-events.csv";
-    public static final String SCENE2_TERRAIN_PATH = "src/levels/scene2-terrain.csv";
-    public static final String SCENE2_EVENTS_PATH = "src/levels/scene2-events.csv";
+    public static final String SCENE2_TERRAIN_PATH = "src/levels/test-scene2-terrain.csv";
+    public static final String SCENE2_EVENTS_PATH = "src/levels/test-scene2-events.csv";
 
     // Window and timing
     public static final int BOARD_WIDTH = 716;
@@ -83,8 +83,8 @@ public final class Global {
     public static final int MINE_SIZE = 45*2;
     public static final int MINE_DAMAGE = 1;
     public static final int MINE_EXPLOSION_RADIUS = 62;
-    public static final int CORAL_WIDTH = 44;
-    public static final int CORAL_HEIGHT = 62;
+    public static final int CORAL_WIDTH = 25;
+    public static final int CORAL_HEIGHT = 25;
     public static final int CORAL_CONTACT_DAMAGE = 1;
     public static final boolean WALL_DAMAGE_ENABLED = true;
     public static final int WALL_DAMAGE = 1;

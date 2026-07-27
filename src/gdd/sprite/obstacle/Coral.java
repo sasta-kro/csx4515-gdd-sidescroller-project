@@ -14,11 +14,12 @@ public class Coral extends Sprite {
     private static final String DEATH_SHEET_PATH = "src/images/obstacles/coral_death.png";
     private static final ImageIcon idleImage = new ImageIcon(IDLE_IMAGE_PATH);
     private static final ImageIcon deathSheet = new ImageIcon(DEATH_SHEET_PATH);
+
     private static final List<Rectangle> deathAnimationClips = List.of(
-            new Rectangle(0, 0, 52, 53),
-            new Rectangle(52, 0, 52, 53),
-            new Rectangle(52 * 2, 0, 52, 53),
-            new Rectangle(52 * 3, 0, 52, 53),
+//            new Rectangle(0, 0, 52, 53),
+//            new Rectangle(52, 0, 52, 53),
+//            new Rectangle(52 * 2, 0, 52, 53),
+//            new Rectangle(52 * 3, 0, 52, 53),
             new Rectangle(52 * 4, 0, 52, 53),
             new Rectangle(52 * 5, 0, 52, 53)
     );
@@ -27,7 +28,7 @@ public class Coral extends Sprite {
     public int contactDamage = CORAL_CONTACT_DAMAGE;
 
     public Coral(int x, int y) {
-        super(x, y, CORAL_WIDTH, CORAL_HEIGHT, new Color(235, 95, 115));
+        super(x, y, CORAL_WIDTH*3, CORAL_HEIGHT*3, new Color(235, 95, 115));
         setImage(idleImage.getImage());
     }
 
