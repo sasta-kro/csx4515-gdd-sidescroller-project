@@ -65,8 +65,8 @@ public class Scene1 extends JPanel implements GameScene {
 
     private KeyAdapter input = new SceneInput();
     private Timer timer;
-    private int backgroundOffsetNear;
-    private int backgroundOffsetFar;
+    private double backgroundOffset;
+    private double midgroundOffset;
     private boolean paused;
     private boolean finished;
     private boolean transitioning;
@@ -190,11 +190,10 @@ public class Scene1 extends JPanel implements GameScene {
 
     // parallax is implemented here
     private void updateBackgroundScroll() {
-        // The near and far background layers are moving at different speeds.
+        // The background, midground, and foreground terrain move at different speeds.
         // These offsets are changing here, and gameTick() is repainting afterward.
-        backgroundOffsetNear
-                = (backgroundOffsetNear + WORLD_SCROLL_SPEED) % BACKGROUND_WIDTH;
-        backgroundOffsetFar = (backgroundOffsetFar + 1) % BACKGROUND_WIDTH;
+        backgroundOffset = (backgroundOffset + BACKGROUND_SCROLL_SPEED) % BACKGROUND_WIDTH;
+        midgroundOffset = (midgroundOffset + MIDGROUND_SCROLL_SPEED) % BACKGROUND_WIDTH;
     }
 
     private void updatePlayerDeath() {
@@ -591,14 +590,13 @@ public class Scene1 extends JPanel implements GameScene {
     private void drawBackground(Graphics g) {
         int backgroundY = getHeight() - BACKGROUND_HEIGHT;
 
-        drawBackgroundLayer(g, backgroundImage, backgroundOffsetFar, backgroundY);
-        drawBackgroundLayer(g, midground1Image, backgroundOffsetFar, backgroundY);
-        drawBackgroundLayer(g, midground2Image, backgroundOffsetNear, backgroundY);
+        drawBackgroundLayer(g, backgroundImage, backgroundOffset, backgroundY);
+        drawBackgroundLayer(g, midground1Image, backgroundOffset, backgroundY);
+        drawBackgroundLayer(g, midground2Image, midgroundOffset, backgroundY);
     }
 
-    private void drawBackgroundLayer(Graphics g, ImageIcon layer,
-            int offset, int y) {
-        for (int x = -offset; x < getWidth(); x += BACKGROUND_WIDTH) {
+    private void drawBackgroundLayer(Graphics g, ImageIcon layer, double offset, int y) {
+        for (int x = -(int) Math.round(offset); x < getWidth(); x += BACKGROUND_WIDTH) {
             g.drawImage(layer.getImage(), x, y, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, null);
         }
     }

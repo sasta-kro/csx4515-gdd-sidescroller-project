@@ -64,8 +64,8 @@ public class Scene2 extends JPanel implements GameScene {
 
     private KeyAdapter input = new SceneInput();
     private Timer timer;
-    private int backgroundOffsetNear;
-    private int backgroundOffsetFar;
+    private double backgroundOffset;
+    private double midgroundOffset;
     private boolean paused;
     private boolean finished;
     private boolean transitioning;
@@ -187,10 +187,10 @@ public class Scene2 extends JPanel implements GameScene {
 
     // parallax is implemented here
     private void updateBackgroundScroll() {
-        // The near and far background layers are moving at different speeds.
+        // The background, midground, and foreground terrain move at different speeds.
         // These offsets are changing here, and gameTick() is repainting afterward.
-        backgroundOffsetNear = (backgroundOffsetNear + WORLD_SCROLL_SPEED) % MIDGROUND_WIDTH;
-        backgroundOffsetFar = (backgroundOffsetFar + 1) % BACKGROUND_TILE_WIDTH;
+        backgroundOffset = (backgroundOffset + BACKGROUND_SCROLL_SPEED) % BACKGROUND_TILE_WIDTH;
+        midgroundOffset = (midgroundOffset + MIDGROUND_SCROLL_SPEED) % MIDGROUND_WIDTH;
     }
 
     private void updatePlayerDeath() {
@@ -535,16 +535,17 @@ public class Scene2 extends JPanel implements GameScene {
     }
 
     private void drawBackground(Graphics g) {
+        int renderedBackgroundOffset = (int) Math.round(backgroundOffset);
+        int renderedMidgroundOffset = (int) Math.round(midgroundOffset);
+
         for (int y = 0; y < getHeight(); y += BACKGROUND_TILE_HEIGHT) {
-            for (int x = -backgroundOffsetFar;
-                    x < getWidth(); x += BACKGROUND_TILE_WIDTH) {
+            for (int x = -renderedBackgroundOffset; x < getWidth(); x += BACKGROUND_TILE_WIDTH) {
                 g.drawImage(backgroundImage.getImage(), x, y,
                         BACKGROUND_TILE_WIDTH, BACKGROUND_TILE_HEIGHT, null);
             }
         }
 
-        for (int x = -backgroundOffsetNear;
-                x < getWidth(); x += MIDGROUND_WIDTH) {
+        for (int x = -renderedMidgroundOffset; x < getWidth(); x += MIDGROUND_WIDTH) {
             g.drawImage(midgroundImage.getImage(), x, 0,
                     MIDGROUND_WIDTH, MIDGROUND_HEIGHT, null);
         }
