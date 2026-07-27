@@ -10,8 +10,8 @@ public final class Global {
 
     // Development settings
     public static final boolean DEV_USE_SHORT_STAGE_TIMERS = true;
-    public static final int DEV_STAGE_DURATION_SECONDS = 100;
-    public static final boolean DEV_SHOW_ENTITY_HITBOXES = true;
+    public static final int DEV_STAGE_DURATION_SECONDS = 50;
+    public static final boolean DEV_SHOW_ENTITY_HITBOXES = false;
 
     public static final SpawnMode DEFAULT_SPAWN_MODE = SpawnMode.SCRIPTED;
 

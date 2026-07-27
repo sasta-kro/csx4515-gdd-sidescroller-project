@@ -14,6 +14,7 @@ import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.image.BufferedImage;
 import javax.swing.ImageIcon;
 
 public final class GameHud {
@@ -21,15 +22,14 @@ public final class GameHud {
     private static final int HUD_HEIGHT = 78;
     private static final int ICON_SIZE = 44;
 
-    private static final Color HUD_BACKGROUND = new Color(3, 25, 38, 226);
-    private static final Color HUD_EDGE = new Color(72, 207, 202, 210);
-    private static final Color PRIMARY_TEXT = new Color(242, 253, 250);
-    private static final Color SECONDARY_TEXT = new Color(150, 202, 207);
+    private static final Color PRIMARY_TEXT = new Color(255, 250, 232);
+    private static final Color SECONDARY_TEXT = new Color(255, 211, 132);
+    private static final Color TEXT_OUTLINE = new Color(0, 12, 20, 235);
     private static final Color EMPTY_PIP = new Color(41, 77, 88);
     private static final Color HEALTH_BUBBLE_COLOR =
-            new Color(248, 105, 126);
+            new Color(130, 0, 12);
     private static final Color SCORE_BUBBLE_COLOR =
-            new Color(255, 218, 112);
+            new Color(232, 157, 12);
     private static final Color TRACK_COLOR = new Color(24, 62, 73);
     private static final Color BOSS_PHASE_ONE_HEALTH =
             new Color(48, 176, 91);
@@ -51,9 +51,11 @@ public final class GameHud {
     private static final Image baseBubbleSheet =
             BubbleSprite.tintedSheet(COLOR_PLAYER);
     private static final Image healthBubbleSheet =
-            BubbleSprite.tintedSheet(HEALTH_BUBBLE_COLOR);
+            overlayTint(BubbleSprite.tintedSheet(HEALTH_BUBBLE_COLOR),
+                    HEALTH_BUBBLE_COLOR, 0.62f);
     private static final Image scoreBubbleSheet =
-            BubbleSprite.tintedSheet(SCORE_BUBBLE_COLOR);
+            overlayTint(BubbleSprite.tintedSheet(SCORE_BUBBLE_COLOR),
+                    SCORE_BUBBLE_COLOR, 0.42f);
 
     private GameHud() {
     }
@@ -63,16 +65,9 @@ public final class GameHud {
         Graphics2D g = (Graphics2D) graphics.create();
         configureGraphics(g);
 
-        g.setColor(HUD_BACKGROUND);
-        g.fillRect(0, 0, width, HUD_HEIGHT);
-        g.setColor(HUD_EDGE);
-        g.fillRect(0, HUD_HEIGHT - 2, width, 2);
-
         drawHealth(g, player.getHealth());
-        drawDivider(g, 160);
         drawScore(g, runState.getScore());
         drawStageAndTime(g, stageName, remainingTicks);
-        drawDivider(g, width - 296);
         drawSpeed(g, width - 286, player);
         drawWeapon(g, width - 152, player);
 
@@ -127,8 +122,7 @@ public final class GameHud {
 
     private static void drawHealth(Graphics2D g, int health) {
         g.setFont(new Font("SansSerif", Font.BOLD, 11));
-        g.setColor(SECONDARY_TEXT);
-        g.drawString("HP", 14, 18);
+        drawText(g, "HP", 14, 18, SECONDARY_TEXT);
 
         for (int index = 0; index < PLAYER_MAX_HEALTH; index++) {
             int x = 15 + index * 27;
@@ -147,27 +141,24 @@ public final class GameHud {
                 iconX - 2, iconY - 2, 28, 1f);
 
         g.setFont(new Font("SansSerif", Font.BOLD, 11));
-        g.setColor(SECONDARY_TEXT);
-        g.drawString("SCORE", 208, 19);
+        drawText(g, "SCORE", 208, 19, SECONDARY_TEXT);
 
         g.setFont(new Font("Monospaced", Font.BOLD, 23));
-        g.setColor(PRIMARY_TEXT);
-        g.drawString(String.format("%06d", score), 207, 51);
+        drawText(g, String.format("%06d", score),
+                207, 51, PRIMARY_TEXT);
     }
 
     private static void drawStageAndTime(Graphics2D g, String stageName,
             int remainingTicks) {
         int centerX = 370;
         g.setFont(new Font("SansSerif", Font.BOLD, 11));
-        g.setColor(SECONDARY_TEXT);
-        drawCentered(g, stageName, centerX, 20);
+        drawCentered(g, stageName, centerX, 20, SECONDARY_TEXT);
 
         String time = remainingTicks < 0
                 ? "BOSS"
                 : formatTime(remainingTicks);
         g.setFont(new Font("Monospaced", Font.BOLD, 22));
-        g.setColor(PRIMARY_TEXT);
-        drawCentered(g, time, centerX, 50);
+        drawCentered(g, time, centerX, 50, PRIMARY_TEXT);
     }
 
     private static void drawSpeed(Graphics2D g, int x, Player player) {
@@ -230,11 +221,25 @@ public final class GameHud {
         bubbleGraphics.dispose();
     }
 
+    private static BufferedImage overlayTint(Image source,
+            Color color, float strength) {
+        BufferedImage tinted = new BufferedImage(
+                source.getWidth(null), source.getHeight(null),
+                BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = tinted.createGraphics();
+        graphics.drawImage(source, 0, 0, null);
+        graphics.setComposite(AlphaComposite.SrcAtop.derive(strength));
+        graphics.setColor(color);
+        graphics.fillRect(0, 0, tinted.getWidth(), tinted.getHeight());
+        graphics.dispose();
+        return tinted;
+    }
+
     private static void drawPowerLabel(Graphics2D g, String label,
             int x, boolean active) {
         g.setFont(new Font("SansSerif", Font.BOLD, 11));
-        g.setColor(active ? PRIMARY_TEXT : SECONDARY_TEXT);
-        g.drawString(label, x, 25);
+        drawText(g, label, x, 25,
+                active ? PRIMARY_TEXT : SECONDARY_TEXT);
     }
 
     private static void drawStackPips(Graphics2D g, int x, int y,
@@ -266,9 +271,8 @@ public final class GameHud {
                 ? String.format("%.1f", ticks / (double) TARGET_FPS)
                 : "--";
         g.setFont(new Font("Monospaced", Font.BOLD, 10));
-        g.setColor(SECONDARY_TEXT);
         int width = g.getFontMetrics().stringWidth(text);
-        g.drawString(text, rightX - width, baselineY);
+        drawText(g, text, rightX - width, baselineY, SECONDARY_TEXT);
     }
 
     private static Image weaponIcon(WeaponType type) {
@@ -304,14 +308,21 @@ public final class GameHud {
                 totalSeconds / 60, totalSeconds % 60);
     }
 
-    private static void drawDivider(Graphics2D g, int x) {
-        g.setColor(new Color(105, 190, 192, 80));
-        g.drawLine(x, 13, x, HUD_HEIGHT - 13);
+    private static void drawCentered(Graphics2D g, String text,
+            int centerX, int baselineY, Color color) {
+        int x = centerX - g.getFontMetrics().stringWidth(text) / 2;
+        drawText(g, text, x, baselineY, color);
     }
 
-    private static void drawCentered(Graphics2D g, String text,
-            int centerX, int baselineY) {
-        int x = centerX - g.getFontMetrics().stringWidth(text) / 2;
+    private static void drawText(Graphics2D g, String text,
+            int x, int baselineY, Color color) {
+        g.setColor(TEXT_OUTLINE);
+        g.drawString(text, x - 1, baselineY);
+        g.drawString(text, x + 1, baselineY);
+        g.drawString(text, x, baselineY - 1);
+        g.drawString(text, x, baselineY + 1);
+        g.drawString(text, x + 2, baselineY + 2);
+        g.setColor(color);
         g.drawString(text, x, baselineY);
     }
 
