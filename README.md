@@ -2,11 +2,9 @@
 
 ## Project Information
 
-| | |
-|---|---|
-| **Course** | CSX4515 Game Design and Development |
-| **Group** | Ocean Invaders |
-| **Team members** | Sai Aike Shwe Tun Aung and Ekaterina Kazakova |
+- **Course:** CSX4515 Game Design and Development
+- **Group:** Ocean Invaders
+- **Team members:** Sai Aike Shwe Tun Aung and Ekaterina Kazakova
 
 <p align="center">
   <img src="resources/readme/stage2-layered-preview.png"
