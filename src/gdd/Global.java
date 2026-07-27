@@ -21,6 +21,7 @@ public final class Global {
     public static final String SCENE1_EVENTS_PATH = "src/levels/final-scene1-events.csv";
     public static final String SCENE2_TERRAIN_PATH = "src/levels/final-scene2-terrain.csv";
     public static final String SCENE2_EVENTS_PATH = "src/levels/final-scene2-events.csv";
+    public static final String BOSS_TERRAIN_PATH = "src/levels/boss-terrain.csv";
 
     // Window and timing
     public static final int BOARD_WIDTH = 716;

@@ -3,6 +3,14 @@ package gdd.scene;
 import gdd.Game;
 import static gdd.Global.*;
 import gdd.RunState;
+import gdd.level.LevelLoader;
+import gdd.level.TileMap;
+import gdd.powerup.Heal;
+import gdd.powerup.MegaShot;
+import gdd.powerup.MultiShot;
+import gdd.powerup.PowerUp;
+import gdd.powerup.SpeedUp;
+import gdd.powerup.SplitShot;
 import gdd.sprite.enemy.Anglerfish;
 import gdd.sprite.enemy.BomberFish;
 import gdd.sprite.Bubble;
@@ -14,11 +22,14 @@ import gdd.ui.GameHud;
 import gdd.ui.PauseMenu;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -37,20 +48,31 @@ public class BossScene extends JPanel implements GameScene {
     private static final int MIDGROUND_WIDTH = (int) Math.round(midgroundImage.getIconWidth() * BACKGROUND_SCALE);
     private static final int MIDGROUND_HEIGHT = (int) Math.round(midgroundImage.getIconHeight() * BACKGROUND_SCALE);
 
+    private static final int PICKUP_INITIAL_DELAY_TICKS = secondsToTicks(3);
+    private static final int PICKUP_MIN_INTERVAL_TICKS = secondsToTicks(6);
+    private static final int PICKUP_MAX_INTERVAL_TICKS = secondsToTicks(10);
+    private static final int PICKUP_SPAWN_X = BOARD_WIDTH + 20;
+    private static final int PICKUP_MIN_Y = 125;
+    private static final int PICKUP_MAX_Y = BOARD_HEIGHT - 270;
+
     private Game game;
     private RunState runState;
     private List<Enemy> enemies = new ArrayList<>();
+    private List<PowerUp> powerUps = new ArrayList<>();
     private List<Bubble> playerBubbles = new ArrayList<>();
     private List<EnemyProjectile> enemyProjectiles = new ArrayList<>();
     private List<Explosion> explosions = new ArrayList<>();
+    private final Random random = new Random();
 
     private Player player;
     private Anglerfish boss;
+    private TileMap tileMap;
     private KeyAdapter input = new SceneInput();
     private Timer timer;
     private boolean paused;
     private boolean finished;
     private int playerDeathTicks;
+    private int pickupSpawnTicks;
 
     public BossScene(Game game, RunState runState) {
         this.game = game;
@@ -80,8 +102,12 @@ public class BossScene extends JPanel implements GameScene {
         paused = false;
         finished = false;
         playerDeathTicks = 0;
+        pickupSpawnTicks = PICKUP_INITIAL_DELAY_TICKS;
 
         player = new Player(runState);
+        tileMap = new TileMap(
+                LevelLoader.loadTerrain(BOSS_TERRAIN_PATH));
+        resolveTerrainOverlap();
         boss = new Anglerfish(player);
         enemies.add(boss);
     }
@@ -101,6 +127,7 @@ public class BossScene extends JPanel implements GameScene {
         }
 
         updatePlayer();
+        updatePowerUps();
         updateEnemies();
         updateProjectiles();
         updateExplosions();
@@ -132,7 +159,36 @@ public class BossScene extends JPanel implements GameScene {
 
     private void updatePlayer() {
         player.act();
+        resolveTerrainOverlap();
         playerBubbles.addAll(player.createBubbles());
+    }
+
+    private void updatePowerUps() {
+        if (!boss.isDying() && --pickupSpawnTicks <= 0) {
+            powerUps.add(createRandomPowerUp());
+            pickupSpawnTicks = randomBetween(
+                    PICKUP_MIN_INTERVAL_TICKS,
+                    PICKUP_MAX_INTERVAL_TICKS);
+        }
+
+        for (PowerUp powerUp : powerUps) {
+            powerUp.act();
+        }
+    }
+
+    private PowerUp createRandomPowerUp() {
+        int y = randomBetween(PICKUP_MIN_Y, PICKUP_MAX_Y);
+        return switch (random.nextInt(5)) {
+            case 0 -> new SpeedUp(PICKUP_SPAWN_X, y);
+            case 1 -> new MultiShot(PICKUP_SPAWN_X, y);
+            case 2 -> new MegaShot(PICKUP_SPAWN_X, y);
+            case 3 -> new SplitShot(PICKUP_SPAWN_X, y);
+            default -> new Heal(PICKUP_SPAWN_X, y);
+        };
+    }
+
+    private int randomBetween(int min, int max) {
+        return min + random.nextInt(max - min + 1);
     }
 
     private void updateEnemies() {
@@ -161,6 +217,10 @@ public class BossScene extends JPanel implements GameScene {
 
     private void advanceSpriteAnimations() {
         player.advanceAnimation();
+
+        for (PowerUp powerUp : powerUps) {
+            powerUp.advanceAnimation();
+        }
 
         for (Enemy enemy : enemies) {
             enemy.advanceAnimation();
@@ -213,6 +273,7 @@ public class BossScene extends JPanel implements GameScene {
         handlePlayerBubbleCollisions();
         handleEnemyProjectileCollisions();
         handleEnemyContact();
+        handlePowerUpContact();
     }
 
     private void handlePlayerBubbleCollisions() {
@@ -234,6 +295,11 @@ public class BossScene extends JPanel implements GameScene {
                     break;
                 }
             }
+
+            if (bubble.isVisible()
+                    && tileMap.intersects(bubble.getBounds(), 0)) {
+                bubble.die();
+            }
         }
     }
 
@@ -254,6 +320,12 @@ public class BossScene extends JPanel implements GameScene {
             if (projectile.isVisible() && projectile.collidesWith(player)) {
                 player.damage(projectile.getDamage());
                 projectile.die();
+                continue;
+            }
+
+            if (projectile.isVisible()
+                    && tileMap.intersects(projectile.getBounds(), 0)) {
+                projectile.die();
             }
         }
     }
@@ -266,6 +338,14 @@ public class BossScene extends JPanel implements GameScene {
         }
     }
 
+    private void handlePowerUpContact() {
+        for (PowerUp powerUp : powerUps) {
+            if (powerUp.isVisible() && powerUp.collidesWith(player)) {
+                powerUp.upgrade(player);
+            }
+        }
+    }
+
     private void addSmallExplosion(gdd.sprite.Sprite sprite) {
         explosions.add(new Explosion(
                 sprite.getX() + sprite.getRenderWidth() / 2,
@@ -274,6 +354,7 @@ public class BossScene extends JPanel implements GameScene {
 
     private void removeDeadEntities() {
         enemies.removeIf(enemy -> !enemy.isVisible() && enemy != boss);
+        powerUps.removeIf(powerUp -> !powerUp.isVisible());
         playerBubbles.removeIf(bubble -> !bubble.isVisible());
         enemyProjectiles.removeIf(projectile -> !projectile.isVisible());
         explosions.removeIf(explosion -> !explosion.isVisible());
@@ -293,9 +374,11 @@ public class BossScene extends JPanel implements GameScene {
 
     private void clearStageEntities() {
         enemies.clear();
+        powerUps.clear();
         playerBubbles.clear();
         enemyProjectiles.clear();
         explosions.clear();
+        tileMap = null;
     }
 
     @Override
@@ -303,7 +386,11 @@ public class BossScene extends JPanel implements GameScene {
         super.paintComponent(g);
 
         drawBackground(g);
-        drawEntities(g);
+        drawEnemies(g);
+        if (tileMap != null) {
+            tileMap.draw(g, 0);
+        }
+        drawForegroundEntities(g);
         drawBossHealth(g);
         drawHud(g);
 
@@ -326,9 +413,15 @@ public class BossScene extends JPanel implements GameScene {
         }
     }
 
-    private void drawEntities(Graphics g) {
+    private void drawEnemies(Graphics g) {
         for (Enemy enemy : enemies) {
             enemy.draw(g);
+        }
+    }
+
+    private void drawForegroundEntities(Graphics g) {
+        for (PowerUp powerUp : powerUps) {
+            powerUp.draw(g);
         }
 
         for (Bubble bubble : playerBubbles) {
@@ -344,6 +437,25 @@ public class BossScene extends JPanel implements GameScene {
         }
 
         player.draw(g);
+    }
+
+    private void resolveTerrainOverlap() {
+        Rectangle playerBounds = player.getBounds();
+        Point correction = tileMap.getCollisionCorrection(
+                playerBounds, getPlayerHitboxMovementArea(playerBounds), 0);
+        player.setX(player.getX() + correction.x);
+        player.setY(player.getY() + correction.y);
+    }
+
+    private Rectangle getPlayerHitboxMovementArea(
+            Rectangle playerBounds) {
+        int hitboxOffsetX = playerBounds.x - player.getX();
+        int hitboxOffsetY = playerBounds.y - player.getY();
+        return new Rectangle(
+                hitboxOffsetX, hitboxOffsetY,
+                BOARD_WIDTH - player.getRenderWidth() + playerBounds.width,
+                BOARD_HEIGHT - 32 - player.getRenderHeight()
+                        + playerBounds.height);
     }
 
     private void drawBossHealth(Graphics g) {
