@@ -135,7 +135,8 @@ public class Octopus extends Enemy {
     }
 
     private EnemyProjectile createRock() {
-        EnemyProjectile rock = new EnemyProjectile(getX() - 16, getY());
+        EnemyProjectile rock = new EnemyProjectile(getX(), getY());
+        rock.setX(getX() - rock.getRenderWidth());
         rock.setY(getY()
                 + (getRenderHeight() - rock.getRenderHeight()) / 2);
         return rock;

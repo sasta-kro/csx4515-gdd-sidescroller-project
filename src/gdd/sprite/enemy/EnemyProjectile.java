@@ -8,6 +8,7 @@ import javax.swing.ImageIcon;
 
 public class EnemyProjectile extends Sprite {
 
+    private static final int ROCK_SIZE = 32;
     private static final String ROCK_IMAGE_PATH
             = "src/images/enemies/octopus/Rock.png";
     private static final ImageIcon rockImage
@@ -17,7 +18,7 @@ public class EnemyProjectile extends Sprite {
     private final int speed;
 
     public EnemyProjectile(int x, int y) {
-        this(x, y, 16, 16, 5, ENEMY_PROJECTILE_DAMAGE,
+        this(x, y, ROCK_SIZE, ROCK_SIZE, 5, ENEMY_PROJECTILE_DAMAGE,
                 new Color(115, 100, 90));
         setImage(rockImage.getImage());
     }

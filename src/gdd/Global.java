@@ -9,9 +9,9 @@ public final class Global {
     }
 
     // Development settings
-    public static final boolean DEV_USE_SHORT_STAGE_TIMERS = false;
-    public static final int DEV_STAGE_DURATION_SECONDS = 15;
-    public static final boolean DEV_SHOW_ENTITY_HITBOXES = false;
+    public static final boolean DEV_USE_SHORT_STAGE_TIMERS = true;
+    public static final int DEV_STAGE_DURATION_SECONDS = 1;
+    public static final boolean DEV_SHOW_ENTITY_HITBOXES = true;
 
     public static final SpawnMode DEFAULT_SPAWN_MODE = SpawnMode.SCRIPTED;
 
@@ -29,7 +29,7 @@ public final class Global {
     public static final int TIMER_DELAY_MS = 1000 / TARGET_FPS;
     public static final int STAGE_DURATION_SECONDS = 5 * 60;
     public static final int INITIAL_SPAWN_DELAY_SECONDS = 2;
-    public static final TransitionMode SCENE_TRANSITION_MODE = TransitionMode.SEAMLESS;
+    public static final TransitionMode SCENE_TRANSITION_MODE = TransitionMode.SUDDEN;
     public static final int SEAMLESS_TRANSITION_TICKS = secondsToTicks(1.5);
     public static final int PLAYER_DEATH_TICKS = secondsToTicks(1);
 

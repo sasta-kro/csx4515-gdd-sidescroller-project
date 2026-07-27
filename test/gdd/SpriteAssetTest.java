@@ -31,6 +31,10 @@ public class SpriteAssetTest {
                 "rock texture width");
         assertEquals(16, rock.getImage().getHeight(null),
                 "rock texture height");
+        assertEquals(32, rock.getRenderWidth(),
+                "rock render width");
+        assertEquals(32, rock.getRenderHeight(),
+                "rock render height");
     }
 
     private static void playsCoralDeathAnimation() {
@@ -86,9 +90,9 @@ public class SpriteAssetTest {
                 BUBBLE_WIDTH, BUBBLE_HEIGHT, BUBBLE_DAMAGE,
                 BUBBLE_SPEED, Color.CYAN, true);
 
-        assertEquals(48, bubble.getImage().getWidth(null),
+        assertEquals(144, bubble.getImage().getWidth(null),
                 "bubble sheet width");
-        assertEquals(16, bubble.getImage().getHeight(null),
+        assertEquals(48, bubble.getImage().getHeight(null),
                 "bubble sheet height");
 
         bubble.die();
@@ -116,7 +120,7 @@ public class SpriteAssetTest {
         BufferedImage cyanSheet = (BufferedImage) cyanBubble.getImage();
         BufferedImage brownSheet = (BufferedImage) brownBubble.getImage();
 
-        assertTrue(cyanSheet.getRGB(8, 8) != brownSheet.getRGB(8, 8),
+        assertTrue(cyanSheet.getRGB(24, 24) != brownSheet.getRGB(24, 24),
                 "bubble sheet uses the supplied tint");
 
         BossBubble bossBubble = new BossBubble(

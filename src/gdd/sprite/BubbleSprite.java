@@ -14,7 +14,8 @@ public final class BubbleSprite {
 
     private static final String SHEET_PATH =
             "src/images/projectiles/bubble.png";
-    private static final int FRAME_SIZE = 16;
+    private static final int FRAME_SIZE = 48;
+    private static final float TINT_STRENGTH = 0.55f;
     private static final BufferedImage NEUTRAL_SHEET =
             toBufferedImage(new ImageIcon(SHEET_PATH).getImage());
     private static final Map<Integer, BufferedImage> TINTED_SHEETS =
@@ -69,7 +70,10 @@ public final class BubbleSprite {
     private static int tintedChannel(int colorChannel, int gray,
             float highlight) {
         int colored = colorChannel * gray / 255;
-        return Math.round(colored + (255 - colored) * highlight);
+        int tinted = Math.round(
+                gray * (1f - TINT_STRENGTH)
+                + colored * TINT_STRENGTH);
+        return Math.round(tinted + (255 - tinted) * highlight);
     }
 
     private static BufferedImage toBufferedImage(Image image) {
