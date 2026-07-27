@@ -66,8 +66,8 @@ public final class Global {
     public static final int SPEED_POWERUP_TICKS = secondsToTicks(15);
     public static final int MULTI_SHOT_TICKS = secondsToTicks(15);
     public static final int WEAPON_POWERUP_TICKS = secondsToTicks(10);
-    public static final int POWERUP_WIDTH = 28;
-    public static final int POWERUP_HEIGHT = 28;
+    public static final int POWERUP_WIDTH = 48;
+    public static final int POWERUP_HEIGHT = 48;
     public static final double POWERUP_WAVE_AMPLITUDE = 18.0;
     public static final double POWERUP_WAVE_SPEED = 0.08;
     public static final int POWERUP_SPAWN_MIN_TICKS = secondsToTicks(2);
