@@ -222,8 +222,9 @@ public class Player extends Sprite {
                 burstIntervalTicks = BURST_INTERVAL_TICKS;
                 break;
             case MEGA_SHOT:
-                bubbles.add(new Bubble(getShotX(), getShotY() - 4,
-                        24, 18, 2, BUBBLE_SPEED, getActiveColor(), true));
+                bubbles.add(new Bubble(getShotX(), getShotY() - 7,
+                        BUBBLE_WIDTH * 2, BUBBLE_HEIGHT * 2, 2,
+                        BUBBLE_SPEED, getActiveColor(), true));
                 shotCooldownTicks = (int) Math.round(BASE_SHOT_COOLDOWN_TICKS * 1.125);
                 break;
             case SPLIT_SHOT:

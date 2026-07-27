@@ -18,7 +18,22 @@ public class Anglerfish extends Enemy {
 
     private static final int HITBOX_X_OFFSET = 6 * BOSS_SCALE;
     private static final int HITBOX_Y_OFFSET = BOSS_SCALE;
+    private static final int HITBOX_TOP_BOUND = 45;
+    private static final int HITBOX_BOTTOM_BOUND = 20;
+
+    private static final int PHASE_ONE_IDLE_TICKS = secondsToTicks(2);
+    private static final int PHASE_TWO_IDLE_TICKS = secondsToTicks(0.5);
+    private static final double PHASE_ONE_LASER_CHASE_SPEED = 4.0;
+    private static final double PHASE_TWO_LASER_CHASE_SPEED = 6.0;
+
+    private static final double BITE_DASH_SPEED = 11.0;
+    private static final double BITE_RETURN_SPEED = 8.0;
+
+    private static final int PHASE_ONE_SUMMON_COUNT = 3;
+    private static final int PHASE_TWO_SUMMON_COUNT = 5;
     private static final int SUMMON_VERTICAL_SPACING = 55;
+
+    private static final Color BUBBLE_COLOR = new Color(154, 133, 113);
     private static final Color PHASE_TWO_TINT = new Color(235, 75, 115);
     private static final float PHASE_TWO_TINT_STRENGTH = 0.28f;
 
@@ -98,8 +113,11 @@ public class Anglerfish extends Enemy {
     private AttackState previousAttack;
     private int consecutiveAttackCount;
     private int stateTicks;
-    private int attackCooldown = BOSS_PHASE_ONE_COOLDOWN_TICKS;
+    private int attackCooldown = PHASE_ONE_IDLE_TICKS;
     private int laserInterval;
+    private double biteXSpeed;
+    private double biteYSpeed;
+    private double biteStartY;
     private boolean hurt;
     private boolean deathFinished;
     private double idleWave;
@@ -152,23 +170,14 @@ public class Anglerfish extends Enemy {
                 break;
             case BITE_WARNING:
                 if (--stateTicks <= 0) {
-                    state = AttackState.BITE_OUT;
-                    updateAnimationFrames();
+                    startBite();
                 }
                 break;
             case BITE_OUT:
-                x -= 11;
-                if (getBounds().x <= 0) {
-                    state = AttackState.BITE_RETURN;
-                    updateAnimationFrames();
-                }
+                updateBiteOut();
                 break;
             case BITE_RETURN:
-                x += 8;
-                if (getX() >= homeX) {
-                    x = homeX;
-                    returnToIdle();
-                }
+                updateBiteReturn();
                 break;
             case SUMMON:
                 createSummons();
@@ -182,6 +191,7 @@ public class Anglerfish extends Enemy {
     private void updateIdle() {
         idleWave += 0.045;
         y += Math.sin(idleWave) * 0.15;
+        keepHitboxInsideVerticalBounds();
         if (--attackCooldown <= 0) {
             chooseAttack();
         }
@@ -221,11 +231,15 @@ public class Anglerfish extends Enemy {
 
     private void updateLaser() {
         double playerCenter = player.getY() + player.getRenderHeight() / 2.0;
-        double bossCenter = y + getRenderHeight() / 2.0;
+        Rectangle bossHitbox = getBounds();
+        double bossCenter = bossHitbox.getCenterY();
         double distanceToPlayer = playerCenter - bossCenter;
-        y += Math.max(-BOSS_LASER_TRACK_SPEED,
-                Math.min(BOSS_LASER_TRACK_SPEED, distanceToPlayer));
-        y = Math.max(45, Math.min(BOARD_HEIGHT - getRenderHeight() - 20, y));
+        double chaseSpeed = isPhaseTwo()
+                ? PHASE_TWO_LASER_CHASE_SPEED
+                : PHASE_ONE_LASER_CHASE_SPEED;
+        y += Math.max(-chaseSpeed,
+                Math.min(chaseSpeed, distanceToPlayer));
+        keepHitboxInsideVerticalBounds();
 
         if (laserInterval-- <= 0) {
             pendingProjectiles.add(createBubbleAtHitboxEdge());
@@ -237,20 +251,93 @@ public class Anglerfish extends Enemy {
         }
     }
 
+    private void startBite() {
+        state = AttackState.BITE_OUT;
+        biteStartY = y;
+
+        if (isPhaseTwo()) {
+            Rectangle bossHitbox = getBounds();
+            Rectangle playerHitbox = player.getBounds();
+            double targetX = playerHitbox.getCenterX()
+                    - bossHitbox.getCenterX();
+            double targetY = playerHitbox.getCenterY()
+                    - bossHitbox.getCenterY();
+            double distance = Math.max(1.0, Math.hypot(targetX, targetY));
+            biteXSpeed = targetX / distance * BITE_DASH_SPEED;
+            biteYSpeed = targetY / distance * BITE_DASH_SPEED;
+        } else {
+            biteXSpeed = -BITE_DASH_SPEED;
+            biteYSpeed = 0;
+        }
+
+        updateAnimationFrames();
+    }
+
+    private void updateBiteOut() {
+        x += biteXSpeed;
+        y += biteYSpeed;
+        keepHitboxInsideVerticalBounds();
+
+        Rectangle hitbox = getBounds();
+        boolean reachedHorizontalEdge = biteXSpeed < 0
+                ? hitbox.x <= 0
+                : hitbox.x + hitbox.width >= BOARD_WIDTH;
+        if (reachedHorizontalEdge) {
+            state = AttackState.BITE_RETURN;
+            updateAnimationFrames();
+        }
+    }
+
+    private void updateBiteReturn() {
+        double distanceX = homeX - x;
+        double distanceY = biteStartY - y;
+        double distance = Math.hypot(distanceX, distanceY);
+
+        if (distance <= BITE_RETURN_SPEED) {
+            x = homeX;
+            y = biteStartY;
+            returnToIdle();
+            return;
+        }
+
+        x += distanceX / distance * BITE_RETURN_SPEED;
+        y += distanceY / distance * BITE_RETURN_SPEED;
+        keepHitboxInsideVerticalBounds();
+    }
+
+    private void keepHitboxInsideVerticalBounds() {
+        Rectangle hitbox = getBounds();
+        if (hitbox.y < HITBOX_TOP_BOUND) {
+            y += HITBOX_TOP_BOUND - hitbox.y;
+        }
+
+        int bottomEdge = BOARD_HEIGHT - HITBOX_BOTTOM_BOUND;
+        if (hitbox.y + hitbox.height > bottomEdge) {
+            y -= hitbox.y + hitbox.height - bottomEdge;
+        }
+    }
+
     private BossBubble createBubbleAtHitboxEdge() {
         Rectangle hitbox = getBounds();
         int spawnX = hitbox.x - BossBubble.WIDTH / 2;
         int spawnY = hitbox.y + (hitbox.height - BossBubble.HEIGHT) / 2;
-        return new BossBubble(spawnX, spawnY, 1);
+        Color bubbleColor = isPhaseTwo()
+                ? PHASE_TWO_TINT
+                : BUBBLE_COLOR;
+        return new BossBubble(spawnX, spawnY, 1, bubbleColor);
     }
 
     private void createSummons() {
         int spawnX = spawnXAtLeftEdge(BomberFish.SIZE);
         int centerY = spawnYAtCenter(BomberFish.SIZE);
+        int summonCount = isPhaseTwo()
+                ? PHASE_TWO_SUMMON_COUNT
+                : PHASE_ONE_SUMMON_COUNT;
+        int middleIndex = summonCount / 2;
 
-        for (int index = 0; index < 3; index++) {
+        for (int index = 0; index < summonCount; index++) {
             int spawnY = centerY
-                    + (index - 1) * SUMMON_VERTICAL_SPACING;
+                    + (index - middleIndex) * SUMMON_VERTICAL_SPACING;
             pendingSummons.add(new BomberFish(
                     player, spawnX, spawnY, random));
         }
@@ -266,10 +353,14 @@ public class Anglerfish extends Enemy {
 
     private void returnToIdle() {
         state = AttackState.IDLE;
-        attackCooldown = health <= BOSS_PHASE_TWO_HEALTH
-                ? BOSS_PHASE_TWO_COOLDOWN_TICKS
-                : BOSS_PHASE_ONE_COOLDOWN_TICKS;
+        attackCooldown = isPhaseTwo()
+                ? PHASE_TWO_IDLE_TICKS
+                : PHASE_ONE_IDLE_TICKS;
         updateAnimationFrames();
+    }
+
+    private boolean isPhaseTwo() {
+        return health <= BOSS_PHASE_TWO_HEALTH;
     }
 
     private void updateAnimationFrames() {
@@ -347,6 +438,8 @@ public class Anglerfish extends Enemy {
             return false;
         }
 
+        boolean enteringPhaseTwo = !isPhaseTwo()
+                && health - amount <= BOSS_PHASE_TWO_HEALTH;
         health -= amount;
         if (health <= 0) {
             health = 0;
@@ -356,6 +449,11 @@ public class Anglerfish extends Enemy {
             setDying(true);
             updateAnimationFrames();
             return true;
+        }
+
+        if (enteringPhaseTwo && state == AttackState.IDLE) {
+            attackCooldown = Math.min(
+                    attackCooldown, PHASE_TWO_IDLE_TICKS);
         }
 
         hurt = true;
