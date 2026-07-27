@@ -41,6 +41,11 @@ public class Game extends JFrame {
         loadScene2();
     }
 
+    public void startFromBoss() {
+        runState = new RunState();
+        loadBossScene();
+    }
+
     public void loadScene1() {
         showScene(new Scene1(this, runState));
     }
