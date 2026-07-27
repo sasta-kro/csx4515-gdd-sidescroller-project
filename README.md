@@ -21,12 +21,11 @@ collects temporary power-ups across two stages and a boss encounter.
 - **Group:** Ocean Invaders
 - **Team members:** Sai Aike Shwe Tun Aung and Ekaterina Kazakova
 
-
 ## Highlights
 
 - Four-direction movement with tap-or-hold bubble shooting
 - Two scrolling stages followed by a multi-attack Anglerfish boss
-- Five enemy types with distinct movement, attack, hurt, and death behavior
+- Five standard enemy types with distinct movement and combat behavior
 - Five power-ups, including stackable speed and multi-shot upgrades
 - Mines with chain reactions, destructible coral, and solid cave terrain
 - Scene-specific music and event-driven sound effects
@@ -47,24 +46,28 @@ collects temporary power-ups across two stages and a boss encounter.
 | Pause or resume | `Escape` |
 
 ### Menus
+
 Menus use direct keyboard commands rather than cursor-based navigation.
 
+#### Title Screen
 
-#### Title Screen:
 | Key | Action |
 |---|---|
-| `1` | Start from Stage 1 |
+| `1` or `Space` | Start from Stage 1 |
 | `2` | Start from Stage 2 for development |
+| `3` | Start the boss fight for development |
 | `Q` | Quit |
 
-#### Pause Screen:
+#### Pause Screen
+
 | Key | Action |
 |---|---|
 | `R` | Restart from Stage 1 |
 | `M` | Return to the main menu |
 | `Q` | Quit |
 
-#### Game over and Victory Screens:
+#### Game Over and Victory Screens
+
 | Key | Action |
 |---|---|
 | `Enter` | Return to the main menu |
@@ -100,10 +103,10 @@ used for that animation.
 
 | Animated preview | Source sprite sheet | Enemy                 | Behavior                                                                                               |
 |---|---|-----------------------|--------------------------------------------------------------------------------------------------------|
-| <img src="resources/readme/animations/jellyfish-idle.gif" alt="Animated Jellyfish" width="96"> | <img src="src/images/enemies/jellyfish/Idle.png" alt="Jellyfish idle sprite sheet" height="48"> | **Jellyfish**         | Drifts left while floating up and down, and periodically fills the area around itself with electricity . |
+| <img src="resources/readme/animations/jellyfish-idle.gif" alt="Animated Jellyfish" width="96"> | <img src="src/images/enemies/jellyfish/Idle.png" alt="Jellyfish idle sprite sheet" height="48"> | **Jellyfish**         | Drifts left while floating up and down, then expands its damaging area during its attack animation.      |
 | <img src="resources/readme/animations/turtle-swim.gif" alt="Animated Turtle" width="96"> | <img src="src/images/enemies/turtle/Walk.png" alt="Turtle swim sprite sheet" height="48"> | **Turtle**            | A durable enemy that continuously swims toward the player.                                             |
 | <img src="resources/readme/animations/octopus-idle.gif" alt="Animated Octopus" width="96"> | <img src="src/images/enemies/octopus/Idle.png" alt="Octopus idle sprite sheet" height="48"> | **Octopus**           | Swims with the current and throws rocks during its attack animation.                                   |
-| <img src="resources/readme/animations/swordfish-charge.gif" alt="Animated Swordfish" width="96"> | <img src="src/images/enemies/swordfish/Walk.png" alt="Swordfish charge sprite sheet" height="48"> | **Swordfish**         | Charges its attack for a bit, then rushes toward the player's recorded position.                       |
+| <img src="resources/readme/animations/swordfish-charge.gif" alt="Animated Swordfish" width="96"> | <img src="src/images/enemies/swordfish/Walk.png" alt="Swordfish charge sprite sheet" height="48"> | **Swordfish**         | Briefly charges, then rushes toward the player's recorded position.                                    |
 | <img src="resources/readme/animations/snake-swim.gif" alt="Animated Snake" width="96"> | <img src="src/images/enemies/snake/Walk.png" alt="Snake swim sprite sheet" height="48"> | **Snake**             | Emerges from cave terrain and attacks vertically from the top or bottom.                               |
 | <img src="resources/readme/animations/bomber-fish-swim.gif" alt="Animated Bomber Fish" width="96"> | <img src="src/images/boss/bomber-fish/Walk.png" alt="Bomber Fish swim sprite sheet" height="48"> | **Bomber Fish**       | Tracks the player after being summoned and explodes when its timer expires.                            |
 | <img src="resources/readme/animations/anglerfish-idle.gif" alt="Animated Anglerfish boss" width="128"> | <img src="src/images/boss/anglerfish-boss/Idle.png" alt="Anglerfish idle sprite sheet" height="48"> | **Anglerfish (Boss)** | Uses a tracking bubble stream, a dash-bite, and summoned Bomber Fish.                                  |
@@ -226,9 +229,9 @@ src/
 └── levels/                            Terrain and timed event CSV files
 
 resources/
-├── drafts/                            Project specifications and planning material
+├── drafts/                            Rough initial-vision brainstorming scratchpads
 └── readme/
-    └── animations/                    README previews and supporting media
+    └── animations/                    Animated README previews
 test/
 └── gdd/
     ├── audio/                         Audio asset and signal tests
@@ -238,15 +241,12 @@ tools/
 └── sprite-clipper/                    Sprite-sheet frame clipping tool
 ```
 
-## Project Documentation
+## Initial Development Scratchpads
 
-- [Project specification](resources/PROJECT_SPECIFICATION.md)
-- [Implementation plan](resources/IMPLEMENTATION_PLAN.md)
-- [Original idea dump](resources/Side-Scroller%20Project%20Ideadump.md)
-
-The specification defines the intended game behavior. The implementation
-plan records the technical approach, while this README remains the practical
-overview for players and contributors.
+The files in [`resources/drafts/`](resources/drafts/) are rough scratchpads
+from the game's initial vision and brainstorming phase. They capture early
+ideas and planning discussions, not final project documentation or
+authoritative specifications.
 
 ## Team
 
@@ -254,6 +254,9 @@ overview for players and contributors.
 - [kari-nami](https://github.com/kari-nami) (Ekaterina Kazakova)
 
 ## Asset Attribution
+
+The VMES faculty logo was added at the request of Professor Chayapol M.
+
 
 | Use                                  | Source |
 |--------------------------------------|---|
@@ -267,15 +270,13 @@ overview for players and contributors.
 | Scene 1 music                        | [Frenzied Swimming](https://opengameart.org/content/frenzied-swimming) |
 | Menu and Scene 2 music               | [Aquaria](https://opengameart.org/content/aquaria) |
 | Death music                          | [Underwater-like Fanfare](https://opengameart.org/content/underwater-like-fanfare) |
-| Player hurt and Octopus rock effects | *The Legend of Zelda*, Koji Kondo, Nintendo (1987) |
-| Snake attack effect                  | *Castlevania*, Konami (1987) |
+| Player hurt, Octopus rock, and coral break effects | *The Legend of Zelda*, Koji Kondo, Nintendo (1987) |
+| Snake and Jellyfish attack effects   | *Castlevania*, Konami (1987) |
 | Victory music                        | *Final Fantasy III*, Square (1990) |
 | Boss bite sound effect               | [Bite Sounds on Quick Sounds](https://quicksounds.com/library/sounds/bite) |
 | Boss music                           | [*Dead in the Water* PlayStation soundtrack on Zophar's Domain](https://www.zophar.net/music/playstation-psf/dead-in-the-water) |
 | Assorted effects                     | [Gradius II NES soundtrack and sounds](https://www.zophar.net/music/nintendo-nes-nsf/gradius-ii?ct=1785154631481) |
 
-Third-party artwork and audio remain subject to their original authors'
-licenses and terms.
 
 ## Acknowledgements
 
