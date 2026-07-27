@@ -25,7 +25,7 @@ collects temporary power-ups across two stages and a boss encounter.
 
 - Four-direction movement with tap-or-hold bubble shooting
 - Two scrolling stages followed by a multi-attack Anglerfish boss
-- Five standard enemy types with distinct movement and combat behavior
+- Five standard enemy types (7 total) with distinct movement and combat behavior
 - Five power-ups, including stackable speed and multi-shot upgrades
 - Mines with chain reactions, destructible coral, and solid cave terrain
 - Scene-specific music and event-driven sound effects
