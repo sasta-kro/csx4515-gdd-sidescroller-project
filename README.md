@@ -1,10 +1,5 @@
 # Ocean Invaders
 
-<p align="center">
-  <img src="resources/readme/stage2-layered-preview.png"
-       alt="Ocean Invaders Stage 2 layered cave environment" width="900">
-</p>
-
 ## Project Information
 
 | | |
@@ -12,6 +7,11 @@
 | **Course** | CSX4515 Game Design and Development |
 | **Group** | Ocean Invaders |
 | **Team members** | Sai Aike Shwe Tun Aung and Ekaterina Kazakova |
+
+<p align="center">
+  <img src="resources/readme/stage2-layered-preview.png"
+       alt="Ocean Invaders Stage 2 layered cave environment" width="900">
+</p>
 
 **Ocean Invaders** is an underwater side-scrolling shooter built in Java for
 the CSX4515 Game Design and Development pre-midterm project. It takes the
