@@ -191,6 +191,27 @@ for (const match of tileRegistry.matchAll(
 }
 assert.equal(Object.keys(TILES).length, 22);
 
+assert.equal(
+  TYPE_BY_NAME["PowerUp-Speed"].sprite,
+  "../../src/images/powerups/speed.png",
+);
+assert.equal(
+  TYPE_BY_NAME["PowerUp-Multi"].sprite,
+  "../../src/images/powerups/multi-shot.png",
+);
+assert.equal(
+  TYPE_BY_NAME["PowerUp-Mega"].sprite,
+  "../../src/images/powerups/mega-shot.png",
+);
+assert.equal(
+  TYPE_BY_NAME["PowerUp-Split"].sprite,
+  "../../src/images/powerups/split-shot.png",
+);
+assert.equal(
+  TYPE_BY_NAME["PowerUp-Heal"].sprite,
+  "../../src/images/powerups/heal.png",
+);
+
 const testTerrain = parseTerrain(scene1TestTerrain);
 const testEvents = parseEvents(scene1TestEvents);
 assert.equal(testTerrain.width, 159);
