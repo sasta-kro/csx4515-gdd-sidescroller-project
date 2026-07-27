@@ -15,6 +15,10 @@ public final class Global {
 
     public static final SpawnMode DEFAULT_SPAWN_MODE = SpawnMode.SCRIPTED;
 
+    // Audio
+    public static final boolean AUDIO_ENABLED = true;
+    public static final float MUSIC_GAIN_DB = -10.0f;
+    public static final float SFX_GAIN_DB = -4.0f;
 
     // Level files
     public static final String SCENE1_TERRAIN_PATH = "src/levels/final-scene1-terrain.csv";
@@ -91,7 +95,7 @@ public final class Global {
     public static final int WALL_DAMAGE = 1;
 
     // Boss
-    public static final int BOSS_MAX_HEALTH = 50;
+    public static final int BOSS_MAX_HEALTH = 250;
     public static final int BOSS_SCALE = 8;
     public static final int BOSS_PHASE_TWO_HEALTH = BOSS_MAX_HEALTH / 2;
     public static final int BOSS_CONTACT_DAMAGE = 1;

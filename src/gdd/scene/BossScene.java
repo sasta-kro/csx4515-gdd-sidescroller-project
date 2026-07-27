@@ -3,6 +3,7 @@ package gdd.scene;
 import gdd.Game;
 import static gdd.Global.*;
 import gdd.RunState;
+import gdd.audio.SoundEffect;
 import gdd.level.LevelLoader;
 import gdd.level.TileMap;
 import gdd.powerup.Heal;
@@ -162,6 +163,12 @@ public class BossScene extends JPanel implements GameScene {
         player.act();
         resolveTerrainOverlap();
         playerBubbles.addAll(player.createBubbles());
+        if (player.consumeShotStarted()) {
+            playSound(SoundEffect.forWeapon(player.getWeaponType()));
+        }
+        if (player.consumePowerupExpired()) {
+            playSound(SoundEffect.POWERUP_TIMEOUT);
+        }
     }
 
     private void updatePowerUps() {
@@ -179,7 +186,7 @@ public class BossScene extends JPanel implements GameScene {
 
     private PowerUp createRandomPowerUp() {
         int y = randomBetween(PICKUP_MIN_Y, PICKUP_MAX_Y);
-        return switch (random.nextInt(5)) {
+        return switch (random.nextInt(7)) { // weight of heal is 3/4
             case 0 -> new SpeedUp(PICKUP_SPAWN_X, y);
             case 1 -> new MultiShot(PICKUP_SPAWN_X, y);
             case 2 -> new MegaShot(PICKUP_SPAWN_X, y);
@@ -197,6 +204,10 @@ public class BossScene extends JPanel implements GameScene {
             if (enemy.isVisible()) {
                 enemy.act();
             }
+        }
+
+        if (boss.consumeLaserChargeStarted()) {
+            playSound(SoundEffect.BOSS_LASER_CHARGE);
         }
     }
 
@@ -254,6 +265,7 @@ public class BossScene extends JPanel implements GameScene {
                             bomber.getY() + bomber.getRenderHeight() / 2,
                             BOMBER_EXPLOSION_RADIUS);
                     explosions.add(explosion);
+                    playSound(SoundEffect.EXPLOSION);
                     if (explosion.reaches(player)) {
                         player.damage(BOMBER_EXPLOSION_DAMAGE);
                     }
@@ -343,6 +355,9 @@ public class BossScene extends JPanel implements GameScene {
         for (PowerUp powerUp : powerUps) {
             if (powerUp.isVisible() && powerUp.collidesWith(player)) {
                 powerUp.upgrade(player);
+                if (!(powerUp instanceof Heal)) {
+                    playSound(SoundEffect.POWERUP_COLLECT);
+                }
             }
         }
     }
@@ -473,12 +488,21 @@ public class BossScene extends JPanel implements GameScene {
         PauseMenu.draw(g, getWidth(), getHeight());
     }
 
+    private void playSound(SoundEffect soundEffect) {
+        if (game != null) {
+            game.playSound(soundEffect);
+        }
+    }
+
     private class SceneInput extends KeyAdapter {
 
         @Override
         public void keyPressed(KeyEvent event) {
             if (event.getKeyCode() == KeyEvent.VK_ESCAPE) {
                 paused = !paused;
+                if (game != null) {
+                    game.setMusicPaused(paused);
+                }
                 return;
             }
 

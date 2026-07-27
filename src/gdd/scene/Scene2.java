@@ -4,8 +4,10 @@ import gdd.Game;
 import static gdd.Global.*;
 import gdd.RunState;
 import gdd.TransitionMode;
+import gdd.audio.SoundEffect;
 import gdd.level.LevelLoader;
 import gdd.level.TileMap;
+import gdd.powerup.Heal;
 import gdd.powerup.PowerUp;
 import gdd.spawn.SpawnDetails;
 import gdd.spawn.SpawnManager;
@@ -229,6 +231,12 @@ public class Scene2 extends JPanel implements GameScene {
         }
 
         playerBubbles.addAll(player.createBubbles());
+        if (player.consumeShotStarted()) {
+            playSound(SoundEffect.forWeapon(player.getWeaponType()));
+        }
+        if (player.consumePowerupExpired()) {
+            playSound(SoundEffect.POWERUP_TIMEOUT);
+        }
     }
 
     private void updateEnemies() {
@@ -245,6 +253,7 @@ public class Scene2 extends JPanel implements GameScene {
 
                 if (rock != null) {
                     enemyProjectiles.add(rock);
+                    playSound(SoundEffect.CORAL_BREAK_ROCK_THROW);
                 }
             }
         }
@@ -360,6 +369,7 @@ public class Scene2 extends JPanel implements GameScene {
             for (Coral coral : corals) {
                 if (bubble.collidesWith(coral)) {
                     coral.damage();
+                    playSound(SoundEffect.CORAL_BREAK_ROCK_THROW);
                     bubble.die();
                     break;
                 }
@@ -402,6 +412,9 @@ public class Scene2 extends JPanel implements GameScene {
         for (PowerUp powerUp : powerUps) {
             if (powerUp.isVisible() && powerUp.collidesWith(player)) {
                 powerUp.upgrade(player);
+                if (!(powerUp instanceof Heal)) {
+                    playSound(SoundEffect.POWERUP_COLLECT);
+                }
             }
         }
     }
@@ -411,6 +424,7 @@ public class Scene2 extends JPanel implements GameScene {
             if (coral.collidesWith(player)) {
                 player.damage(coral.contactDamage);
                 coral.damage();
+                playSound(SoundEffect.CORAL_BREAK_ROCK_THROW);
             }
         }
     }
@@ -591,6 +605,12 @@ public class Scene2 extends JPanel implements GameScene {
         PauseMenu.draw(g, getWidth(), getHeight());
     }
 
+    private void playSound(SoundEffect soundEffect) {
+        if (game != null) {
+            game.playSound(soundEffect);
+        }
+    }
+
     private class SceneInput extends KeyAdapter {
 
         @Override
@@ -598,6 +618,9 @@ public class Scene2 extends JPanel implements GameScene {
             // kinda like a toggle logic
             if (event.getKeyCode() == KeyEvent.VK_ESCAPE) {
                 paused = !paused;
+                if (game != null) {
+                    game.setMusicPaused(paused);
+                }
                 return;
             }
 

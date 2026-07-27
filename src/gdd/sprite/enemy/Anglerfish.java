@@ -23,7 +23,7 @@ public class Anglerfish extends Enemy {
 
     private static final int PHASE_ONE_IDLE_TICKS = secondsToTicks(2);
     private static final int PHASE_TWO_IDLE_TICKS = secondsToTicks(0.5);
-    private static final double PHASE_ONE_LASER_CHASE_SPEED = 4.0;
+    private static final double PHASE_ONE_LASER_CHASE_SPEED = 3.0;
     private static final double PHASE_TWO_LASER_CHASE_SPEED = 6.0;
 
     private static final double BITE_DASH_SPEED = 11.0;
@@ -112,6 +112,7 @@ public class Anglerfish extends Enemy {
     private AttackState state = AttackState.IDLE;
     private AttackState previousAttack;
     private int consecutiveAttackCount;
+    private boolean laserChargeStarted;
     private int stateTicks;
     private int attackCooldown = PHASE_ONE_IDLE_TICKS;
     private int laserInterval;
@@ -219,6 +220,7 @@ public class Anglerfish extends Enemy {
         switch (state) {
             case LASER_CHARGE:
                 stateTicks = BOSS_LASER_CHARGE_TICKS;
+                laserChargeStarted = true;
                 break;
             case BITE_WARNING:
                 stateTicks = BOSS_BITE_WARNING_TICKS;
@@ -227,6 +229,12 @@ public class Anglerfish extends Enemy {
                 break;
         }
         updateAnimationFrames();
+    }
+
+    public boolean consumeLaserChargeStarted() {
+        boolean result = laserChargeStarted;
+        laserChargeStarted = false;
+        return result;
     }
 
     private void updateLaser() {

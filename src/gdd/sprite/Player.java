@@ -106,6 +106,8 @@ public class Player extends Sprite {
     private int shotCooldownTicks;
     private int burstRemaining;
     private int burstIntervalTicks;
+    private boolean shotStarted;
+    private boolean powerupExpired;
 
     public Player(RunState state) {
         super(state.getPlayerX(), state.getPlayerY(), PLAYER_WIDTH, PLAYER_HEIGHT, COLOR_PLAYER);
@@ -174,6 +176,8 @@ public class Player extends Sprite {
         movingRight = false;
         firing = false;
         burstRemaining = 0;
+        shotStarted = false;
+        powerupExpired = false;
 
         setAnimationFrames(activeDeathAnimationClips());
         setAnimationInterval(PLAYER_DEATH_ANIMATION_FRAME_TICKS);
@@ -243,10 +247,12 @@ public class Player extends Sprite {
         if (speedPowerupTicks > 0 && --speedPowerupTicks == 0) {
             speedLevel = 0;
             updateAnimationFrames();
+            powerupExpired = true;
         }
 
         if (weaponPowerupTicks > 0 && --weaponPowerupTicks == 0) {
             clearWeapon();
+            powerupExpired = true;
         }
     }
 
@@ -267,6 +273,8 @@ public class Player extends Sprite {
         if (!firing || shotCooldownTicks > 0 || burstRemaining > 0) {
             return bubbles;
         }
+
+        shotStarted = true;
 
         switch (weaponType) {
             case MULTI_SHOT:
@@ -294,6 +302,18 @@ public class Player extends Sprite {
         }
 
         return bubbles;
+    }
+
+    public boolean consumeShotStarted() {
+        boolean result = shotStarted;
+        shotStarted = false;
+        return result;
+    }
+
+    public boolean consumePowerupExpired() {
+        boolean result = powerupExpired;
+        powerupExpired = false;
+        return result;
     }
 
     private Bubble createStandardBubble(int yOffset) {

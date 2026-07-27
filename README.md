@@ -28,6 +28,7 @@ collects temporary power-ups across two stages and a boss encounter.
 - Five enemy types with distinct movement, attack, hurt, and death behavior
 - Five power-ups, including stackable speed and multi-shot upgrades
 - Mines with chain reactions, destructible coral, and solid cave terrain
+- Scene-specific music and event-driven sound effects
 - Scripted and random spawning modes for development and level design
 - External CSV terrain and event files
 - Alpha-aware terrain collision derived from the visible tile artwork
@@ -175,7 +176,7 @@ workflow.
 
 ```text
 src/
-├── audio/                 Music and audio files
+├── audio/                 WAV music and role-based sound effects
 ├── gdd/
 │   ├── level/             CSV loading, tile definitions, and terrain collision
 │   ├── powerup/           Power-up behavior and weapon modes
@@ -217,6 +218,11 @@ overview for players and contributors.
 | Explosion effects | [Ring Explosion on OpenGameArt](https://opengameart.org/content/ring-explosion) |
 | Stage 1 environment | [Underwater Mines Pixel Background on OpenGameArt](https://opengameart.org/content/underwater-mines-pixel-background) |
 | Stage 2 environment | [Underwater Diving Pack on OpenGameArt](https://opengameart.org/content/underwater-diving-pack) |
+| Player bubble sound effects | [Bubbles](https://opengameart.org/content/bubbles) and [Skippy Fish Water Sound Collection](https://opengameart.org/content/skippy-fish-water-sound-collection) |
+| Scene 2 music | [Frenzied Swimming](https://opengameart.org/content/frenzied-swimming) |
+| Menu music | [Aquaria](https://opengameart.org/content/aquaria) |
+| Death music | [Underwater-like Fanfare](https://opengameart.org/content/underwater-like-fanfare) |
+| Temporary boss music and assorted effects | [Gradius II NES soundtrack and sounds](https://www.zophar.net/music/nintendo-nes-nsf/gradius-ii?ct=1785154631481) |
 
 Third-party artwork and audio remain subject to their original authors'
 licenses and terms.
