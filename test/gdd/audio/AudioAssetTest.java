@@ -52,6 +52,9 @@ public class AudioAssetTest {
         assert SoundEffect.SNAKE_ATTACK.getPath().equals(
                 SoundEffect.JELLYFISH_ATTACK.getPath())
                 : "Snake and Jellyfish must share their attack audio";
+        assert SoundEffect.OCTOPUS_ROCK_THROW.getPath().equals(
+                SoundEffect.CORAL_BREAK.getPath())
+                : "Octopus rock throw and coral break must share audio";
         assert SoundEffect.JELLYFISH_ATTACK.getGainOffsetDb()
                 == SoundEffect.SNAKE_ATTACK.getGainOffsetDb() - 6.0f
                 : "Jellyfish attack must play at half amplitude";

@@ -380,6 +380,7 @@ public class Scene2 extends JPanel implements GameScene {
             for (Coral coral : corals) {
                 if (bubble.collidesWith(coral)) {
                     coral.damage();
+                    playSound(SoundEffect.CORAL_BREAK);
                     bubble.die();
                     break;
                 }
@@ -432,6 +433,7 @@ public class Scene2 extends JPanel implements GameScene {
             if (coral.collidesWith(player)) {
                 damagePlayer(coral.contactDamage);
                 coral.damage();
+                playSound(SoundEffect.CORAL_BREAK);
             }
         }
     }
