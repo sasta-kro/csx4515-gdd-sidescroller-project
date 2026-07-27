@@ -387,6 +387,19 @@ function tickToWorldX(tick) {
   return tick * SCROLL + SCREEN_W;
 }
 
+function eventScreenAnchorX(event, definition = TYPE_BY_NAME[event.type]) {
+  if (!definition || !definition.snake) return SCREEN_W;
+  return event.x + definition.size[0] / 2;
+}
+
+function worldXToEventTick(worldX, event, definition = TYPE_BY_NAME[event.type]) {
+  return Math.round((worldX - eventScreenAnchorX(event, definition)) / SCROLL);
+}
+
+function eventWorldX(event, definition = TYPE_BY_NAME[event.type]) {
+  return event.tick * SCROLL + eventScreenAnchorX(event, definition);
+}
+
 function formatTime(tick) {
   const seconds = Math.max(0, tick) / FPS;
   const minutes = Math.floor(seconds / 60);
@@ -538,22 +551,22 @@ function resizeDuration() {
 
 function placeEvent(worldX, worldY) {
   const definition = TYPE_BY_NAME[selectedEventType];
-  const tick = worldXToTick(worldX);
+  const event = {
+    id: nextEventId++,
+    tick: 0,
+    type: definition.type,
+    x: definition.defaultX,
+    y: definition.snake
+      ? definition.defaultY
+      : Math.max(42, Math.min(SCREEN_H - definition.size[1], Math.round(worldY - definition.size[1] / 2))),
+  };
+  const tick = worldXToEventTick(worldX, event, definition);
   if (tick < 0 || tick > stageTicks) {
     toast(`Events must be between tick 0 and ${stageTicks}`);
     return;
   }
 
-  const y = definition.snake
-    ? definition.defaultY
-    : Math.max(42, Math.min(SCREEN_H - definition.size[1], Math.round(worldY - definition.size[1] / 2)));
-  const event = {
-    id: nextEventId++,
-    tick,
-    type: definition.type,
-    x: definition.defaultX,
-    y,
-  };
+  event.tick = tick;
   edit(() => events.push(event));
   selectedEventId = event.id;
   updateInspector();
@@ -568,7 +581,7 @@ function eventAt(worldX, worldY) {
     const event = events[index];
     const definition = TYPE_BY_NAME[event.type];
     if (!definition) continue;
-    const markerX = tickToWorldX(event.tick);
+    const markerX = eventWorldX(event, definition);
     const markerY = definition.snake
       ? (event.type === "SnakeTop" ? 30 : SCREEN_H - 30)
       : event.y + definition.size[1] / 2;
@@ -660,7 +673,7 @@ function drawWorldBackground(rulerHeight) {
 function drawEventMarker(event, rulerHeight) {
   const definition = TYPE_BY_NAME[event.type];
   if (!definition) return;
-  const worldX = tickToWorldX(event.tick);
+  const worldX = eventWorldX(event, definition);
   const centerY = definition.snake
     ? (event.type === "SnakeTop" ? 28 : SCREEN_H - 28)
     : event.y + definition.size[1] / 2;
@@ -937,10 +950,16 @@ function updateWarnings() {
       warnings.push({ level: "error", text: `${event.type} is after the stage ends.`, tick: event.tick });
     }
     if (definition.snake) {
-      const worldColumn = Math.floor((event.tick * SCROLL + event.x) / TILE);
+      const snakeWorldX = eventWorldX(event, definition);
+      const worldColumn = Math.floor(snakeWorldX / TILE);
       const wallRow = event.type === "SnakeTop" ? 0 : ROWS - 1;
       if (worldColumn < 0 || worldColumn >= columns || tileAt(wallRow, worldColumn) === 0) {
-        warnings.push({ level: "warn", text: `${event.type} at ${formatTime(event.tick)} has no terrain at its entrance.`, tick: event.tick });
+        warnings.push({
+          level: "warn",
+          text: `${event.type} at ${formatTime(event.tick)} has no terrain at its entrance.`,
+          tick: event.tick,
+          worldX: snakeWorldX,
+        });
       }
     }
   }
@@ -956,7 +975,9 @@ function updateWarnings() {
     item.className = `warning ${warning.level === "error" ? "error" : ""}`;
     item.textContent = warning.text;
     item.onclick = () => {
-      const worldX = warning.tick !== undefined
+      const worldX = warning.worldX !== undefined
+        ? warning.worldX
+        : warning.tick !== undefined
         ? tickToWorldX(warning.tick)
         : warning.column * TILE;
       $("layoutPane").scrollLeft = Math.max(0, worldX * zoom - 250);
@@ -1147,10 +1168,17 @@ layoutCanvas.addEventListener("pointerdown", event => {
 });
 layoutCanvas.addEventListener("pointermove", event => {
   const position = canvasPosition(event);
+  const cursorDefinition = TYPE_BY_NAME[selectedEventType];
+  const cursorEvent = {
+    type: selectedEventType,
+    x: cursorDefinition.defaultX,
+  };
   cursor = {
     column: Math.floor(position.worldX / TILE),
     row: Math.floor(position.worldY / TILE),
-    tick: worldXToTick(position.worldX),
+    tick: tab === "events"
+      ? worldXToEventTick(position.worldX, cursorEvent, cursorDefinition)
+      : worldXToTick(position.worldX),
   };
   updateCursorStatus();
   if (dragPainting) handleLayoutPointer(event);

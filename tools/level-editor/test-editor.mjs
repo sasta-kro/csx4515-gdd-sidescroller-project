@@ -147,10 +147,18 @@ assert.match(eventsCsv(), /120,Jellyfish,756,152/);
 
 document.getElementById("stage").value = "scene2";
 selectedEventType = "SnakeTop";
-placeEvent(tickToWorldX(480), 100);
+const snakeTargetTick = 480;
+const snakeDefinition = TYPE_BY_NAME.SnakeTop;
+const snakeTargetWorldX = snakeTargetTick * SCROLL
+  + snakeDefinition.defaultX
+  + snakeDefinition.size[0] / 2;
+placeEvent(snakeTargetWorldX, 100);
 assert.equal(events[2].type, "SnakeTop");
+assert.equal(events[2].tick, snakeTargetTick);
 assert.equal(events[2].x, 420);
 assert.equal(events[2].y, 0);
+assert.equal(eventWorldX(events[2]), snakeTargetWorldX);
+assert.equal(worldXToEventTick(snakeTargetWorldX, events[2]), snakeTargetTick);
 
 placeTile(4, 8, 20);
 const roundTrip = parseTerrain(terrainCsv());

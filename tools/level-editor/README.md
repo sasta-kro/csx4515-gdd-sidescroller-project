@@ -57,6 +57,11 @@ Snakes are different. Their top or bottom side is part of the event type, and th
 screen X position is editable. Select a Snake and drag it horizontally in Viewport
 Preview, or enter its X position in the inspector.
 
+In World Layout, a Snake marker represents the terrain position where the center of
+the Snake will emerge. Its spawn tick is calculated from both that terrain position
+and the Snake's screen X. Other enemy markers still represent the moment they reach
+the right edge of the viewport.
+
 Multiple events may use the same tick.
 
 ## Controls
