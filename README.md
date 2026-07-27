@@ -1,8 +1,8 @@
 # Ocean Invaders
 
 <p align="center">
-  <img src="src/images/background/scene1_bg/full_scene_demo_big.png"
-       alt="Ocean Invaders underwater environment" width="900">
+  <img src="resources/readme/stage2-layered-preview.png"
+       alt="Ocean Invaders Stage 2 layered cave environment" width="900">
 </p>
 
 **Ocean Invaders** is an underwater side-scrolling shooter built in Java for
@@ -52,6 +52,15 @@ collects temporary power-ups across two stages and a boss encounter.
 
 Menus use direct keyboard commands rather than cursor-based navigation.
 
+## Player
+
+The player animation is clipped from the main fish character sheet and
+flipped at runtime to face the direction of fire.
+
+| Animated preview | Source frames | Role |
+|---|---|---|
+| <img src="resources/readme/animations/player-swim.gif" alt="Animated player fish swimming" width="96"> | <img src="resources/readme/player-swim-sheet.png" alt="Player swim source frames" height="64"> | Move freely through the viewport, fire bubbles, collect upgrades, and survive all three encounters. |
+
 ## Power-Ups
 
 Power-ups drift with the world and float vertically as they move. Speed can
@@ -68,14 +77,19 @@ weapon replaces the current weapon mode.
 
 ## Enemies
 
-| Sprite | Enemy | Behavior |
-|---|---|---|
-| <img src="src/images/enemies/jellyfish/Idle.png" alt="Jellyfish animation" height="48"> | **Jellyfish** | Drifts left while floating up and down. |
-| <img src="src/images/enemies/turtle/Walk.png" alt="Turtle animation" height="48"> | **Turtle** | A durable enemy that continuously swims toward the player. |
-| <img src="src/images/enemies/octopus/Idle.png" alt="Octopus animation" height="48"> | **Octopus** | Swims with the current and throws rocks during its attack animation. |
-| <img src="src/images/enemies/swordfish/Walk.png" alt="Swordfish animation" height="48"> | **Swordfish** | Telegraphs its attack, then rushes toward the player's recorded position. |
-| <img src="src/images/enemies/snake/Walk.png" alt="Snake animation" height="48"> | **Snake** | Emerges from cave terrain and attacks vertically from the top or bottom. |
-| <img src="src/images/boss/anglerfish-boss/Idle.png" alt="Anglerfish animation" height="48"> | **Anglerfish** | Uses a tracking bubble stream, a dash-bite, and summoned bomber fish. |
+The animated previews use the same frame order, orientation, and relative
+timing as the game. The adjacent static image is the original source sheet
+used for that animation.
+
+| Animated preview | Source sprite sheet | Enemy | Behavior |
+|---|---|---|---|
+| <img src="resources/readme/animations/jellyfish-idle.gif" alt="Animated Jellyfish" width="96"> | <img src="src/images/enemies/jellyfish/Idle.png" alt="Jellyfish idle sprite sheet" height="48"> | **Jellyfish** | Drifts left while floating up and down. |
+| <img src="resources/readme/animations/turtle-swim.gif" alt="Animated Turtle" width="96"> | <img src="src/images/enemies/turtle/Walk.png" alt="Turtle swim sprite sheet" height="48"> | **Turtle** | A durable enemy that continuously swims toward the player. |
+| <img src="resources/readme/animations/octopus-idle.gif" alt="Animated Octopus" width="96"> | <img src="src/images/enemies/octopus/Idle.png" alt="Octopus idle sprite sheet" height="48"> | **Octopus** | Swims with the current and throws rocks during its attack animation. |
+| <img src="resources/readme/animations/swordfish-charge.gif" alt="Animated Swordfish" width="96"> | <img src="src/images/enemies/swordfish/Walk.png" alt="Swordfish charge sprite sheet" height="48"> | **Swordfish** | Telegraphs its attack, then rushes toward the player's recorded position. |
+| <img src="resources/readme/animations/snake-swim.gif" alt="Animated Snake" width="96"> | <img src="src/images/enemies/snake/Walk.png" alt="Snake swim sprite sheet" height="48"> | **Snake** | Emerges from cave terrain and attacks vertically from the top or bottom. |
+| <img src="resources/readme/animations/bomber-fish-swim.gif" alt="Animated Bomber Fish" width="96"> | <img src="src/images/boss/bomber-fish/Walk.png" alt="Bomber Fish swim sprite sheet" height="48"> | **Bomber Fish** | Tracks the player after being summoned and explodes when its timer expires. |
+| <img src="resources/readme/animations/anglerfish-idle.gif" alt="Animated Anglerfish boss" width="128"> | <img src="src/images/boss/anglerfish-boss/Idle.png" alt="Anglerfish idle sprite sheet" height="48"> | **Anglerfish** | Uses a tracking bubble stream, a dash-bite, and summoned Bomber Fish. |
 
 ## Stages
 
