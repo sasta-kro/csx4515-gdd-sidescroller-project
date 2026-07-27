@@ -168,8 +168,8 @@ public class TitleScene extends JPanel implements GameScene {
 
     private void drawTitleContent(Graphics2D g) {
         g.setColor(new Color(0, 10, 20, 112));
-        g.fillRect(0, 68, getWidth(), 142);
-        g.fillRect(0, 245, getWidth(), 235);
+        g.fillRect(0, 68, getWidth(), 168);
+        g.fillRect(0, 265, getWidth(), 245);
 
         boolean flash = (animationTick / TITLE_FLASH_TICKS) % 2 == 0;
         Color titleColor = flash
@@ -179,41 +179,79 @@ public class TitleScene extends JPanel implements GameScene {
         g.setFont(new Font("Monospaced", Font.BOLD,
                 scaledFontSize(50)));
         drawCenteredShadowed(g, "OCEAN INVADERS",
-                145, titleColor, new Color(3, 32, 53));
+                140, titleColor, new Color(3, 32, 53));
 
         g.setFont(new Font("Monospaced", Font.BOLD,
                 scaledFontSize(13)));
         drawCenteredShadowed(g, "AN UNDERSEA ARCADE ASSAULT",
-                182, new Color(187, 226, 224), new Color(3, 32, 53));
+                188, new Color(187, 226, 224), new Color(3, 32, 53));
+
+        if (flash) {
+            g.setFont(new Font("Monospaced", Font.BOLD,
+                    scaledFontSize(13)));
+            drawCenteredShadowed(g,
+                    "PRESS SPACE TO START  or  USE SHOWN KEYS FOR OPTIONS",
+                    220, new Color(255, 236, 137), new Color(3, 32, 53));
+        }
 
         g.setFont(new Font("Monospaced", Font.BOLD,
                 scaledFontSize(29)));
-        drawCenteredShadowed(g, "[1]  START GAME",
-                310, new Color(255, 236, 137), new Color(45, 24, 20));
+        drawMenuOption(g, "1", "START GAME", 335,
+                new Color(255, 236, 137), new Color(177, 211, 209));
 
-        int startWidth = g.getFontMetrics().stringWidth("[1]  START GAME");
+        int startWidth = g.getFontMetrics().stringWidth("START GAME");
         int centerX = getWidth() / 2;
         g.setColor(new Color(91, 222, 210));
-        g.fillRect(centerX - startWidth / 2, 322, startWidth, 2);
+        g.fillRect(centerX - startWidth / 2, 347, startWidth, 2);
 
         g.setFont(new Font("Monospaced", Font.BOLD,
                 scaledFontSize(18)));
-        drawCenteredShadowed(g, "[2]  START FROM STAGE 2",
-                371, Color.WHITE, new Color(3, 22, 36));
-        drawCenteredShadowed(g, "[3]  START BOSS FIGHT",
-                411, new Color(255, 177, 147), new Color(3, 22, 36));
-        drawCenteredShadowed(g, "[Q]  QUIT",
-                451, new Color(179, 207, 210), new Color(3, 22, 36));
+        drawMenuOption(g, "2", "START FROM STAGE-2", 400,
+                Color.WHITE, new Color(145, 190, 194));
+        drawMenuOption(g, "3", "START BOSS FIGHT", 442,
+                new Color(255, 177, 147), new Color(145, 190, 194));
+        drawMenuOption(g, "Q", "QUIT", 484,
+                new Color(179, 207, 210), new Color(125, 172, 178));
 
         g.setFont(new Font("Monospaced", Font.BOLD,
                 scaledFontSize(11)));
         drawCenteredShadowed(g, "CSX4515 GAME DESIGN AND DEVELOPMENT",
-                620, new Color(153, 207, 207), new Color(3, 22, 36));
+                610, new Color(153, 207, 207), new Color(3, 22, 36));
         drawCenteredShadowed(g, "SECTION 542  |  SEMESTER 1/2026",
-                641, new Color(153, 207, 207), new Color(3, 22, 36));
+                631, new Color(153, 207, 207), new Color(3, 22, 36));
+        g.setFont(new Font("Monospaced", Font.BOLD,
+                scaledFontSize(9)));
+        drawCenteredShadowed(g, "M",
+                655, new Color(153, 207, 207), new Color(3, 22, 36));
+        g.setFont(new Font("Monospaced", Font.BOLD,
+                scaledFontSize(11)));
         drawCenteredShadowed(g,
                 "SAI AIKE SHWE TUN AUNG  &  EKATERINA KAZAKOVA",
-                668, new Color(218, 236, 231), new Color(3, 22, 36));
+                678, new Color(218, 236, 231), new Color(3, 22, 36));
+    }
+
+    private void drawMenuOption(Graphics2D g, String shortcut, String label,
+            int y, Color labelColor, Color shortcutColor) {
+        Font labelFont = g.getFont();
+        int labelWidth = g.getFontMetrics(labelFont).stringWidth(label);
+        int labelX = (getWidth() - labelWidth) / 2;
+
+        g.setColor(new Color(3, 22, 36));
+        g.drawString(label, labelX + 3, y + 3);
+        g.setColor(labelColor);
+        g.drawString(label, labelX, y);
+
+        Font shortcutFont = labelFont.deriveFont(
+                Math.max(10f, labelFont.getSize2D() * 0.62f));
+        g.setFont(shortcutFont);
+        int shortcutWidth = g.getFontMetrics().stringWidth(shortcut);
+        int shortcutX = labelX - shortcutWidth - scaledFontSize(14);
+
+        g.setColor(new Color(3, 22, 36));
+        g.drawString(shortcut, shortcutX + 2, y + 2);
+        g.setColor(shortcutColor);
+        g.drawString(shortcut, shortcutX, y);
+        g.setFont(labelFont);
     }
 
     private void drawCenteredShadowed(Graphics2D g, String text, int y,
@@ -265,7 +303,8 @@ public class TitleScene extends JPanel implements GameScene {
         @Override
         public void keyPressed(KeyEvent event) {
             switch (event.getKeyCode()) {
-                case KeyEvent.VK_1 -> game.startNewGame();
+                case KeyEvent.VK_1, KeyEvent.VK_SPACE ->
+                    game.startNewGame();
                 case KeyEvent.VK_2 -> game.startFromScene2();
                 case KeyEvent.VK_3 -> game.startFromBoss();
                 case KeyEvent.VK_Q -> game.quit();
