@@ -12,11 +12,10 @@ public enum SoundEffect {
     POWERUP_COLLECT("src/audio/sfx/powerups/weapon-upgrade.wav"),
     POWERUP_TIMEOUT("src/audio/sfx/powerups/upgrade-timeout.wav"),
     EXPLOSION("src/audio/sfx/world/mine-explosion.wav"),
-    CORAL_BREAK(
-            "src/audio/sfx/world/coral-break-rock-throw.wav"),
     OCTOPUS_ROCK_THROW(
             "src/audio/sfx/enemies/octopus-rock-throw.wav"),
-    SNAKE_ATTACK("src/audio/sfx/enemies/snake-attack.wav", -10.f),
+    SNAKE_ATTACK("src/audio/sfx/enemies/snake-attack.wav", -10.0f),
+    JELLYFISH_ATTACK("src/audio/sfx/enemies/snake-attack.wav", -16.0f),
     BOSS_LASER_CHARGE("src/audio/sfx/boss/laser-charge.wav");
 
     private final String path;

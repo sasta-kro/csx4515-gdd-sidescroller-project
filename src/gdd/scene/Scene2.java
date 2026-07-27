@@ -15,6 +15,7 @@ import gdd.sprite.Bubble;
 import gdd.sprite.obstacle.Coral;
 import gdd.sprite.enemy.Enemy;
 import gdd.sprite.enemy.EnemyProjectile;
+import gdd.sprite.enemy.Jellyfish;
 import gdd.sprite.obstacle.Explosion;
 import gdd.sprite.enemy.Octopus;
 import gdd.sprite.enemy.Snake;
@@ -261,6 +262,11 @@ public class Scene2 extends JPanel implements GameScene {
                     && snake.consumeAttackStarted()) {
                 playSound(SoundEffect.SNAKE_ATTACK);
             }
+
+            if (enemy instanceof Jellyfish jellyfish
+                    && jellyfish.consumeAttackStarted()) {
+                playSound(SoundEffect.JELLYFISH_ATTACK);
+            }
         }
     }
 
@@ -374,7 +380,6 @@ public class Scene2 extends JPanel implements GameScene {
             for (Coral coral : corals) {
                 if (bubble.collidesWith(coral)) {
                     coral.damage();
-                    playSound(SoundEffect.CORAL_BREAK);
                     bubble.die();
                     break;
                 }
@@ -427,7 +432,6 @@ public class Scene2 extends JPanel implements GameScene {
             if (coral.collidesWith(player)) {
                 damagePlayer(coral.contactDamage);
                 coral.damage();
-                playSound(SoundEffect.CORAL_BREAK);
             }
         }
     }
