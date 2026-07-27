@@ -18,10 +18,23 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.ImageIcon;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
 public class BossScene extends JPanel implements GameScene {
+
+    private static final String BACKGROUND_IMAGE_PATH = "src/images/background/scene2_bg/background.png";
+    private static final String MIDGROUND_IMAGE_PATH = "src/images/background/scene2_bg/midground.png";
+
+    private static final ImageIcon backgroundImage = new ImageIcon(BACKGROUND_IMAGE_PATH);
+    private static final ImageIcon midgroundImage = new ImageIcon(MIDGROUND_IMAGE_PATH);
+    private static final double BACKGROUND_SCALE = BOARD_HEIGHT / (double) midgroundImage.getIconHeight();
+    private static final double BACKGROUND_TILE_SCALE = BACKGROUND_SCALE * 2;
+    private static final int BACKGROUND_TILE_WIDTH = (int) Math.round(backgroundImage.getIconWidth() * BACKGROUND_TILE_SCALE);
+    private static final int BACKGROUND_TILE_HEIGHT = (int) Math.round(backgroundImage.getIconHeight() * BACKGROUND_TILE_SCALE);
+    private static final int MIDGROUND_WIDTH = (int) Math.round(midgroundImage.getIconWidth() * BACKGROUND_SCALE);
+    private static final int MIDGROUND_HEIGHT = (int) Math.round(midgroundImage.getIconHeight() * BACKGROUND_SCALE);
 
     private Game game;
     private RunState runState;
@@ -106,7 +119,7 @@ public class BossScene extends JPanel implements GameScene {
     }
 
     private void updatePlayerDeath() {
-        // Existing explosions are continuing while the death delay is counting down.
+        // Existing explosions continue during the death delay.
         updateExplosions();
         explosions.removeIf(explosion -> !explosion.isVisible());
         playerDeathTicks--;
@@ -299,10 +312,17 @@ public class BossScene extends JPanel implements GameScene {
     }
 
     private void drawBackground(Graphics g) {
-        g.setColor(new Color(3, 34, 62));
-        g.fillRect(0, 0, getWidth(), getHeight());
-        g.setColor(new Color(10, 65, 76));
-        g.fillRect(0, getHeight() - 115, getWidth(), 115);
+        for (int y = 0; y < getHeight(); y += BACKGROUND_TILE_HEIGHT) {
+            for (int x = 0; x < getWidth(); x += BACKGROUND_TILE_WIDTH) {
+                g.drawImage(backgroundImage.getImage(), x, y,
+                        BACKGROUND_TILE_WIDTH, BACKGROUND_TILE_HEIGHT, null);
+            }
+        }
+
+        for (int x = 0; x < getWidth(); x += MIDGROUND_WIDTH) {
+            g.drawImage(midgroundImage.getImage(), x, 0,
+                    MIDGROUND_WIDTH, MIDGROUND_HEIGHT, null);
+        }
     }
 
     private void drawEntities(Graphics g) {

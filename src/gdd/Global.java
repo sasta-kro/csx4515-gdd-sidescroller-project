@@ -9,16 +9,16 @@ public final class Global {
     }
 
     // Development settings
-    public static final boolean DEV_USE_SHORT_STAGE_TIMERS = true;
+    public static final boolean DEV_USE_SHORT_STAGE_TIMERS = false;
     public static final int DEV_STAGE_DURATION_SECONDS = 15;
-    public static final boolean DEV_SHOW_ENTITY_HITBOXES = true;
+    public static final boolean DEV_SHOW_ENTITY_HITBOXES = false;
 
     public static final SpawnMode DEFAULT_SPAWN_MODE = SpawnMode.RANDOM;
 
 
     // Level files
-    public static final String SCENE1_TERRAIN_PATH = "src/levels/scene1-test-terrain.csv";
-    public static final String SCENE1_EVENTS_PATH = "src/levels/scene1-test-events.csv";
+    public static final String SCENE1_TERRAIN_PATH = "src/levels/test-scene1-terrain.csv";
+    public static final String SCENE1_EVENTS_PATH = "src/levels/test-scene1-events.csv";
     public static final String SCENE2_TERRAIN_PATH = "src/levels/scene2-terrain.csv";
     public static final String SCENE2_EVENTS_PATH = "src/levels/scene2-events.csv";
 
@@ -37,7 +37,11 @@ public final class Global {
     public static final double RENDER_SCALE = 1.0 ;
     public static final double HITBOX_SCALE = 1.0;
     public static final int WORLD_SCROLL_SPEED = 2;
+    public static final double BACKGROUND_SCROLL_SPEED = WORLD_SCROLL_SPEED * 0.5;
+    public static final double MIDGROUND_SCROLL_SPEED = WORLD_SCROLL_SPEED * 0.75;
     public static final int TILE_SIZE = 50;
+    public static final int TERRAIN_HITBOX_BLOCK_SIZE = 10;
+    public static final double TERRAIN_HITBOX_MIN_OPAQUE_COVERAGE = 0.20;
 
     // Player
     public static final int PLAYER_START_X = 90;

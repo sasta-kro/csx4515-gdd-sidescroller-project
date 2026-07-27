@@ -20,6 +20,7 @@ import gdd.sprite.Player;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
@@ -53,7 +54,6 @@ public class Scene2 extends JPanel implements GameScene {
     private List<EnemyProjectile> enemyProjectiles = new ArrayList<>();
     private List<Explosion> explosions = new ArrayList<>();
     private List<Coral> corals = new ArrayList<>();
-    private List<Rectangle> walls = new ArrayList<>();
 
     private Player player;
     private SpawnManager spawnManager;
@@ -64,8 +64,8 @@ public class Scene2 extends JPanel implements GameScene {
 
     private KeyAdapter input = new SceneInput();
     private Timer timer;
-    private int backgroundOffsetNear;
-    private int backgroundOffsetFar;
+    private double backgroundOffset;
+    private double midgroundOffset;
     private boolean paused;
     private boolean finished;
     private boolean transitioning;
@@ -104,25 +104,22 @@ public class Scene2 extends JPanel implements GameScene {
         playerDeathTicks = 0;
         player = new Player(runState);
         Map<Integer, List<SpawnDetails>> scriptedSpawns = Map.of();
+
         if (DEFAULT_SPAWN_MODE == SpawnMode.SCRIPTED) {
-            scriptedSpawns = LevelLoader.loadEvents(
-                    SCENE2_EVENTS_PATH);
-            tileMap = new TileMap(LevelLoader.loadTerrain(
-                    SCENE2_TERRAIN_PATH));
-        } else {
+            scriptedSpawns = LevelLoader.loadEvents(SCENE2_EVENTS_PATH);
+            tileMap = new TileMap(LevelLoader.loadTerrain(SCENE2_TERRAIN_PATH));
+        }
+
+        else {
             tileMap = null;
             loadPlaceholderStageContent();
         }
-        spawnManager = new SpawnManager(player, 2,
-                DEFAULT_SPAWN_MODE, scriptedSpawns);
+
+        spawnManager = new SpawnManager(player, 2, DEFAULT_SPAWN_MODE, scriptedSpawns);
     }
 
     private void loadPlaceholderStageContent() {
-        corals.add(new Coral(BOARD_WIDTH + 170,
-                BOARD_HEIGHT - CORAL_HEIGHT - 42));
-        walls.add(new Rectangle(BOARD_WIDTH + 520, 0, 130, 85));
-        walls.add(new Rectangle(BOARD_WIDTH + 850,
-                BOARD_HEIGHT - 130, 150, 100));
+        corals.add(new Coral(BOARD_WIDTH + 170, BOARD_HEIGHT - CORAL_HEIGHT - 42));
     }
 
     /* this is basically equal to doGameCycle() inside a GameCycle class like this
@@ -163,7 +160,6 @@ public class Scene2 extends JPanel implements GameScene {
         spawnScriptedWorldEvents(spawnManager.update(
                 stageTick, enemies, powerUps));
 
-        spawnPlaceholderObstacles();
         updateEnemies();
         updateProjectiles();
         updatePowerUps();
@@ -176,7 +172,6 @@ public class Scene2 extends JPanel implements GameScene {
         if (player.isDead()) {
             player.setDying(true);
             playerDeathTicks = PLAYER_DEATH_TICKS;
-//            enemyProjectiles.clear();  // why remove this? cuz like keeping it makes it look more realistic?
             return;
         }
 
@@ -192,12 +187,10 @@ public class Scene2 extends JPanel implements GameScene {
 
     // parallax is implemented here
     private void updateBackgroundScroll() {
-        // The near and far background layers are moving at different speeds.
+        // The background, midground, and foreground terrain move at different speeds.
         // These offsets are changing here, and gameTick() is repainting afterward.
-        backgroundOffsetNear
-                = (backgroundOffsetNear + WORLD_SCROLL_SPEED) % MIDGROUND_WIDTH;
-        backgroundOffsetFar
-                = (backgroundOffsetFar + 1) % BACKGROUND_TILE_WIDTH;
+        backgroundOffset = (backgroundOffset + BACKGROUND_SCROLL_SPEED) % BACKGROUND_TILE_WIDTH;
+        midgroundOffset = (midgroundOffset + MIDGROUND_SCROLL_SPEED) % MIDGROUND_WIDTH;
     }
 
     private void updatePlayerDeath() {
@@ -231,18 +224,11 @@ public class Scene2 extends JPanel implements GameScene {
     }
 
     private void updatePlayer() {
-        int oldX = player.getX();
-        int oldY = player.getY();
         player.act();
 
         if (intersectsTerrain(player.getBounds())) {
-            player.restorePosition(oldX, oldY);
-            if (WALL_DAMAGE_ENABLED) {
-                player.damage(WALL_DAMAGE);
-            }
-        } else if (intersectsWall(player.getBounds())) {
-            player.restorePosition(oldX, oldY);
-            resolveWallOverlap();
+            resolveTerrainOverlap();
+
             if (WALL_DAMAGE_ENABLED) {
                 player.damage(WALL_DAMAGE);
             }
@@ -290,10 +276,6 @@ public class Scene2 extends JPanel implements GameScene {
         for (Coral coral : corals) {
             coral.act();
         }
-
-        for (Rectangle wall : walls) {
-            wall.x -= WORLD_SCROLL_SPEED;
-        }
     }
 
     private void updateExplosions() {
@@ -328,25 +310,16 @@ public class Scene2 extends JPanel implements GameScene {
         for (Explosion explosion : explosions) {
             explosion.advanceAnimation();
         }
-    }
-
-    private void spawnPlaceholderObstacles() {
-        if (DEFAULT_SPAWN_MODE == SpawnMode.SCRIPTED) {
-            return;
-        }
 
         if (stageTick > 0 && stageTick % secondsToTicks(11) == 0) {
-            corals.add(new Coral(BOARD_WIDTH + 40,
-                    BOARD_HEIGHT - CORAL_HEIGHT - 42));
+            corals.add(new Coral(BOARD_WIDTH + 40, BOARD_HEIGHT - CORAL_HEIGHT - 42));
         }
     }
 
-    private void spawnScriptedWorldEvents(
-            List<SpawnDetails> worldEvents) {
+    private void spawnScriptedWorldEvents(List<SpawnDetails> worldEvents) {
         for (SpawnDetails event : worldEvents) {
             if (!event.type.equals("Coral")) {
-                throw new IllegalArgumentException(
-                        "Scene 2 does not support event type: " + event.type);
+                throw new IllegalArgumentException("Scene 2 does not support event type: " + event.type);
             }
             corals.add(new Coral(event.x, event.y));
         }
@@ -392,10 +365,8 @@ public class Scene2 extends JPanel implements GameScene {
                 }
             }
 
-            // bubble pops if it touches a wall
-            if (bubble.isVisible()
-                    && (intersectsTerrain(bubble.getBounds())
-                    || intersectsWall(bubble.getBounds()))) {
+            // bubble pops if it touches terrain
+            if (bubble.isVisible() && intersectsTerrain(bubble.getBounds())) {
                 bubble.die();
             }
         }
@@ -413,9 +384,7 @@ public class Scene2 extends JPanel implements GameScene {
                 continue;
             }
 
-            if (projectile.isVisible()
-                    && (intersectsTerrain(projectile.getBounds())
-                    || intersectsWall(projectile.getBounds()))) {
+            if (projectile.isVisible() && intersectsTerrain(projectile.getBounds())) {
                 projectile.die();
             }
         }
@@ -456,53 +425,26 @@ public class Scene2 extends JPanel implements GameScene {
                 sprite.getY() + sprite.getRenderHeight() / 2));
     }
 
-    private boolean intersectsWall(Rectangle bounds) {
-        for (Rectangle wall : walls) {
-            if (bounds.intersects(wall)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     private boolean intersectsTerrain(Rectangle bounds) {
         return tileMap != null && tileMap.intersects(bounds, stageTick);
     }
 
-    private void resolveWallOverlap() {
+    private void resolveTerrainOverlap() {
         Rectangle playerBounds = player.getBounds();
-        for (Rectangle wall : walls) {
-            if (!playerBounds.intersects(wall)) {
-                continue;
-            }
+        Point correction = tileMap.getCollisionCorrection(
+                playerBounds, getPlayerHitboxMovementArea(playerBounds),
+                stageTick);
+        player.setX(player.getX() + correction.x);
+        player.setY(player.getY() + correction.y);
+    }
 
-            Rectangle overlap = playerBounds.intersection(wall);
-            boolean horizontalOverlapIsSmaller = overlap.width < overlap.height;
-
-            // Resolve along the smaller overlap to use the shortest correction.
-            if (horizontalOverlapIsSmaller) {
-                boolean playerIsLeftOfWall = playerBounds.getCenterX() < wall.getCenterX();
-
-                // Push the player left or right based on its side of the wall.
-                if (playerIsLeftOfWall) {
-                    player.setX(player.getX() - overlap.width);
-                } else {
-                    player.setX(player.getX() + overlap.width);
-                }
-            } else {
-                boolean playerIsAboveWall = playerBounds.getCenterY() < wall.getCenterY();
-
-                // Push the player up or down based on its side of the wall.
-                if (playerIsAboveWall) {
-                    player.setY(player.getY() - overlap.height);
-                } else {
-                    player.setY(player.getY() + overlap.height);
-                }
-            }
-
-            // Refresh the hitbox before checking the next wall.
-            playerBounds = player.getBounds();
-        }
+    private Rectangle getPlayerHitboxMovementArea(Rectangle playerBounds) {
+        int hitboxOffsetX = playerBounds.x - player.getX();
+        int hitboxOffsetY = playerBounds.y - player.getY();
+        return new Rectangle(
+                hitboxOffsetX, hitboxOffsetY,
+                BOARD_WIDTH - player.getRenderWidth() + playerBounds.width,
+                BOARD_HEIGHT - 32 - player.getRenderHeight() + playerBounds.height);
     }
 
     private void removeDeadEntities() {
@@ -512,7 +454,6 @@ public class Scene2 extends JPanel implements GameScene {
         enemyProjectiles.removeIf(projectile -> !projectile.isVisible());
         explosions.removeIf(explosion -> !explosion.isVisible());
         corals.removeIf(coral -> !coral.isVisible());
-        walls.removeIf(wall -> wall.x + wall.width < 0);
     }
 
     private void completeStage() {
@@ -545,7 +486,6 @@ public class Scene2 extends JPanel implements GameScene {
         enemyProjectiles.clear();
         explosions.clear();
         corals.clear();
-        walls.clear();
         tileMap = null;
     }
 
@@ -558,7 +498,6 @@ public class Scene2 extends JPanel implements GameScene {
             tileMap.draw(g, stageTick);
         }
         drawTransition(g);
-        drawWalls(g);
         drawEntities(g);
         drawHud(g);
 
@@ -574,33 +513,41 @@ public class Scene2 extends JPanel implements GameScene {
 
         double progress = 1.0 - transitionTicks / (double) SEAMLESS_TRANSITION_TICKS;
         int nextBackgroundX = (int) Math.round(BOARD_WIDTH - progress * BOARD_WIDTH);
-        g.setColor(new Color(3, 24, 45));
-        g.fillRect(nextBackgroundX, 42, BOARD_WIDTH - nextBackgroundX, BOARD_HEIGHT - 42);
+        Graphics transitionGraphics = g.create();
+        transitionGraphics.clipRect(nextBackgroundX, 42,
+                BOARD_WIDTH - nextBackgroundX, BOARD_HEIGHT - 42);
+
+        for (int y = 0; y < getHeight(); y += BACKGROUND_TILE_HEIGHT) {
+            for (int x = nextBackgroundX;
+                    x < getWidth(); x += BACKGROUND_TILE_WIDTH) {
+                transitionGraphics.drawImage(backgroundImage.getImage(), x, y,
+                        BACKGROUND_TILE_WIDTH, BACKGROUND_TILE_HEIGHT, null);
+            }
+        }
+
+        for (int x = nextBackgroundX;
+                x < getWidth(); x += MIDGROUND_WIDTH) {
+            transitionGraphics.drawImage(midgroundImage.getImage(), x, 0,
+                    MIDGROUND_WIDTH, MIDGROUND_HEIGHT, null);
+        }
+
+        transitionGraphics.dispose();
     }
 
     private void drawBackground(Graphics g) {
+        int renderedBackgroundOffset = (int) Math.round(backgroundOffset);
+        int renderedMidgroundOffset = (int) Math.round(midgroundOffset);
+
         for (int y = 0; y < getHeight(); y += BACKGROUND_TILE_HEIGHT) {
-            for (int x = -backgroundOffsetFar;
-                    x < getWidth(); x += BACKGROUND_TILE_WIDTH) {
+            for (int x = -renderedBackgroundOffset; x < getWidth(); x += BACKGROUND_TILE_WIDTH) {
                 g.drawImage(backgroundImage.getImage(), x, y,
                         BACKGROUND_TILE_WIDTH, BACKGROUND_TILE_HEIGHT, null);
             }
         }
 
-        for (int x = -backgroundOffsetNear;
-                x < getWidth(); x += MIDGROUND_WIDTH) {
+        for (int x = -renderedMidgroundOffset; x < getWidth(); x += MIDGROUND_WIDTH) {
             g.drawImage(midgroundImage.getImage(), x, 0,
                     MIDGROUND_WIDTH, MIDGROUND_HEIGHT, null);
-        }
-    }
-
-    private void drawWalls(Graphics g) {
-        g.setColor(new Color(50, 70, 78));
-        for (Rectangle wall : walls) {
-            g.fillRect(wall.x, wall.y, wall.width, wall.height);
-            g.setColor(new Color(90, 110, 115));
-            g.drawRect(wall.x, wall.y, wall.width, wall.height);
-            g.setColor(new Color(50, 70, 78));
         }
     }
 

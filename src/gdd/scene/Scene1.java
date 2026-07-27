@@ -20,6 +20,8 @@ import gdd.sprite.Player;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
@@ -63,8 +65,8 @@ public class Scene1 extends JPanel implements GameScene {
 
     private KeyAdapter input = new SceneInput();
     private Timer timer;
-    private int backgroundOffsetNear;
-    private int backgroundOffsetFar;
+    private double backgroundOffset;
+    private double midgroundOffset;
     private boolean paused;
     private boolean finished;
     private boolean transitioning;
@@ -188,11 +190,10 @@ public class Scene1 extends JPanel implements GameScene {
 
     // parallax is implemented here
     private void updateBackgroundScroll() {
-        // The near and far background layers are moving at different speeds.
+        // The background, midground, and foreground terrain move at different speeds.
         // These offsets are changing here, and gameTick() is repainting afterward.
-        backgroundOffsetNear
-                = (backgroundOffsetNear + WORLD_SCROLL_SPEED) % BACKGROUND_WIDTH;
-        backgroundOffsetFar = (backgroundOffsetFar + 1) % BACKGROUND_WIDTH;
+        backgroundOffset = (backgroundOffset + BACKGROUND_SCROLL_SPEED) % BACKGROUND_WIDTH;
+        midgroundOffset = (midgroundOffset + MIDGROUND_SCROLL_SPEED) % BACKGROUND_WIDTH;
     }
 
     private void updatePlayerDeath() {
@@ -226,12 +227,10 @@ public class Scene1 extends JPanel implements GameScene {
     }
 
     private void updatePlayer() {
-        int oldX = player.getX();
-        int oldY = player.getY();
         player.act();
 
         if (intersectsTerrain(player.getBounds())) {
-            player.restorePosition(oldX, oldY);
+            resolveTerrainOverlap();
             if (WALL_DAMAGE_ENABLED) {
                 player.damage(WALL_DAMAGE);
             }
@@ -415,6 +414,25 @@ public class Scene1 extends JPanel implements GameScene {
         return tileMap != null && tileMap.intersects(bounds, stageTick);
     }
 
+    private void resolveTerrainOverlap() {
+        Rectangle playerBounds = player.getBounds();
+        Point correction = tileMap.getCollisionCorrection(playerBounds, getPlayerHitboxMovementArea(playerBounds), stageTick);
+
+        player.setX(player.getX() + correction.x);
+        player.setY(player.getY() + correction.y);
+    }
+
+    private Rectangle getPlayerHitboxMovementArea(Rectangle playerBounds) {
+        int hitboxOffsetX = playerBounds.x - player.getX();
+        int hitboxOffsetY = playerBounds.y - player.getY();
+
+        return new Rectangle(
+                hitboxOffsetX,
+                hitboxOffsetY,
+                BOARD_WIDTH - player.getRenderWidth() + playerBounds.width,
+                BOARD_HEIGHT - 32 - player.getRenderHeight() + playerBounds.height);
+    }
+
     private void handleEnemyContact() {
         for (Enemy enemy : enemies) {
             if (enemy.collidesWith(player)) {
@@ -457,8 +475,7 @@ public class Scene1 extends JPanel implements GameScene {
 
             int centerX = mine.getCenterX();
             int centerY = mine.getCenterY();
-            Explosion explosion = new Explosion(
-                    centerX, centerY, MINE_EXPLOSION_RADIUS);
+            Explosion explosion = new Explosion(centerX, centerY, MINE_EXPLOSION_RADIUS);
             explosions.add(explosion);
 
             if (explosion.reaches(player)) {
@@ -573,14 +590,13 @@ public class Scene1 extends JPanel implements GameScene {
     private void drawBackground(Graphics g) {
         int backgroundY = getHeight() - BACKGROUND_HEIGHT;
 
-        drawBackgroundLayer(g, backgroundImage, backgroundOffsetFar, backgroundY);
-        drawBackgroundLayer(g, midground1Image, backgroundOffsetFar, backgroundY);
-        drawBackgroundLayer(g, midground2Image, backgroundOffsetNear, backgroundY);
+        drawBackgroundLayer(g, backgroundImage, backgroundOffset, backgroundY);
+        drawBackgroundLayer(g, midground1Image, backgroundOffset, backgroundY);
+        drawBackgroundLayer(g, midground2Image, midgroundOffset, backgroundY);
     }
 
-    private void drawBackgroundLayer(Graphics g, ImageIcon layer,
-            int offset, int y) {
-        for (int x = -offset; x < getWidth(); x += BACKGROUND_WIDTH) {
+    private void drawBackgroundLayer(Graphics g, ImageIcon layer, double offset, int y) {
+        for (int x = -(int) Math.round(offset); x < getWidth(); x += BACKGROUND_WIDTH) {
             g.drawImage(layer.getImage(), x, y, BACKGROUND_WIDTH, BACKGROUND_HEIGHT, null);
         }
     }
