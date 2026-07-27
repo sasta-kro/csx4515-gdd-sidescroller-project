@@ -46,6 +46,18 @@ public class AudioAssetTest {
                 == SoundEffect.MEGA_SHOT;
         assert SoundEffect.forWeapon(WeaponType.SPLIT_SHOT)
                 == SoundEffect.SPLIT_SHOT;
+        assert SoundEffect.MULTI_SHOT.getPath().equals(
+                SoundEffect.SPLIT_SHOT.getPath())
+                : "Multi-shot and split-shot must share their audio";
+        assert SoundEffect.SNAKE_ATTACK.getPath().equals(
+                SoundEffect.JELLYFISH_ATTACK.getPath())
+                : "Snake and Jellyfish must share their attack audio";
+        assert SoundEffect.OCTOPUS_ROCK_THROW.getPath().equals(
+                SoundEffect.CORAL_BREAK.getPath())
+                : "Octopus rock throw and coral break must share audio";
+        assert SoundEffect.JELLYFISH_ATTACK.getGainOffsetDb()
+                == SoundEffect.SNAKE_ATTACK.getGainOffsetDb() - 6.0f
+                : "Jellyfish attack must play at half amplitude";
         assert MusicTrack.MENU.getPath().equals(
                 MusicTrack.SCENE_2.getPath())
                 : "Menu and Scene 2 must share their music";

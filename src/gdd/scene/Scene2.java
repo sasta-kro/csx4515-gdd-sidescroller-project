@@ -15,6 +15,7 @@ import gdd.sprite.Bubble;
 import gdd.sprite.obstacle.Coral;
 import gdd.sprite.enemy.Enemy;
 import gdd.sprite.enemy.EnemyProjectile;
+import gdd.sprite.enemy.Jellyfish;
 import gdd.sprite.obstacle.Explosion;
 import gdd.sprite.enemy.Octopus;
 import gdd.sprite.enemy.Snake;
@@ -260,6 +261,11 @@ public class Scene2 extends JPanel implements GameScene {
             if (enemy instanceof Snake snake
                     && snake.consumeAttackStarted()) {
                 playSound(SoundEffect.SNAKE_ATTACK);
+            }
+
+            if (enemy instanceof Jellyfish jellyfish
+                    && jellyfish.consumeAttackStarted()) {
+                playSound(SoundEffect.JELLYFISH_ATTACK);
             }
         }
     }

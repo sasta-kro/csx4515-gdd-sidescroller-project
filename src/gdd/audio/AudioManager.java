@@ -3,7 +3,7 @@ package gdd.audio;
 import static gdd.Global.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,8 +21,7 @@ public final class AudioManager implements AutoCloseable {
     private record AudioData(AudioFormat format, byte[] samples) {
     }
 
-    private final Map<SoundEffect, AudioData> soundEffects =
-            new EnumMap<>(SoundEffect.class);
+    private final Map<String, AudioData> audioByPath = new HashMap<>();
     private final Set<Clip> activeSoundEffects =
             ConcurrentHashMap.newKeySet();
 
@@ -36,8 +35,8 @@ public final class AudioManager implements AutoCloseable {
         }
 
         for (SoundEffect soundEffect : SoundEffect.values()) {
-            soundEffects.put(soundEffect,
-                    loadAudio(soundEffect.getPath()));
+            audioByPath.computeIfAbsent(
+                    soundEffect.getPath(), this::loadAudio);
         }
     }
 
@@ -84,7 +83,8 @@ public final class AudioManager implements AutoCloseable {
             return;
         }
 
-        Clip clip = openClip(soundEffects.get(soundEffect), SFX_GAIN_DB);
+        float gain = SFX_GAIN_DB + soundEffect.getGainOffsetDb();
+        Clip clip = openClip(audioByPath.get(soundEffect.getPath()), gain);
         activeSoundEffects.add(clip);
         clip.addLineListener(event -> {
             if (event.getType() == LineEvent.Type.STOP

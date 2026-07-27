@@ -55,6 +55,8 @@ public class BossScene extends JPanel implements GameScene {
     private static final int PICKUP_SPAWN_X = BOARD_WIDTH + 20;
     private static final int PICKUP_MIN_Y = 125;
     private static final int PICKUP_MAX_Y = BOARD_HEIGHT - 270;
+    private static final int LEFT_CORNER_COLUMNS = 1;
+    private static final int RIGHT_CORNER_COLUMNS = 2;
 
     private Game game;
     private RunState runState;
@@ -108,6 +110,11 @@ public class BossScene extends JPanel implements GameScene {
                 LevelLoader.loadTerrain(BOSS_TERRAIN_PATH));
         resolveTerrainOverlap();
         boss = new Anglerfish(player);
+        Rectangle verticalBossBounds = tileMap.getVerticalOpenBounds(
+                LEFT_CORNER_COLUMNS * TILE_SIZE,
+                (tileMap.getColumns() - RIGHT_CORNER_COLUMNS) * TILE_SIZE);
+        boss.setVerticalHitboxBounds(verticalBossBounds.y,
+                verticalBossBounds.y + verticalBossBounds.height);
         enemies.add(boss);
     }
 

@@ -53,6 +53,7 @@ public class Jellyfish extends Enemy {
     private double wave;
     private State state = State.IDLE;
     private int attackCooldownTicks = ATTACK_COOLDOWN_TICKS;
+    private boolean attackStarted;
 
     public Jellyfish(Player player, int x, int y) {
         super(player, x, y, 48*2, 48*2, 1, ENEMY_CONTACT_DAMAGE, 100, new Color(130, 210, 235));
@@ -78,6 +79,7 @@ public class Jellyfish extends Enemy {
             updateAnimationFrames();
         } else if (state == State.IDLE && --attackCooldownTicks <= 0) {
             state = State.ATTACKING;
+            attackStarted = true;
             updateAnimationFrames();
         }
 
@@ -87,6 +89,12 @@ public class Jellyfish extends Enemy {
         if (getX() + getRenderWidth() < 0) {
             die();
         }
+    }
+
+    public boolean consumeAttackStarted() {
+        boolean result = attackStarted;
+        attackStarted = false;
+        return result;
     }
 
     private void updateAnimationFrames() {
