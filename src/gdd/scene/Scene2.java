@@ -7,7 +7,6 @@ import gdd.TransitionMode;
 import gdd.audio.SoundEffect;
 import gdd.level.LevelLoader;
 import gdd.level.TileMap;
-import gdd.powerup.Heal;
 import gdd.powerup.PowerUp;
 import gdd.spawn.SpawnDetails;
 import gdd.spawn.SpawnManager;
@@ -418,9 +417,7 @@ public class Scene2 extends JPanel implements GameScene {
         for (PowerUp powerUp : powerUps) {
             if (powerUp.isVisible() && powerUp.collidesWith(player)) {
                 powerUp.upgrade(player);
-                if (!(powerUp instanceof Heal)) {
-                    playSound(SoundEffect.POWERUP_COLLECT);
-                }
+                playSound(SoundEffect.POWERUP_COLLECT);
             }
         }
     }

@@ -355,9 +355,7 @@ public class BossScene extends JPanel implements GameScene {
         for (PowerUp powerUp : powerUps) {
             if (powerUp.isVisible() && powerUp.collidesWith(player)) {
                 powerUp.upgrade(player);
-                if (!(powerUp instanceof Heal)) {
-                    playSound(SoundEffect.POWERUP_COLLECT);
-                }
+                playSound(SoundEffect.POWERUP_COLLECT);
             }
         }
     }
