@@ -28,12 +28,12 @@ public class ScriptedLevelLoadingTest {
                 SCENE1_EVENTS_PATH);
 
         assertEquals(14, terrain.length, "Scene 1 terrain rows");
-        assertEquals(159, terrain[0].length, "Scene 1 terrain columns");
-        assertEquals(35, eventCount(schedule), "Scene 1 events");
-        assertEquals(2, schedule.get(480).size(),
+        assertEquals(735, terrain[0].length, "Scene 1 terrain columns");
+        assertEquals(228, eventCount(schedule), "Scene 1 events");
+        assertEquals(2, schedule.get(17441).size(),
                 "Scene 1 same-tick pair");
-        assertEquals(3, schedule.get(2040).size(),
-                "Scene 1 same-tick formation");
+        assertEquals("Mine", schedule.get(24).get(0).type,
+                "Scene 1 first world event");
     }
 
     private static void verifiesScene2Files() {
@@ -44,29 +44,30 @@ public class ScriptedLevelLoadingTest {
 
         assertEquals(14, terrain.length, "Scene 2 terrain rows");
         assertEquals(735, terrain[0].length, "Scene 2 terrain columns");
-        assertEquals(8, eventCount(schedule), "Scene 2 events");
-        assertEquals(2, schedule.get(120).size(),
+        assertEquals(180, eventCount(schedule), "Scene 2 events");
+        assertEquals(2, schedule.get(2252).size(),
                 "Scene 2 same-tick pair");
-        assertEquals("Coral", schedule.get(720).get(0).type,
-                "Scene 2 world event");
+        assertEquals("Coral", schedule.get(56).get(0).type,
+                "Scene 2 first world event");
     }
 
     private static void verifiesScene1Spawns() {
         SpawnCounts counts = spawnAll(1, SCENE1_EVENTS_PATH,
-                secondsToTicks(60));
+                stageDurationTicks());
 
-        assertEquals(23, counts.enemies, "Scene 1 spawned enemies");
-        assertEquals(5, counts.powerUps, "Scene 1 spawned powerups");
-        assertEquals(7, counts.worldEvents,
+        assertEquals(116, counts.enemies, "Scene 1 spawned enemies");
+        assertEquals(58, counts.powerUps, "Scene 1 spawned powerups");
+        assertEquals(54, counts.worldEvents,
                 "Scene 1 spawned world events");
     }
 
     private static void verifiesScene2Spawns() {
-        SpawnCounts counts = spawnAll(2, SCENE2_EVENTS_PATH, 840);
+        SpawnCounts counts = spawnAll(2, SCENE2_EVENTS_PATH,
+                stageDurationTicks());
 
-        assertEquals(6, counts.enemies, "Scene 2 spawned enemies");
-        assertEquals(1, counts.powerUps, "Scene 2 spawned powerups");
-        assertEquals(1, counts.worldEvents,
+        assertEquals(82, counts.enemies, "Scene 2 spawned enemies");
+        assertEquals(28, counts.powerUps, "Scene 2 spawned powerups");
+        assertEquals(70, counts.worldEvents,
                 "Scene 2 spawned world events");
     }
 
