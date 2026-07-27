@@ -17,6 +17,7 @@ import gdd.sprite.enemy.EnemyProjectile;
 import gdd.sprite.obstacle.Explosion;
 import gdd.sprite.enemy.Octopus;
 import gdd.sprite.Player;
+import gdd.ui.GameHud;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -580,35 +581,8 @@ public class Scene2 extends JPanel implements GameScene {
     }
 
     private void drawHud(Graphics g) {
-        g.setColor(new Color(0, 15, 28, 210));
-        g.fillRect(0, 0, getWidth(), 42);
-        g.setColor(Color.WHITE);
-        g.setFont(new Font("Monospaced", Font.BOLD, scaledFontSize(13)));
-
-        int remainingTicks = getRemainingTicks();
-        String timerText = String.format("%d:%02d",
-                remainingTicks / TARGET_FPS / 60,
-                remainingTicks / TARGET_FPS % 60);
-
-        g.drawString("STAGE 2", 12, 18);
-        g.drawString("TIME " + timerText, 12, 36);
-        g.drawString("SCORE " + runState.getScore(), 125, 18);
-        g.drawString("HP " + player.getHealth() + "/" + PLAYER_MAX_HEALTH,
-                125, 36);
-        g.drawString("SPEED " + player.getSpeedLevel() + "/2", 285, 18);
-        g.drawString("SPD " + ticksAsSeconds(player.getSpeedPowerupTicks()),
-                285, 36);
-        g.drawString(player.getWeaponType().getDisplayName(), 430, 18);
-        g.drawString("LV " + player.getMultiShotLevel()
-                + "  " + ticksAsSeconds(player.getWeaponPowerupTicks()),
-                430, 36);
-    }
-
-    private String ticksAsSeconds(int ticks) {
-        if (ticks <= 0) {
-            return "--";
-        }
-        return String.format("%.1fs", ticks / (double) TARGET_FPS);
+        GameHud.draw(g, getWidth(), player, runState,
+                "STAGE 2", getRemainingTicks());
     }
 
     private void drawPauseOverlay(Graphics g) {
